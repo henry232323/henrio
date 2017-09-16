@@ -88,7 +88,7 @@ class Loop:
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
-        self.running = False
+        self.running = True
         self.selector = selector if selector else selectors.DefaultSelector()
 
     def run_until_complete(self, starting_task):
@@ -225,9 +225,3 @@ class Loop:
             return True
         else:
             return False
-
-if __name__ == "__main__":
-    from testers import *
-    loop = Loop()
-
-    f = loop.run_until_complete(sleep(5))

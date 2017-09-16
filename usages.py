@@ -1,4 +1,5 @@
-from loop import *
+from henrio import *
+
 
 async def sleeper(tim):
     await sleep(tim)
@@ -15,13 +16,11 @@ async def duo():
 async def raser():
     raise IndexError("Oh no")
 
+
 import socket
-
-loop = Loop()
-
+loop = SelectorLoop()
 my_socket = socket.socket()
 my_socket.connect(("irc.mindfang.org", 1413))
-
 buffer = bytes()
 def reader():
     global buffer

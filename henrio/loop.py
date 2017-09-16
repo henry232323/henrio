@@ -16,7 +16,7 @@ class Loop:
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
-        self.running = True
+        self.running = False
 
     @coroutine
     def handle_callback(self, callback, args):
@@ -25,6 +25,9 @@ class Loop:
     def run_until_complete(self, starting_task):
         if self.running:
             raise RuntimeError("Loop is already running!")
+        else:
+            self.running = True
+
         self._tasks.clear()
         if not isinstance(starting_task, Future):
             starting_task = Task(starting_task, None)
@@ -60,9 +63,14 @@ class Loop:
                                 self._tasks.append(task._data)
                             self._tasks.append(task)
 
+        self.running = False
         return starting_task.result()
 
     def run_forever(self):
+        if self.running:
+            raise RuntimeError("Loop is already running!")
+        else:
+            self.running = True
         self._tasks.clear()
         self._tasks.extend(self._queue)
         self._queue.clear()

@@ -25,14 +25,13 @@ class CancelledError(Exception):
     pass
 
 
-class Task:
-    def __init__(self, task, data):
-        self._task = task
-        self._data = data
+class Future:
+    def __init__(self):
         self._result = None
         self._error = None
         self.complete = False
         self.cancelled = False
+        self._current = self.__await__()
 
     def result(self):
         if self._error is not None:
@@ -42,10 +41,14 @@ class Task:
         return self._result
 
     def set_result(self, data):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
         self.complete = True
         self._result = data
 
     def set_exception(self, exception):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
         self._error = exception
 
     def cancel(self):
@@ -56,21 +59,46 @@ class Task:
         self.cancelled = True
         self.set_exception(CancelledError)
 
+    def __await__(self):
+        if not self.complete and self._error is None:
+            yield self
+        return self.result()
+
+    def send(self, data):
+        self._current.send(data)
+
+
+class Task(Future):
+    def __init__(self, task, data):
+        super().__init__()
+        self._task = task
+        self._data = data
+
+    def send(self, data):
+        self._task.send(data)
+
+    def throw(self, exc):
+        self._task.throw(exc)
+
 
 class Loop:
-    running = False
-
     def __init__(self, selector=None):
         self._queue = deque()
         self.__tasks = deque()
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
+        self.running = False
         self.selector = selector if selector else selectors.DefaultSelector()
 
-    def run_until_complete(self, task):
+    def run_until_complete(self, starting_task):
+        if self.running:
+            raise RuntimeError("Loop is already running!")
         self.__tasks.clear()
-        self.__tasks.append(Task(task, None))
+        if not isinstance(starting_task, Future):
+            starting_task = Task(starting_task, None)
+        if starting_task not in self.__tasks:
+            self.__tasks.append(starting_task)
         while self.__tasks or self._timers:
             self._queue.extend(self.__tasks)
             self.__tasks.clear()
@@ -92,7 +120,7 @@ class Loop:
                 task = self._queue.popleft()
                 if not task.cancelled and not task.complete:
                     try:
-                        task._data = task._task.send(task._data)
+                        task._data = task.send(task._data)
                     except StopIteration as err:
                         task.set_result(err.value)
                     except Exception as err:
@@ -106,15 +134,56 @@ class Loop:
                                 self.__tasks.append(task._data)
                             self.__tasks.append(task)
 
-        return task.result()
+        return starting_task.result()
+
+    def run_forever(self):
+        self.__tasks.clear()
+        self.__tasks.extend(self._queue)
+        self._queue.clear()
+        while self.running:
+            self._queue.extend(self.__tasks)
+            self.__tasks.clear()
+            if not self.__tasks and self._timers:
+                time.sleep(max(0.0, self._timers[0][0] - time.monotonic()))
+
+            while self._timers and self._timers[0][0] < time.monotonic():
+                _, task = heappop(self._timers)
+                self.__tasks.append(task)
+
+            if self.selector.get_map():
+                for file, events in self._poll():
+                    if events & 1:
+                        self.__tasks.append(Task(handle_callback(*self._readers[file.fd]), None))
+                    if events & 2:
+                        self.__tasks.append(Task(handle_callback(*self._writers[file.fd]), None))
+
+            while self._queue:
+                task = self._queue.popleft()
+                if not task.cancelled and not task.complete:
+                    try:
+                        task._data = task.send(task._data)
+                    except StopIteration as err:
+                        task.set_result(err.value)
+                    except Exception as err:
+                        task.set_exception(err)
+                        print_exc()
+                    else:
+                        if task._data and task._data[0] == 'sleep':
+                            heappush(self._timers, (task._data[1], task))
+                        else:
+                            if iscoroutine(task._data):
+                                self.__tasks.append(task._data)
+                            self.__tasks.append(task)
 
     def _poll(self):
         return self.selector.select(0 if self.__tasks or self._queue or self._timers else None)
 
     def create_task(self, task):
-        new_task = Task(task, None)
-        self._queue.append(new_task)
-        return new_task
+        if not isinstance(task, Future):
+            task = Task(task, None)
+        if task not in self._queue:
+            self._queue.append(task)
+        return task
 
     def close(self):
         self.running = False
@@ -146,7 +215,7 @@ class Loop:
         else:
             return False
 
-    def unregister_write(self, fileobj):
+    def unregister_writer(self, fileobj):
         if fileobj.fileno() in self.selector.get_map():
             if self.selector.get_key(fileobj) == selectors.EVENT_READ ^ selectors.EVENT_WRITE:
                 self.selector.modify(fileobj, selectors.EVENT_READ)
@@ -160,4 +229,5 @@ class Loop:
 if __name__ == "__main__":
     from testers import *
     loop = Loop()
-    loop.run_until_complete(duo())
+
+    f = loop.run_until_complete(sleep(5))

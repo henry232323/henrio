@@ -6,7 +6,7 @@ from inspect import iscoroutine
 from traceback import print_exc
 from types import coroutine
 
-from .futures import Task, Future
+from .futures import Task, Future, File, Socket
 
 
 class Loop:
@@ -16,6 +16,7 @@ class Loop:
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
+        self._files = dict()
         self.running = False
 
     @coroutine
@@ -126,11 +127,26 @@ class SelectorLoop(Loop):
     def _poll(self):
         if self.selector.get_map():
             files = self.selector.select(0 if self._tasks or self._queue or self._timers else None)
+            ready = dict()
             for file, events in files:
-                if events & 1:
-                    self._tasks.append(Task(self.handle_callback(*self._readers[file.fd]), None))
-                if events & 2:
-                    self._tasks.append(Task(self.handle_callback(*self._writers[file.fd]), None))
+                if file.fileno() in self._readers or file.fileno() in self._writers:
+                    if events & 1:
+                        self._tasks.append(Task(self.handle_callback(*self._readers[file.fd]), None))
+                    if events & 2:
+                        self._tasks.append(Task(self.handle_callback(*self._writers[file.fd]), None))
+                if file.fileno() in self._files:
+                    ready[file.fileno()] = events
+
+            for fileno, file in self._files.items():
+                if fileno in ready:
+                    event = ready[fileno]
+                    if event & 1:
+                        file._read_ready(True)
+                    if event & 2:
+                        file._write_ready(True)
+                else:
+                    file._read_ready(False)
+                    file._write_ready(False)
 
     def register_reader(self, fileobj, callback, *args):
         if fileobj.fileno() in self.selector.get_map() and self.selector.get_key(
@@ -169,3 +185,15 @@ class SelectorLoop(Loop):
             return True
         else:
             return False
+
+    def wrap_file(self, file):
+        wrapped = File(file, loop=self)
+        self._files[file.fileno()] = wrapped
+        self.selector.register(file, selectors.EVENT_READ | selectors.EVENT_WRITE)
+        return wrapped
+
+    def wrap_socket(self, socket):
+        wrapped = Socket(socket, loop=self)
+        self._files[socket.fileno()] = wrapped
+        self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE)
+        return wrapped

@@ -9,7 +9,10 @@ def ayield():
 
 @coroutine
 def sleep(seconds):
-    yield ("sleep", monotonic() + seconds)
+    if seconds == 0:
+        yield
+    else:
+        yield ("sleep", monotonic() + seconds)
 
 
 class CancelledError(Exception):
@@ -23,6 +26,13 @@ class Future:
         self.complete = False
         self.cancelled = False
         self._current = self.__await__()
+
+    def __repr__(self):
+        fmt = "{0} {1} {2}".format(self._result, self._error, self._data)
+        if self.cancelled:
+            return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
+        else:
+            return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
 
     def result(self):
         if self._error is not None:
@@ -56,10 +66,10 @@ class Future:
         return self.result()
 
     def send(self, data):
-        self._current.send(data)
+        return self._current.send(data)
 
     def throw(self, exc):
-        self._current.send(exc)
+        return self._current.send(exc)
 
 
 class Task(Future):
@@ -69,12 +79,12 @@ class Task(Future):
         self._data = data
 
     def send(self, data):
-        self._task.send(data)
+        return self._task.send(data)
 
     def throw(self, exc):
-        self._task.throw(exc)
+        return self._task.throw(exc)
 
 
 class File:
-    def __init__(self):
-        file
+    def __init__(self, file):
+        pass

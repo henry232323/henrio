@@ -39,12 +39,22 @@ def run_socks():
     loop.register_reader(my_socket, reader)
     loop.run_forever()
 
-async def run1():
-    print("first!", time.monotonic())
-    f = sleep(10)
-    print(f)
-    await f
-    print("seconds", time.monotonic())
+def run_files():
+    loop = SelectorLoop()
+    file = open("LICENSE", 'rb')
+    buffer = bytes()
+    def reader():
+        global buffer
+        received = file.read(1024)
+        if received:
+            buffer += received
+            pts = buffer.split(b"\r\n")
+            buffer = pts.pop()
+            for el in pts:
+                print(el)
+        else:
+            loop.unregister_reader(file)
+            file.close()
 
-l = Loop()
-d = l.run_until_complete(run1())
+    loop.register_reader(file, reader)
+    loop.run_forever()

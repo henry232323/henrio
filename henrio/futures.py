@@ -1,5 +1,6 @@
 from time import monotonic
 from types import coroutine
+from collections import deque
 
 
 @coroutine
@@ -86,5 +87,66 @@ class Task(Future):
 
 
 class File:
-    def __init__(self, file):
-        pass
+    def __init__(self, file, loop=None):
+        self.loop = loop
+        self.file = file
+        self._read_queue = deque()
+        self._write_queue = deque()
+
+    def read_ready(self, value):
+        if value:
+            fut, data = self._write_queue.popleft()
+            fut.set_result(self.file.write(data))
+
+    def write_ready(self, value):
+        if value:
+            fut, nbytes = self._write_queue.popleft()
+            fut.set_result(self.file.read(nbytes))
+
+    async def read(self, nbytes):
+        fut = Future()
+        self._read_queue.append((fut, nbytes))
+        return fut
+
+    async def write(self, data):
+        fut = Future()
+        self._write_queue.append((fut, data))
+        return fut
+
+    def close(self):
+        del self.loop._files[self.file.fileno()]
+        self.loop.selector.unregister(self.file)
+        self.file.close()
+
+
+class Socket:
+    def __init__(self, file, loop=None):
+        self.loop = loop
+        self.file = file
+        self._read_queue = deque()
+        self._write_queue = deque()
+
+    def read_ready(self, value):
+        if value:
+            fut, data = self._write_queue.popleft()
+            fut.set_result(self.file.send(data))
+
+    def write_ready(self, value):
+        if value:
+            fut, nbytes = self._write_queue.popleft()
+            fut.set_result(self.file.recv(nbytes))
+
+    async def recv(self, nbytes):
+        fut = Future()
+        self._read_queue.append((fut, nbytes))
+        return fut
+
+    async def send(self, data):
+        fut = Future()
+        self._write_queue.append((fut, data))
+        return fut
+
+    def close(self):
+        del self.loop._files[self.file.fileno()]
+        self.loop.selector.unregister(self.file)
+        self.file.close()

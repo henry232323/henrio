@@ -1,3 +1,5 @@
+import typing
+import socket
 from time import monotonic
 from types import coroutine
 from collections import deque
@@ -9,7 +11,7 @@ def ayield():
 
 
 @coroutine
-def sleep(seconds):
+def sleep(seconds: typing.Union[float, int]):
     if seconds == 0:
         yield
     else:
@@ -28,13 +30,6 @@ class Future:
         self.cancelled = False
         self._current = self.__await__()
 
-    def __repr__(self):
-        fmt = "{0} {1} {2}".format(self._result, self._error, self._data)
-        if self.cancelled:
-            return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
-        else:
-            return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
-
     def result(self):
         if self._error is not None:
             raise self._error
@@ -42,13 +37,13 @@ class Future:
             raise RuntimeError("Result isn't ready!")
         return self._result
 
-    def set_result(self, data):
+    def set_result(self, data: typing.Any):
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self.complete = True
         self._result = data
 
-    def set_exception(self, exception):
+    def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self._error = exception
@@ -74,10 +69,17 @@ class Future:
 
 
 class Task(Future):
-    def __init__(self, task, data):
+    def __init__(self, task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any):
         super().__init__()
         self._task = task
         self._data = data
+
+    def __repr__(self):
+        fmt = "{0} {1} {2}".format(self._result, self._error, self._data)
+        if self.cancelled:
+            return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
+        else:
+            return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
 
     def send(self, data):
         return self._task.send(data)
@@ -87,31 +89,43 @@ class Task(Future):
 
 
 class File:
-    def __init__(self, file, loop=None):
+    def __init__(self, file: typing.IO[typing.AnyStr], loop=None):
         self.loop = loop
         self.file = file
         self._read_queue = deque()
         self._write_queue = deque()
 
-    def read_ready(self, value):
-        if value:
+    def _read_ready(self, value: bool):
+        if value and self._read_queue:
+            fut, (type, nbytes) = self._read_queue.popleft()
+            if type == 0:
+                fut.set_result(self.file.read(nbytes))
+            elif type == 1:
+                fut.set_result(self.file.readline(nbytes))
+
+    def _write_ready(self, value: bool):
+        if value and self._write_queue:
             fut, data = self._write_queue.popleft()
             fut.set_result(self.file.write(data))
 
-    def write_ready(self, value):
-        if value:
-            fut, nbytes = self._write_queue.popleft()
-            fut.set_result(self.file.read(nbytes))
-
-    async def read(self, nbytes):
+    async def read(self, nbytes: int=-1) -> typing.AnyStr:
         fut = Future()
-        self._read_queue.append((fut, nbytes))
-        return fut
+        self._read_queue.append((fut, (0, nbytes)))
+        return await fut
 
-    async def write(self, data):
+    async def readline(self, nbytes: int=-1) -> typing.AnyStr:
+        fut = Future()
+        self._read_queue.append((fut, (1, nbytes)))
+        return await fut
+
+    async def write(self, data: typing.AnyStr):
         fut = Future()
         self._write_queue.append((fut, data))
-        return fut
+        return await fut
+
+    @property
+    def fileno(self):
+        return self.file.fileno()
 
     def close(self):
         del self.loop._files[self.file.fileno()]
@@ -120,31 +134,35 @@ class File:
 
 
 class Socket:
-    def __init__(self, file, loop=None):
+    def __init__(self, file: socket.socket, loop=None):
         self.loop = loop
         self.file = file
         self._read_queue = deque()
         self._write_queue = deque()
 
-    def read_ready(self, value):
-        if value:
+    def _read_ready(self, value: bool):
+        if value and self._read_queue:
+            fut, nbytes = self._read_queue.popleft()
+            fut.set_result(self.file.recv(nbytes))
+
+    def _write_ready(self, value: bool):
+        if value and self._write_queue:
             fut, data = self._write_queue.popleft()
             fut.set_result(self.file.send(data))
 
-    def write_ready(self, value):
-        if value:
-            fut, nbytes = self._write_queue.popleft()
-            fut.set_result(self.file.recv(nbytes))
-
-    async def recv(self, nbytes):
+    async def recv(self, nbytes: int) -> bytes:
         fut = Future()
         self._read_queue.append((fut, nbytes))
-        return fut
+        return await fut
 
-    async def send(self, data):
+    async def send(self, data: bytes):
         fut = Future()
         self._write_queue.append((fut, data))
-        return fut
+        return await fut
+
+    @property
+    def fileno(self):
+        return self.file.fileno()
 
     def close(self):
         del self.loop._files[self.file.fileno()]

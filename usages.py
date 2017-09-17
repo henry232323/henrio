@@ -17,7 +17,7 @@ async def duo():
 async def raser():
     raise IndexError("Oh no")
 
-def run_socks():
+def run_readers():
     import socket
     loop = SelectorLoop()
     my_socket = socket.socket()
@@ -39,6 +39,7 @@ def run_socks():
     loop.register_reader(my_socket, reader)
     loop.run_forever()
 
+
 def run_files():
     loop = SelectorLoop()
     file = open("LICENSE", 'rb')
@@ -58,3 +59,24 @@ def run_files():
 
     loop.register_reader(file, reader)
     loop.run_forever()
+
+
+def run_socks():
+    import socket
+    loop = SelectorLoop()
+    r, w = socket.socketpair()
+    reader, writer = loop.wrap_socket(r), loop.wrap_socket(w)
+    w.send(b"Elle me dit ecris un chanson")
+    d = loop.run_until_complete(reader.recv(1024))
+    print(d)
+
+
+def run_stdio():
+    import sys
+    loop = SelectorLoop()
+    reader, writer = loop.wrap_file(sys.stdin), loop.wrap_file(sys.stdout)
+    loop.create_task(writer.write("fuck"))
+    resp = loop.run_until_complete(reader.read(10))
+    print(resp)
+
+run_socks()

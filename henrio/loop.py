@@ -23,7 +23,8 @@ class Loop:
     @coroutine
     def handle_callback(self, callback: typing.Callable, args: typing.Iterable):
         """Asynchronously deploy a callback sync -> async"""
-        yield callback(*args)
+        callback(*args)
+        yield
 
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""

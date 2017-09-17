@@ -40,10 +40,11 @@ def run_readers():
     loop.run_forever()
 
 
+buffer = bytes()
 def run_files():
+    global buffer
     loop = SelectorLoop()
     file = open("LICENSE", 'rb')
-    buffer = bytes()
     def reader():
         global buffer
         received = file.read(1024)
@@ -79,4 +80,4 @@ def run_stdio():
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
 
-run_socks()
+run_readers()

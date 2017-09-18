@@ -1,5 +1,8 @@
+"""
+Ignore this file, this is some test usages
+"""
+
 from henrio import *
-import time
 
 
 async def sleeper(tim):
@@ -37,6 +40,18 @@ def run_readers():
             my_socket.close()
 
     loop.register_reader(my_socket, reader)
+    loop.run_forever()
+
+def run_stdreaders():
+    import sys
+    loop = SelectorLoop()
+    my_file = sys.stdin
+    buffer = bytes()
+    def reader():
+        global buffer
+        print(my_file.readline())
+
+    loop.register_reader(my_file, reader)
     loop.run_forever()
 
 
@@ -80,4 +95,4 @@ def run_stdio():
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
 
-run_readers()
+run_stdreaders()

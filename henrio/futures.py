@@ -1,25 +1,16 @@
 import typing
 import socket
-from time import monotonic
 from types import coroutine
 from collections import deque
 
-
-@coroutine
-def ayield():
-    yield
-
+from . import CancelledError
 
 @coroutine
 def sleep(seconds: typing.Union[float, int]):
     if seconds == 0:
         yield
     else:
-        yield ("sleep", monotonic() + seconds)
-
-
-class CancelledError(Exception):
-    pass
+        yield ("sleep", seconds)
 
 
 class Future:

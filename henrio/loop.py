@@ -20,8 +20,11 @@ class Loop:
         self._files = dict()
         self.running = False
 
+    def time(self):
+        return time.monotonic()
+
     @coroutine
-    def handle_callback(self, callback: typing.Callable, args: typing.Iterable):
+    def handle_callback(self, callback: typing.Callable[..., None], args: typing.Iterable[typing.Any]):
         """Asynchronously deploy a callback sync -> async"""
         callback(*args)
         yield
@@ -64,9 +67,9 @@ class Loop:
         self._queue.extend(self._tasks)
         self._tasks.clear()
         if not self._tasks and self._timers:
-            time.sleep(max(0.0, self._timers[0][0] - time.monotonic()))
+            time.sleep(max(0.0, self._timers[0][0] - self.time()))
 
-        while self._timers and self._timers[0][0] < time.monotonic():
+        while self._timers and self._timers[0][0] < self.time():
             _, task = heappop(self._timers)
             self._tasks.append(task)
 
@@ -84,7 +87,7 @@ class Loop:
                     print_exc()
                 else:
                     if isinstance(task._data, tuple) and task._data[0] == 'sleep':
-                        heappush(self._timers, (task._data[1], task))
+                        heappush(self._timers, (self.time() + task._data[1], task))
                     else:
                         if iscoroutine(task._data):
                             self._tasks.append(task._data)

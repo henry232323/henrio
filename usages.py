@@ -79,11 +79,15 @@ def run_files():
 
 def run_socks():
     import socket
-    loop = SelectorLoop()
+    loop = IOCPLoop()
     r, w = socket.socketpair()
     reader, writer = loop.wrap_socket(r), loop.wrap_socket(w)
     w.send(b"Elle me dit ecris un chanson")
-    d = loop.run_until_complete(reader.recv(1024))
+    async def do_thing():
+        print(await reader.recv(1024))
+
+    loop.create_task(do_thing())
+    d = loop.run_forever()
     print(d)
 
 
@@ -95,4 +99,4 @@ def run_stdio():
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
 
-run_stdreaders()
+run_socks()

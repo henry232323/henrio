@@ -82,9 +82,10 @@ def run_socks():
     loop = IOCPLoop()
     r, w = socket.socketpair()
     reader, writer = loop.wrap_socket(r), loop.wrap_socket(w)
-    w.send(b"Elle me dit ecris un chanson")
+    #w.send(b"Elle me dit ecris un chanson")
     async def do_thing():
-        print(await reader.recv(1024))
+        print(await writer.send(b"Fuckeroni!"), 3)
+        print(r.recv(5), 1)
 
     loop.create_task(do_thing())
     d = loop.run_forever()

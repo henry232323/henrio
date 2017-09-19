@@ -29,7 +29,6 @@ class IOCPLoop(Loop):
         ms = 100
         while True:
             status = _overlapped.GetQueuedCompletionStatus(self._port, ms)
-            print(status)
             if status is None:
                 break
             ms = 0
@@ -92,12 +91,17 @@ class IOCPSocket:
 
         return fut
 
-    def recv(self, nbytes, flags=0):
+    async def recv(self, nbytes, flags=0):
         self._overlap.WSARecv(self.file.fileno(), nbytes, flags)
         fut = Future()
         self._queue.append((1, fut, nbytes))
+        await fut
+        return self.file.recv(nbytes)
 
-        return fut
-
-    def cancel(self):
-        self._overlap.cancel()
+    def close(self):
+        try:
+            self._overlap.cancel()
+            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
+                _winapi.CloseHandle(self.file.fileno())
+        finally:
+            self.file.close()

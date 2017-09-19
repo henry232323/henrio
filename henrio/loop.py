@@ -1,13 +1,12 @@
 import time
 import typing
-import selectors
 from types import coroutine
 from collections import deque
 from traceback import print_exc
 from inspect import iscoroutine
 from heapq import heappop, heappush
 
-from .futures import Task, Future, File, Socket
+from .awaitables import Task, Future
 
 
 class Loop:
@@ -107,91 +106,3 @@ class Loop:
     def close(self):
         """Close the running event loop"""
         self.running = False
-
-
-class SelectorLoop(Loop):
-    """An event loop using the the OS's builtin Selector."""
-    def __init__(self, selector=None):
-        super().__init__()
-        self.selector = selector if selector else selectors.DefaultSelector()
-
-    def _poll(self):
-        """Poll IO using the selector"""
-        if self.selector.get_map():
-            files = self.selector.select(0 if self._tasks or self._queue or self._timers else None)
-            ready = dict()
-            for file, events in files:
-                if file.fd in self._readers or file.fd in self._writers:
-                    if events & 1:
-                        self._tasks.append(Task(self.handle_callback(*self._readers[file.fd]), None))
-                    if events & 2:
-                        self._tasks.append(Task(self.handle_callback(*self._writers[file.fd]), None))
-                if file.fd in self._files:
-                    ready[file.fd] = events
-
-            for fileno, file in self._files.items():
-                if fileno in ready:
-                    event = ready[fileno]
-                    if event & 1:
-                        file._read_ready(True)
-                    if event & 2:
-                        file._write_ready(True)
-                else:
-                    file._read_ready(False)
-                    file._write_ready(False)
-
-    def register_reader(self, fileobj, callback: typing.Callable, *args):
-        """Register a reader, the given callback will be called with the given args when the file is ready to read"""
-        if fileobj.fileno() in self.selector.get_map() and self.selector.get_key(
-                fileobj).events == selectors.EVENT_WRITE:
-            self.selector.modify(fileobj, selectors.EVENT_READ | selectors.EVENT_WRITE)
-        else:
-            self.selector.register(fileobj, selectors.EVENT_READ)
-        self._readers[fileobj.fileno()] = (callback, args)
-
-    def register_writer(self, fileobj, callback: typing.Callable, *args):
-        """Register a writer, the given callback will be called with the given args when the file is ready to write"""
-        if fileobj.fileno() in self.selector.get_map():
-            if self.selector.get_key(fileobj).events == selectors.EVENT_READ:
-                self.selector.modify(fileobj, selectors.EVENT_READ | selectors.EVENT_WRITE)
-        else:
-            self.selector.register(fileobj, selectors.EVENT_WRITE)
-        self._writers[fileobj.fileno()] = (callback, args)
-
-    def unregister_reader(self, fileobj):
-        """Disable and remove a reader"""
-        if fileobj.fileno() in self.selector.get_map():
-            if self.selector.get_key(fileobj) == selectors.EVENT_READ ^ selectors.EVENT_WRITE:
-                self.selector.modify(fileobj, selectors.EVENT_WRITE)
-            else:
-                self.selector.unregister(fileobj)
-            del self._readers[fileobj.fileno()]
-            return True
-        else:
-            return False
-
-    def unregister_writer(self, fileobj):
-        """Disable and remove a writer"""
-        if fileobj.fileno() in self.selector.get_map():
-            if self.selector.get_key(fileobj) == selectors.EVENT_READ ^ selectors.EVENT_WRITE:
-                self.selector.modify(fileobj, selectors.EVENT_READ)
-            else:
-                self.selector.unregister(fileobj)
-            del self._writers[fileobj.fileno()]
-            return True
-        else:
-            return False
-
-    def wrap_file(self, file) -> File:
-        """Wrap a file in an async file API."""
-        wrapped = File(file, loop=self)
-        self._files[file.fileno()] = wrapped
-        self.selector.register(file, selectors.EVENT_READ | selectors.EVENT_WRITE)
-        return wrapped
-
-    def wrap_socket(self, socket) -> Socket:
-        """Wrap a file in an async socket API."""
-        wrapped = Socket(socket, loop=self)
-        self._files[socket.fileno()] = wrapped
-        self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE)
-        return wrapped

@@ -44,36 +44,24 @@ def run_readers():
 
 def run_stdreaders():
     import sys
-    loop = SelectorLoop()
-    my_file = sys.stdin
-    buffer = bytes()
-    def reader():
-        global buffer
-        print(my_file.readline())
-
-    loop.register_reader(my_file, reader)
+    loop = IOCPLoop()
+    file = sys.stdin
+    print(file.fileno())
+    wrapped = loop.wrap_file(file)
+    async def do_thing():
+        print(await wrapped.read(1024))
+    loop.create_task(do_thing())
     loop.run_forever()
 
 
-buffer = bytes()
 def run_files():
-    global buffer
-    loop = SelectorLoop()
+    loop = IOCPLoop()
     file = open("LICENSE", 'rb')
-    def reader():
-        global buffer
-        received = file.read(1024)
-        if received:
-            buffer += received
-            pts = buffer.split(b"\r\n")
-            buffer = pts.pop()
-            for el in pts:
-                print(el)
-        else:
-            loop.unregister_reader(file)
-            file.close()
-
-    loop.register_reader(file, reader)
+    print(file.fileno())
+    wrapped = loop.wrap_file(file)
+    async def do_thing():
+        print(await wrapped.read(1024))
+    loop.create_task(do_thing())
     loop.run_forever()
 
 
@@ -100,4 +88,3 @@ def run_stdio():
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
 
-run_socks()

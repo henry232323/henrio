@@ -1,15 +1,15 @@
 import time
 import typing
-from types import coroutine
 from collections import deque
 from traceback import print_exc
 from inspect import iscoroutine
 from heapq import heappop, heappush
 
 from .awaitables import Task, Future
+from .bases import AbstractLoop
 
 
-class Loop:
+class BaseLoop(AbstractLoop):
     def __init__(self):
         self._queue = deque()
         self._tasks = deque()
@@ -20,34 +20,37 @@ class Loop:
         self.running = False
 
     def time(self):
+        """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
         return time.monotonic()
 
-    @coroutine
-    def handle_callback(self, callback: typing.Callable[..., None], args: typing.Iterable[typing.Any]):
+    @staticmethod
+    async def handle_callback(self, callback: typing.Callable[..., None], args: typing.Iterable[typing.Any]):
         """Asynchronously deploy a callback sync -> async"""
-        callback(*args)
-        yield
+        await callback(*args)
 
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
-        if self.running:
-            raise RuntimeError("Loop is already running!")
-        else:
-            self.running = True
+        try:
+            if self.running:
+                raise RuntimeError("Loop is already running!")
+            else:
+                self.running = True
 
-        self._tasks.clear()
-        if not isinstance(starting_task, Future):
-            starting_task = Task(starting_task, None)
-        if starting_task not in self._tasks:
-            self._tasks.append(starting_task)
-        while self._tasks or self._timers:
-            self._loop_once()
+            self._tasks.clear()
+            if not isinstance(starting_task, Future):
+                starting_task = Task(starting_task, None)  # Convert any coros to tasks
+            if starting_task not in self._tasks:
+                self._tasks.appendleft(starting_task)  # Make it priority over already queued tasks
+            while self._tasks or self._timers:
+                self._loop_once()  # Loop until we're out of tasks
 
-        self.running = False
-        return starting_task.result()
+            # Loop is done, return our result
+            return starting_task.result()
+        finally:
+            self.running = False
 
     def run_forever(self):
-        """Run the current tasks forever"""
+        """Run the current tasks queue forever"""
         try:
             if self.running:
                 raise RuntimeError("Loop is already running!")
@@ -93,6 +96,7 @@ class Loop:
                         self._tasks.append(task)
 
     def _poll(self):
+        """Poll IO once, base loop doesn't handle IO, thus nothing happens"""
         pass
 
     def create_task(self, task: typing.Union[typing.Generator, typing.Awaitable]) -> Task:

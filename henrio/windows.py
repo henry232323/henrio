@@ -3,7 +3,7 @@ import typing
 from collections import deque
 import _winapi
 
-from . import Loop, Future
+from . import BaseLoop, Future, BaseFile, BaseSocket
 
 
 NULL = 0
@@ -18,7 +18,7 @@ CONNECT_PIPE_INIT_DELAY = 0.001
 CONNECT_PIPE_MAX_DELAY = 0.100
 
 
-class IOCPLoop(Loop):
+class IOCPLoop(BaseLoop):
     def __init__(self, concurrency=INFINITE):
         super().__init__()
         self._port = _overlapped.CreateIoCompletionPort(_overlapped.INVALID_HANDLE_VALUE, NULL, 0, concurrency)
@@ -63,16 +63,46 @@ class IOCPLoop(Loop):
         return wrapped
 
 
-class IOCPFile:
+class IOCPFile(BaseFile):
     def __init__(self, file, overlap, loop=None):
         self.file = file
         self._loop = loop
-        self._read_queue = deque()
-        self._write_queue = deque()
-        self._overlap = _overlapped.Overlapped(NULL)
+        self._queue = deque()
+        self._overlap = overlap
+
+    def _io_ready(self, data):
+        if self._queue:
+            _type, fut, _data = self._queue.popleft()
+            fut.set_result(data)
+
+    def write(self, data):
+        self._overlap.WriteFile(self.file.fileno(), data)
+        fut = Future()
+        self._queue.append((0, fut, data))
+
+        return fut
+
+    async def read(self, nbytes):
+        self._overlap.ReadFile(self.file.fileno(), nbytes)
+        fut = Future()
+        self._queue.append((1, fut, nbytes))
+        await fut
+        return self.file.read(nbytes)
+
+    def close(self):
+        try:
+            self._overlap.cancel()
+            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
+                _winapi.CloseHandle(self.file.fileno())
+        finally:
+            self.file.close()
+
+    @property
+    def fileno(self):
+        return self.file.fileno()
 
 
-class IOCPSocket:
+class IOCPSocket(BaseSocket):
     def __init__(self, socket, overlap, loop=None):
         self.file = socket
         self._loop = loop
@@ -105,3 +135,7 @@ class IOCPSocket:
                 _winapi.CloseHandle(self.file.fileno())
         finally:
             self.file.close()
+
+    @property
+    def fileno(self):
+        return self.file.fileno()

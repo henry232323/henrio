@@ -72,7 +72,13 @@ class Future:
         return self._current.send(data)
 
     def throw(self, exc):
-        return self._current.send(exc)
+        if self._current is None:
+            self._current = self.__await__()
+            self._running = True
+        return self._current.throw(exc)
+
+    def add_done_callback(self, fn):
+        self._callback = fn
 
 
 class Task(Future):

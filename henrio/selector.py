@@ -121,7 +121,7 @@ class SelectorFile(BaseFile):
 
     async def read(self, nbytes: int=-1) -> typing.AnyStr:
         fut = Future()  # Just await a future that will eventually be handled when read is ready
-        self._read_queue.append((fut, (0, nbytes)))
+        self._read_queue.append((fut, (0, nbytes)))  # We just delegate to the queue
         return await fut
 
     async def readline(self, nbytes: int=-1) -> typing.AnyStr:

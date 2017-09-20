@@ -19,7 +19,18 @@ class Future:
         self._error = None
         self.complete = False
         self.cancelled = False
-        self._current = self.__await__()
+        self._current = None
+        self._running = False
+        self._callback = None
+
+    def __lt__(self, other):
+        return False
+
+    def running(self):
+        return self._running
+
+    def done(self):
+        return self.complete
 
     def result(self):
         if self._error is not None:
@@ -33,6 +44,8 @@ class Future:
             raise RuntimeError("Future already completed")
         self.complete = True
         self._result = data
+        if self._callback:
+            self._callback()
 
     def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
         if self.complete or self._error is not None:
@@ -48,11 +61,14 @@ class Future:
         self.set_exception(CancelledError)
 
     def __await__(self):
-        if not self.complete and self._error is None:
+        while not self.complete and self._error is None:
             yield self
         return self.result()
 
     def send(self, data):
+        if self._current is None:
+            self._current = self.__await__()
+            self._running = True
         return self._current.send(data)
 
     def throw(self, exc):

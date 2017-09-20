@@ -59,8 +59,8 @@ class BaseLoop(AbstractLoop):
             self._tasks.clear()
             self._tasks.extend(self._queue)
             self._queue.clear()
-            while self.running:  # As long as were 'running' just keep spinning our loop
-                self._loop_once()
+            while self._queue or self._tasks or self._timers and self.running:
+                self._loop_once() # As long as were 'running' and have stuff to do just keep spinning our loop
         finally:
             self.running = False
 

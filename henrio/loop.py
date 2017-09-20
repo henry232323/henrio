@@ -59,7 +59,7 @@ class BaseLoop(AbstractLoop):
             self._tasks.clear()
             self._tasks.extend(self._queue)
             self._queue.clear()
-            while self.running:
+            while self.running:  # As long as were 'running' just keep spinning our loop
                 self._loop_once()
         finally:
             self.running = False
@@ -68,32 +68,33 @@ class BaseLoop(AbstractLoop):
         """Check timers, IO, and run the queue once"""
         self._queue.extend(self._tasks)
         self._tasks.clear()
-        if not self._tasks and self._timers:
-            time.sleep(max(0.0, self._timers[0][0] - self.time()))
+        if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
+            time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
 
-        while self._timers and self._timers[0][0] < self.time():
-            _, task = heappop(self._timers)
+        while self._timers and self._timers[0][0] < self.time():  # Check for overdue timers
+            _, task = heappop(self._timers)  # Get the smallest timer
             self._tasks.append(task)
 
-        self._poll()
+        self._poll()  # Poll for IO
 
         while self._queue:
-            task = self._queue.popleft()
-            if not task.cancelled and not task.complete:
+            task = self._queue.popleft()  # Get next task (FIFO)
+            if not task.cancelled and not task.complete:  # If the task isn't done, run it
                 try:
-                    task._data = task.send(task._data)
+                    task._data = task.send(task._data)  # Iterate, send it the new data
                 except StopIteration as err:
-                    task.set_result(err.value)
-                except Exception as err:
+                    task.set_result(err.value)  # Are we done iterating? Get the err value as the result
+                except Exception as err:  # Did we error? Print the traceback then set as the task error
                     task.set_exception(err)
                     print_exc()
-                else:
+                else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
+                       # A generator yielding us a tuple of `("sleep", time_in_seconds)`
                     if isinstance(task._data, tuple) and task._data[0] == 'sleep':
-                        heappush(self._timers, (self.time() + task._data[1], task))
+                        heappush(self._timers, (self.time() + task._data[1], task))  # Add our time to our list of timers
                     else:
-                        if iscoroutine(task._data):
+                        if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
                             self._tasks.append(task._data)
-                        self._tasks.append(task)
+                        self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task
 
     def _poll(self):
         """Poll IO once, base loop doesn't handle IO, thus nothing happens"""

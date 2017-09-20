@@ -11,12 +11,6 @@ INFINITE = 0xffffffff
 ERROR_CONNECTION_REFUSED = 1225
 ERROR_CONNECTION_ABORTED = 1236
 
-# Initial delay in seconds for connect_pipe() before retrying to connect
-CONNECT_PIPE_INIT_DELAY = 0.001
-
-# Maximum delay in seconds for connect_pipe() before retrying to connect
-CONNECT_PIPE_MAX_DELAY = 0.100
-
 
 class IOCPLoop(BaseLoop):
     def __init__(self, concurrency=INFINITE):
@@ -25,10 +19,9 @@ class IOCPLoop(BaseLoop):
         self._current_iocp = dict()
 
     def _poll(self):
-        #ms = 1000
         ms = 100
         while True:
-            status = _overlapped.GetQueuedCompletionStatus(self._port, ms)
+            status = _overlapped.GetQueuedCompletionStatus(self._port, ms)  # See if anything is ready (LIFO)
             if status is None:
                 break
             ms = 0
@@ -37,26 +30,26 @@ class IOCPLoop(BaseLoop):
 
             try:
                 file = self._current_iocp.pop(address)
-                file._io_ready(transferred)
+                file._io_ready(transferred)  # Tell the file we're ready to perform IO
             except KeyError:
                 if key not in (0, _overlapped.INVALID_HANDLE_VALUE):
-                    _winapi.CloseHandle(key)
+                    _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
                 continue
 
     def register_reader(self, fileobj, callback: typing.Callable[..., None], *args):
-        _overlapped.CreateIoCompletionPort(fileobj.fileno(), self._port, 0, 0)
+        _overlapped.CreateIoCompletionPort(fileobj.fileno(), self._port, 0, 0)  # This isn't ready yet don't use it
 
     def wrap_file(self, file) -> "IOCPFile":
         """Wrap a file in an async file API."""
-        overlap = _overlapped.Overlapped(NULL)
-        wrapped = IOCPFile(file, overlap, loop=self)
-        _overlapped.CreateIoCompletionPort(file.fileno(), self._port, 0, 0)
-        self._current_iocp[overlap.address] = wrapped
+        overlap = _overlapped.Overlapped(NULL)  # Get a new overlapped object
+        wrapped = IOCPFile(file, overlap, loop=self)  # Create a new IOCPFile
+        _overlapped.CreateIoCompletionPort(file.fileno(), self._port, 0, 0)  # Create a new port
+        self._current_iocp[overlap.address] = wrapped  # Cache by address, which is all we'll have from the IOCP Status
         return wrapped
 
     def wrap_socket(self, socket) -> "IOCPSocket":
         """Wrap a file in an async socket API."""
-        overlap = _overlapped.Overlapped(NULL)
+        overlap = _overlapped.Overlapped(NULL)  # Refer to above, except for sockets not files :p
         wrapped = IOCPSocket(socket, overlap, loop=self)
         _overlapped.CreateIoCompletionPort(socket.fileno(), self._port, 0, 0)
         self._current_iocp[overlap.address] = wrapped
@@ -66,46 +59,46 @@ class IOCPLoop(BaseLoop):
 class IOCPFile(BaseFile):
     def __init__(self, file, overlap, loop=None):
         self.file = file
-        self._loop = loop
+        self.loop = loop
         self._queue = deque()
         self._overlap = overlap
 
-    def _io_ready(self, data):
+    def _io_ready(self, data):  # When we're ready to process IO
         if self._queue:
-            _type, fut, _data = self._queue.popleft()
+            _type, fut, _data = self._queue.pop()  # Apparently it processes LIFO? Or maybe I'm confused
             fut.set_result(data)
 
     def write(self, data):
-        self._overlap.WriteFile(self.file.fileno(), data)
+        self._overlap.WriteFile(self.file.fileno(), data)  # Write our file data
         fut = Future()
         self._queue.append((0, fut, data))
 
         return fut
 
-    async def read(self, nbytes):
+    async def read(self, nbytes):  # Read from file
         self._overlap.ReadFile(self.file.fileno(), nbytes)
         fut = Future()
         self._queue.append((1, fut, nbytes))
-        await fut
-        return self.file.read(nbytes)
+        await fut  # Ok this one is weird, we actually wait to be told we can read, rather than delegating the reading
+        return self.file.read(nbytes)  # Like we do with writing
 
     def close(self):
         try:
             self._overlap.cancel()
-            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
-                _winapi.CloseHandle(self.file.fileno())
+            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):  # As long as we aren't trying to close
+                _winapi.CloseHandle(self.file.fileno())  # Stdout we should be good
         finally:
             self.file.close()
 
     @property
-    def fileno(self):
+    def fileno(self):  # Get the fileno ... ?
         return self.file.fileno()
 
 
-class IOCPSocket(BaseSocket):
+class IOCPSocket(BaseSocket):  # Its literally all the same, except send and recv not write and read
     def __init__(self, socket, overlap, loop=None):
         self.file = socket
-        self._loop = loop
+        self.loop = loop
         self._queue = deque()
         self._overlap = overlap
 

@@ -12,5 +12,5 @@ if sys.platform == "win32":
 
 def get_default_loop():
     if sys.platform == "win32":
-        return IOCPLoop
-    return SelectorLoop
+        return IOCPLoop()
+    return SelectorLoop()

@@ -3,6 +3,7 @@ from .bases import AbstractLoop, BaseFile, BaseSocket
 from .loop import BaseLoop
 from .awaitables import Future, Task, sleep
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
+from .queue import Queue
 
 import sys
 

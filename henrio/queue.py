@@ -54,7 +54,7 @@ class Queue(object):
         return self._queue.popleft()
 
     def setlifo(self, bool: bool):
-        self._life = bool
+        self._lifo = bool
 
     async def __anext__(self):
         return await self.get()

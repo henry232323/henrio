@@ -92,9 +92,8 @@ def run_stdio():
 
 
 def run_thing():
-    d = Future()
-
     l = BaseLoop()
+    d = Future()
     async def s():
         await sleep(10)
         d.set_result(32)

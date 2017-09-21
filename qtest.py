@@ -6,19 +6,22 @@ try:
     #q._queue.append(50)
 
     print(q)
-    async def d(i):
+    async def d():
         return await q.get()
 
-    async def a():
-        f = l.time()
+    async def a(i):
+        await sleep(3)
+        await q.put(i)
+
+    for x in range(100):
+        _ = l.create_task(a(x))
+        _ = l.create_task(d())
+
+    async def task():
         await sleep(5)
-        print(l.time() - f)
-        await q.put(5)
-        print(l._queue, l._tasks)
+        print(len(l._queue), len(l._tasks))
 
-    l.create_task(a())
-
-    l.run_until_complete(d(5))
+    l.run_until_complete(task())
 
 finally:
     print(q)

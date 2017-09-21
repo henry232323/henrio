@@ -11,6 +11,7 @@ class SelectorLoop(BaseLoop):
     def __init__(self, selector=None):
         super().__init__()
         self.selector = selector if selector else selectors.DefaultSelector()
+        self._files = dict()
 
     def _poll(self):
         """Poll IO using the selector"""

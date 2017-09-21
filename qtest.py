@@ -2,9 +2,10 @@ try:
     from henrio import *
 
     l = get_default_loop()
-    q = Queue(50)
+    q = Queue(50, lifo=True)
     q._queue.append(50)
 
+    print(q)
     async def d(i):
         await q.put(i)
         await sleep(5)
@@ -16,4 +17,4 @@ try:
     l.run_forever()
 
 finally:
-    print(q._queue)
+    print(q)

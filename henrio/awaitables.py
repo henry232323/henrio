@@ -70,16 +70,9 @@ class Future:
     __await__ = __iter__
 
     def send(self, data):
-        if self._current is None:
-            self._current = self.__await__()
-            self._running = True
-        return self._current.send(data)
-
-    def throw(self, exc):
-        if self._current is None:
-            self._current = self.__await__()
-            self._running = True
-        return self._current.throw(exc)
+        if not self.complete and self._error is None:
+            return self
+        return self.result()
 
     def add_done_callback(self, fn):
         self._callback = fn

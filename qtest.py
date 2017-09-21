@@ -3,18 +3,22 @@ try:
 
     l = get_default_loop()
     q = Queue(50, lifo=True)
-    q._queue.append(50)
+    #q._queue.append(50)
 
     print(q)
     async def d(i):
-        await q.put(i)
-        await sleep(5)
         return await q.get()
 
-    for x in range(1000):
-        _ = l.create_task(d(x))
+    async def a():
+        f = l.time()
+        await sleep(5)
+        print(l.time() - f)
+        await q.put(5)
+        print(l._queue, l._tasks)
 
-    l.run_forever()
+    l.create_task(a())
+
+    l.run_until_complete(d(5))
 
 finally:
     print(q)

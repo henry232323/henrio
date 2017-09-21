@@ -89,3 +89,19 @@ def run_stdio():
     print(resp)
 
 #run_files()
+
+
+def run_thing():
+    d = Future()
+
+    l = BaseLoop()
+    async def s():
+        await sleep(10)
+        d.set_result(32)
+
+    async def g():
+        return await d
+
+    print(l.run_until_complete(g()))
+
+run_thing()

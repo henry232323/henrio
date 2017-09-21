@@ -16,7 +16,6 @@ class BaseLoop(AbstractLoop):
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
-        self._files = dict()
         self.running = False
 
     def time(self):

@@ -36,9 +36,6 @@ class IOCPLoop(BaseLoop):
                     _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
                 continue
 
-    def register_reader(self, fileobj, callback: typing.Callable[..., None], *args):
-        _overlapped.CreateIoCompletionPort(fileobj.fileno(), self._port, 0, 0)  # This isn't ready yet don't use it
-
     def wrap_file(self, file) -> "IOCPFile":
         """Wrap a file in an async file API."""
         overlap = _overlapped.Overlapped(NULL)  # Get a new overlapped object

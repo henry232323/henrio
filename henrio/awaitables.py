@@ -57,13 +57,17 @@ class Future:
             return True
         if self.complete:
             return False
+        if self.running:
+            return False
         self.cancelled = True
         self.set_exception(CancelledError)
 
-    def __await__(self):
+    def __iter__(self):
         while not self.complete and self._error is None:
             yield self
         return self.result()
+
+    __await__ = __iter__
 
     def send(self, data):
         if self._current is None:
@@ -93,6 +97,11 @@ class Task(Future):
             return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
         else:
             return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
+
+    def __iter__(self):
+        return self._task
+
+    __await__ = __iter__
 
     def send(self, data):
         return self._task.send(data)

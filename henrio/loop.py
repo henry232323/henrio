@@ -2,7 +2,7 @@ import time
 import typing
 from collections import deque
 from traceback import print_exc
-from inspect import iscoroutine
+from inspect import iscoroutine, isawaitable
 from heapq import heappop, heappush
 
 from .awaitables import Task, Future
@@ -101,6 +101,8 @@ class BaseLoop(AbstractLoop):
 
     def create_task(self, task: typing.Union[typing.Generator, typing.Awaitable]) -> Task:
         """Add a task to the internal queue, will get called eventually. Returns the awaitable wrapped in a Task"""
+        if not isawaitable(task):
+            raise TypeError("Task must be awaitable!")
         if not isinstance(task, Future):
             task = Task(task, None)
         if task not in self._queue:

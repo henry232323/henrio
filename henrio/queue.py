@@ -14,6 +14,9 @@ class Queue(object):
     def __len__(self):
         return len(self._queue)
 
+    def __repr__(self):
+        return "Queue({0}, lifo={1}, size={2})".format(self._queue.__repr__()[6:-1], self._lifo, self.size)
+
     def empty(self):
         return not self._queue
 

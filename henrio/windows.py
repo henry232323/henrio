@@ -39,7 +39,7 @@ class IOCPLoop(BaseLoop):
     def wrap_file(self, file) -> "IOCPFile":
         """Wrap a file in an async file API."""
         overlap = _overlapped.Overlapped(NULL)  # Get a new overlapped object
-        wrapped = IOCPFile(file, overlap, loop=self)  # Create a new IOCPFile
+        wrapped = IOCPFile(file, overlap)  # Create a new IOCPFile
         _overlapped.CreateIoCompletionPort(file.fileno(), self._port, 0, 0)  # Create a new port
         self._current_iocp[overlap.address] = wrapped  # Cache by address, which is all we'll have from the IOCP Status
         return wrapped
@@ -47,16 +47,15 @@ class IOCPLoop(BaseLoop):
     def wrap_socket(self, socket) -> "IOCPSocket":
         """Wrap a file in an async socket API."""
         overlap = _overlapped.Overlapped(NULL)  # Refer to above, except for sockets not files :p
-        wrapped = IOCPSocket(socket, overlap, loop=self)
+        wrapped = IOCPSocket(socket, overlap)
         _overlapped.CreateIoCompletionPort(socket.fileno(), self._port, 0, 0)
         self._current_iocp[overlap.address] = wrapped
         return wrapped
 
 
 class IOCPFile(BaseFile):
-    def __init__(self, file, overlap, loop=None):
+    def __init__(self, file, overlap):
         self.file = file
-        self.loop = loop
         self._queue = deque()
         self._overlap = overlap
 
@@ -93,9 +92,8 @@ class IOCPFile(BaseFile):
 
 
 class IOCPSocket(BaseSocket):  # Its literally all the same, except send and recv not write and read
-    def __init__(self, socket, overlap, loop=None):
+    def __init__(self, socket, overlap):
         self.file = socket
-        self.loop = loop
         self._queue = deque()
         self._overlap = overlap
 

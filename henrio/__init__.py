@@ -4,6 +4,7 @@ from .loop import BaseLoop
 from .awaitables import Future, Task, sleep
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
 from .queue import Queue
+from .workers import worker, async_worker
 
 import sys
 

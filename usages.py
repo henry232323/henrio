@@ -103,4 +103,45 @@ def run_thing():
 
     print(l.run_until_complete(g()))
 
-run_thing()
+def bier():
+    def asd():
+        yield from sleep(4)
+        yield
+        print("dun")
+
+    l = BaseLoop()
+    l.run_until_complete(asd())
+
+
+def working():
+    async def asd():
+        def b():
+            import time
+            a = time.monotonic()
+            time.sleep(4)
+            print(time.monotonic() - a)
+            return 3
+
+        d = await worker(b)
+        print(d)
+
+    l = BaseLoop()
+    l.run_until_complete(asd())
+
+def async_working():
+    l = SelectorLoop()
+    import socket
+    r, w = socket.socketpair()
+    reader, writer = l.wrap_socket(r), l.wrap_socket(w)
+    async def do_thing():
+        print('asd')
+        await writer.send(b"Fuckeroni!")
+        print("dsa")
+        f = r.recv(5)
+        print(f)
+        return 3
+
+    f = l.run_until_complete(async_worker(do_thing))
+    print(f)
+
+async_working()

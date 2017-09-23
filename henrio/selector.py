@@ -23,9 +23,11 @@ class SelectorLoop(BaseLoop):
             for file, events in files:
                 if file.fd in self._readers or file.fd in self._writers:
                     if events & 1:  # If read ready
-                        self._tasks.append(Task(self.handle_callback(*self._readers[file.fd]), None))
+                        func, args = self._readers[file.fd]
+                        self.create_task(func(*args))
                     if events & 2:  # If write ready, both will run if both are ready (events == 3)
-                        self._tasks.append(Task(self.handle_callback(*self._writers[file.fd]), None))
+                        func, args = self._writers[file.fd]
+                        self.create_task(func(*args))
                 if file.fd in self._files:
                     ready[file.fd] = events
 
@@ -86,14 +88,14 @@ class SelectorLoop(BaseLoop):
 
     def wrap_file(self, file) -> "SelectorFile":
         """Wrap a file in an async file API."""
-        wrapped = SelectorFile(file, loop=self)
+        wrapped = SelectorFile(file)
         self._files[file.fileno()] = wrapped  # Cache our file by file descriptor
         self.selector.register(file, selectors.EVENT_READ | selectors.EVENT_WRITE)  # Register for R/W just in case
         return wrapped
 
     def wrap_socket(self, socket) -> "SelectorSocket":
         """Wrap a file in an async socket API."""
-        wrapped = SelectorSocket(socket, loop=self)
+        wrapped = SelectorSocket(socket)
         self._files[socket.fileno()] = wrapped  # Register just like a regular file, since no repeat fds
         self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE)  # Get our R/W
         return wrapped
@@ -101,9 +103,7 @@ class SelectorLoop(BaseLoop):
 
 class SelectorFile(BaseFile):
     """A file object wrapped with async"""
-    def __init__(self, file: typing.IO[typing.AnyStr], loop=None):
-        self.loop = loop
-        self.file = file
+    def __init__(self, file: typing.IO[typing.AnyStr]):
         self._read_queue = deque()
         self._write_queue = deque()
 
@@ -147,8 +147,7 @@ class SelectorFile(BaseFile):
 
 
 class SelectorSocket(BaseSocket):
-    def __init__(self, file: socket.socket, loop=None):
-        self.loop = loop
+    def __init__(self, file: socket.socket):
         self.file = file
         self._read_queue = deque()
         self._write_queue = deque()

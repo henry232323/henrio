@@ -37,7 +37,6 @@ class AbstractLoop:
 
 
 class IOBase:
-    loop = None
     file = None
 
     def fileno(self):
@@ -61,3 +60,15 @@ class BaseSocket(IOBase):
 
     async def send(self, data):
         raise NotImplementedError
+
+
+class AbstractProtocol:
+    async def data_received(self, data):
+        raise NotImplementedError
+
+    async def connection_lost(self, exc):
+        raise NotImplementedError
+
+# TODO: Readers/Writers no longer loop methods
+# TODO: Remove loop methods, make them module methods -- (sleep, time) style
+# TODO: No need for passing the loop, it'll all make it's way into the loop context

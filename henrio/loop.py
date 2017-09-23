@@ -22,11 +22,6 @@ class BaseLoop(AbstractLoop):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
         return time.monotonic()
 
-    @staticmethod
-    async def handle_callback(self, callback: typing.Callable[..., None], args: typing.Iterable[typing.Any]):
-        """Asynchronously deploy a callback sync -> async"""
-        await callback(*args)
-
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
         try:
@@ -86,8 +81,8 @@ class BaseLoop(AbstractLoop):
                 except Exception as err:  # Did we error? Print the traceback then set as the task error
                     task.set_exception(err)
                     print_exc()
-                else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
-                       # A generator yielding us a tuple of `("sleep", time_in_seconds)`
+                else:   # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
+                        # A generator yielding us a tuple of `("sleep", time_in_seconds)`
                     if isinstance(task._data, tuple) and task._data[0] == 'sleep':
                         heappush(self._timers, (self.time() + task._data[1], task))  # Add our time to our list of timers
                     else:

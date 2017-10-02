@@ -13,6 +13,7 @@ def worker(func, *args):
 
 def async_worker(func, *args):
     fut = Future()
+
     def runner():
         coro = func(*args)
         l = SelectorLoop()
@@ -20,6 +21,7 @@ def async_worker(func, *args):
             fut.set_result(l.run_until_complete(coro))
         except Exception as e:
             fut.set_exception(e)
+
     thread = Thread(target=runner)
     thread.start()
     return fut

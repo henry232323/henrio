@@ -1,9 +1,9 @@
 import time
 import typing
 from collections import deque
-from traceback import print_exc
-from inspect import iscoroutine, isawaitable
 from heapq import heappop, heappush
+from inspect import iscoroutine, isawaitable
+from traceback import print_exc
 
 from .awaitables import Task, Future
 from .bases import AbstractLoop
@@ -58,7 +58,7 @@ class BaseLoop(AbstractLoop):
             self._tasks.extend(self._queue)
             self._queue.clear()
             while self._queue or self._tasks or self._timers and self.running:
-                self._loop_once() # As long as were 'running' and have stuff to do just keep spinning our loop
+                self._loop_once()  # As long as were 'running' and have stuff to do just keep spinning our loop
         finally:
             self.running = False
 
@@ -83,10 +83,11 @@ class BaseLoop(AbstractLoop):
                 except Exception as err:  # Did we error? Print the traceback then set as the task error
                     task.set_exception(err)
                     print_exc()
-                else:   # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
-                        # A generator yielding us a tuple of `("sleep", time_in_seconds)`
+                else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
+                    # A generator yielding us a tuple of `("sleep", time_in_seconds)`
                     if isinstance(task._data, tuple) and task._data[0] == 'sleep':
-                        heappush(self._timers, (self.time() + task._data[1], task))  # Add our time to our list of timers
+                        heappush(self._timers,
+                                 (self.time() + task._data[1], task))  # Add our time to our list of timers
                     else:
                         if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
                             self._tasks.append(task._data)

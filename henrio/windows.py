@@ -19,22 +19,31 @@ class IOCPLoop(BaseLoop):
         self._current_iocp = dict()
 
     def _poll(self):
-        ms = 100
-        while True:
-            status = _overlapped.GetQueuedCompletionStatus(self._port, ms)  # See if anything is ready (LIFO)
-            if status is None:
-                break
-            ms = 0
+        if self._current_iocp:
+            if not self._tasks or self._queue:
+                if self._timers:
+                    ms = max(100, (self._timers[0][0] - self.time()) * 1000)
+                else:
+                    ms = 100
+            else:
+                ms = 100
+            while True:
+                status = _overlapped.GetQueuedCompletionStatus(self._port, ms)  # See if anything is ready (LIFO)
+                if status is None:
+                    break
+                ms = 0
 
-            err, transferred, key, address = status
+                err, transferred, key, address = status
 
-            try:
-                file = self._current_iocp.pop(address)
-                file._io_ready(transferred)  # Tell the file we're ready to perform IO
-            except KeyError:
-                if key not in (0, _overlapped.INVALID_HANDLE_VALUE):
-                    _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
-                continue
+                try:
+                    file = self._current_iocp.pop(address)
+                    file._io_ready(transferred)  # Tell the file we're ready to perform IO
+                except KeyError:
+                    if key not in (0, _overlapped.INVALID_HANDLE_VALUE):
+                        _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
+                    continue
+        else:
+            self.sleep(max(0, self._timers[0][0] - self.time()))
 
     def wrap_file(self, file) -> "IOCPFile":
         """Wrap a file in an async file API."""

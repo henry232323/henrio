@@ -22,6 +22,10 @@ class BaseLoop(AbstractLoop):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
         return time.monotonic()
 
+    def sleep(self, time):
+        """Sleep"""
+        return time.sleep(time)
+
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
         try:
@@ -62,8 +66,6 @@ class BaseLoop(AbstractLoop):
         """Check timers, IO, and run the queue once"""
         self._queue.extend(self._tasks)
         self._tasks.clear()
-        if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
-            time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
 
         while self._timers and self._timers[0][0] < self.time():  # Check for overdue timers
             _, task = heappop(self._timers)  # Get the smallest timer
@@ -92,7 +94,9 @@ class BaseLoop(AbstractLoop):
 
     def _poll(self):
         """Poll IO once, base loop doesn't handle IO, thus nothing happens"""
-        pass
+        if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
+            time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
+            # Make selector select with timeout instead of sleeping
 
     def create_task(self, task: typing.Union[typing.Generator, typing.Awaitable]) -> Task:
         """Add a task to the internal queue, will get called eventually. Returns the awaitable wrapped in a Task"""

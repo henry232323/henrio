@@ -1,6 +1,7 @@
 import selectors
 import typing
 import socket
+import time
 from collections import deque
 
 from . import Future, Task, BaseLoop, BaseSocket, BaseFile
@@ -18,7 +19,15 @@ class SelectorLoop(BaseLoop):
         if self.selector.get_map():  # Pray it doesn't block
             # We can block as long as we want if theres no tasks to process till we're done
             # We want our currently ready files
-            files = self.selector.select(0 if self._tasks or self._queue or self._timers else None)
+            if not self._tasks or self._queue:
+                if self._timers:
+                    wait = max(0.0, self._timers[0][0] - self.time())
+                else:
+                    wait = None
+            else:
+                wait = 0
+
+            files = self.selector.select(wait)
             ready = dict()
             for file, events in files:
                 if file.fd in self._readers or file.fd in self._writers:
@@ -41,6 +50,9 @@ class SelectorLoop(BaseLoop):
                 else:
                     file._read_ready(False)  # If we're no longer good to read, stop it
                     file._write_ready(False)
+        else:
+            if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
+                time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
 
     def register_reader(self, fileobj, callback: typing.Callable[..., None], *args):
         """Register a reader, the given callback will be called with the given args when the file is ready to read"""

@@ -2,6 +2,9 @@ class AbstractLoop:
     def time(self):
         raise NotImplementedError
 
+    def sleep(self, time):
+        raise NotImplementedError
+
     def run_forever(self):
         raise NotImplementedError
 

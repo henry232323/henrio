@@ -1,10 +1,8 @@
 import _overlapped
-import typing
-from collections import deque
 import _winapi
+from collections import deque
 
 from . import BaseLoop, Future, BaseFile, BaseSocket
-
 
 NULL = 0
 INFINITE = 0xffffffff

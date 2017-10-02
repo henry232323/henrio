@@ -10,8 +10,10 @@ async def sleeper(tim):
     print("banane")
     return "Bon hommie"
 
+
 async def sleeperator():
     return await sleeper(4)
+
 
 async def duo():
     await sleeperator()
@@ -20,12 +22,14 @@ async def duo():
 async def raser():
     raise IndexError("Oh no")
 
+
 def run_readers():
     import socket
     loop = SelectorLoop()
     my_socket = socket.socket()
     my_socket.connect(("irc.mindfang.org", 1413))
     buffer = bytes()
+
     def reader():
         global buffer
         received = my_socket.recv(1024)
@@ -42,14 +46,17 @@ def run_readers():
     loop.register_reader(my_socket, reader)
     loop.run_forever()
 
+
 def run_stdreaders():
     import sys
     loop = IOCPLoop()
     file = sys.stdin
     print(file.fileno())
     wrapped = loop.wrap_file(file)
+
     async def do_thing():
         print(await wrapped.read(1024))
+
     loop.create_task(do_thing())
     loop.run_forever()
 
@@ -59,8 +66,10 @@ def run_files():
     file = open("LICENSE", 'rb')
     print(file.fileno())
     wrapped = loop.wrap_file(file)
+
     async def do_thing():
         print(await wrapped.read(1024))
+
     loop.create_task(do_thing())
     loop.run_forever()
 
@@ -70,7 +79,8 @@ def run_socks():
     loop = IOCPLoop()
     r, w = socket.socketpair()
     reader, writer = loop.wrap_socket(r), loop.wrap_socket(w)
-    #w.send(b"Elle me dit ecris un chanson")
+
+    # w.send(b"Elle me dit ecris un chanson")
     async def do_thing():
         print(await writer.send(b"Fuckeroni!"), 3)
         print(r.recv(5), 1)
@@ -88,12 +98,14 @@ def run_stdio():
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
 
-#run_files()
+
+# run_files()
 
 
 def run_thing():
     l = BaseLoop()
     d = Future()
+
     async def s():
         await sleep(10)
         d.set_result(32)
@@ -102,6 +114,7 @@ def run_thing():
         return await d
 
     print(l.run_until_complete(g()))
+
 
 def bier():
     def asd():
@@ -128,11 +141,13 @@ def working():
     l = BaseLoop()
     l.run_until_complete(asd())
 
+
 def async_working():
     l = SelectorLoop()
     import socket
     r, w = socket.socketpair()
     reader, writer = l.wrap_socket(r), l.wrap_socket(w)
+
     async def do_thing():
         print('asd')
         await writer.send(b"Fuckeroni!")
@@ -143,5 +158,6 @@ def async_working():
 
     f = l.run_until_complete(async_worker(do_thing))
     print(f)
+
 
 async_working()

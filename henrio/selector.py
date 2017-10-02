@@ -1,14 +1,15 @@
 import selectors
-import typing
 import socket
 import time
+import typing
 from collections import deque
 
-from . import Future, Task, BaseLoop, BaseSocket, BaseFile
+from . import Future, BaseLoop, BaseSocket, BaseFile
 
 
 class SelectorLoop(BaseLoop):
     """An event loop using the the OS's builtin Selector."""
+
     def __init__(self, selector=None):
         super().__init__()
         self.selector = selector if selector else selectors.DefaultSelector()
@@ -115,6 +116,7 @@ class SelectorLoop(BaseLoop):
 
 class SelectorFile(BaseFile):
     """A file object wrapped with async"""
+
     def __init__(self, file: typing.IO[typing.AnyStr]):
         self._read_queue = deque()
         self._write_queue = deque()
@@ -132,12 +134,12 @@ class SelectorFile(BaseFile):
             fut, data = self._write_queue.popleft()
             fut.set_result(self.file.write(data))
 
-    async def read(self, nbytes: int=-1) -> typing.AnyStr:
+    async def read(self, nbytes: int = -1) -> typing.AnyStr:
         fut = Future()  # Just await a future that will eventually be handled when read is ready
         self._read_queue.append((fut, (0, nbytes)))  # We just delegate to the queue
         return await fut
 
-    async def readline(self, nbytes: int=-1) -> typing.AnyStr:
+    async def readline(self, nbytes: int = -1) -> typing.AnyStr:
         fut = Future()  # Same as above
         self._read_queue.append((fut, (1, nbytes)))
         return await fut

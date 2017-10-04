@@ -96,7 +96,7 @@ class IOCPFile(BaseFile, IOCPInstance):
         await fut  # Ok this one is weird, we actually wait to be told we can read, rather than delegating the reading
         return self.file.read(nbytes)  # Like we do with writing
 
-class IOCPSocket(BaseSocket):  # Its literally all the same, except send and recv not write and read
+class IOCPSocket(BaseSocket, IOCPInstance):  # Its literally all the same, except send and recv not write and read
     def __init__(self, *args):
         IOCPInstance.__init__(self, *args)
 

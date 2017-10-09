@@ -101,3 +101,16 @@ class Task(Future):
 
     def throw(self, exc):
         return self._task.throw(exc)
+
+    def cancel(self):
+        if self.cancelled:
+            return True
+        if self.complete:
+            return False
+        if self.running:
+            return False
+        try:
+            self.throw(CancelledError)
+        except CancelledError as err:
+            self.cancelled = True
+            self.set_exception(err)

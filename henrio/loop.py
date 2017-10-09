@@ -7,6 +7,7 @@ from traceback import print_exc
 
 from .awaitables import Task, Future
 from .bases import AbstractLoop
+from . import CancelledError
 
 
 class BaseLoop(AbstractLoop):
@@ -80,6 +81,9 @@ class BaseLoop(AbstractLoop):
                     task._data = task.send(task._data)  # Iterate, send it the new data
                 except StopIteration as err:
                     task.set_result(err.value)  # Are we done iterating? Get the err value as the result
+                except CancelledError as err:
+                    task.cancelled = True
+                    task.set_exception(err)
                 except Exception as err:  # Did we error? Print the traceback then set as the task error
                     task.set_exception(err)
                     print_exc()

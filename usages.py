@@ -174,3 +174,4 @@ def get_looper():
 
     print(l.run_until_complete(gl()))
 
+get_looper()

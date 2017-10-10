@@ -20,39 +20,39 @@ def get_loop():
 
 @coroutine
 def create_reader(fileobj, callback, *args):
-    yield ("reader", fileobj, callback, args)
+    yield ("register_reader", fileobj, callback, args)
 
 
 @coroutine
 def create_writer(fileobj, callback, *args):
-    yield ("writer", fileobj, callback, args)
+    yield ("register_writer", fileobj, callback, args)
 
 
 @coroutine
 def remove_writer(fileobj):
-    yield ("rmwriter", fileobj)
+    yield ("unregister_writer", fileobj)
 
 
 @coroutine
 def remove_reader(fileobj):
-    yield ("rmreader", fileobj)
+    yield ("unregister_reader", fileobj)
 
 
 @coroutine
 def spawn(awaitable):
-    task = yield ("spawn", awaitable)
+    task = yield ("create_task", awaitable)
     return task
 
 
 @coroutine
 def wrap_file(file):
-    wrapped = yield ("file", file)
+    wrapped = yield ("wrap_file", file)
     return wrapped
 
 
 @coroutine
 def wrap_socket(socket):
-    wrapped = yield ("socket", socket)
+    wrapped = yield ("wrap_socket", socket)
     return wrapped
 
 

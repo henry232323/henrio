@@ -56,6 +56,13 @@ def wrap_socket(socket):
     return wrapped
 
 
+@coroutine
+def unwrap_file(file):
+    yield ("unwrap_file", file)
+
+unwrap_socket = unwrap_file
+
+
 class Future:
     def __init__(self):
         self._data = None

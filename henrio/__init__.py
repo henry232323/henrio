@@ -1,5 +1,5 @@
 from concurrent.futures import CancelledError
-from .awaitables import (Future, Task, sleep, get_loop,
+from .awaitables import (Future, Task, sleep, get_loop, unwrap_file,
                          create_reader, create_writer, remove_reader,
                          remove_writer, spawn, wrap_file, wrap_socket)
 from .bases import AbstractLoop, BaseFile, BaseSocket

@@ -14,8 +14,8 @@ try:
         await q.put(i)
 
     for x in range(100):
-        _ = l.create_task(a(x))
-        _ = l.create_task(d())
+        l.create_task(a(x))
+        l.create_task(d())
 
     async def task():
         await sleep(5)

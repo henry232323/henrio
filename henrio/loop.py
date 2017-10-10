@@ -110,6 +110,7 @@ class BaseLoop(AbstractLoop):
                             elif command == "file":
                                 task._data = self.wrap_file(task._data[1])
                             elif command == "socket":
+                                task._data = self.wrap_socket(task._data[1])
                             self._tasks.append(task)
                     else:
                         if iscoroutine(task._data):  # If we received back a coroutine as data, queue it

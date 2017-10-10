@@ -4,7 +4,7 @@ import time
 import typing
 from collections import deque
 
-from . import Future, BaseLoop, BaseSocket, BaseFile
+from . import Future, BaseLoop, BaseSocket, BaseFile, unwrap_file
 
 
 class SelectorLoop(BaseLoop):
@@ -113,6 +113,10 @@ class SelectorLoop(BaseLoop):
         self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE)  # Get our R/W
         return wrapped
 
+    def unwrap_file(self, file):
+        del self._files[file.fileno()]
+        self.selector.unregister(file)
+
 
 class SelectorFile(BaseFile):
     """A file object wrapped with async"""
@@ -155,9 +159,8 @@ class SelectorFile(BaseFile):
         return self.file.fileno()
 
     def close(self):
-        del self.loop._files[self.file.fileno()]
-        self.loop.selector.unregister(self.file)
         self.file.close()
+        return unwrap_file(self)
 
 
 class SelectorSocket(BaseSocket):
@@ -191,6 +194,5 @@ class SelectorSocket(BaseSocket):
         return self.file.fileno()
 
     def close(self):
-        del self.loop._files[self.file.fileno()]
-        self.loop.selector.unregister(self.file)
         self.file.close()
+        return unwrap_file(self)

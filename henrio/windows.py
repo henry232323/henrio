@@ -59,6 +59,11 @@ class IOCPLoop(BaseLoop):
         """Wrap a file in an async socket API."""
         return self.wrap_channel(IOCPSocket, socket)
 
+    def unwrap_file(self, file):
+        if file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
+            _winapi.CloseHandle(file.fileno())
+        del self._current_iocp[file._overlap.overlap.address]
+
 
 class IOCPInstance:
     def __init__(self, file, overlap):

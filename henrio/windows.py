@@ -1,12 +1,14 @@
 import _overlapped
 import _winapi
 from collections import deque
+
 from . import BaseLoop, Future, BaseFile, BaseSocket
 
 NULL = 0
 INFINITE = 0xffffffff
 ERROR_CONNECTION_REFUSED = 1225
 ERROR_CONNECTION_ABORTED = 1236
+
 
 class IOCPLoop(BaseLoop):
     def __init__(self, concurrency=INFINITE):
@@ -39,8 +41,9 @@ class IOCPLoop(BaseLoop):
                         _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
                     continue
         else:
-            self.sleep(max(0, self._timers[0][0] - self.time()))
-            
+            if self._timers:
+                self.sleep(max(0, self._timers[0][0] - self.time()))
+
     def wrap_channel(self, wrapper, channel):
         overlap = _overlapped.Overlapped(NULL)
         wrapped = wrapper(channel, overlap)
@@ -56,17 +59,18 @@ class IOCPLoop(BaseLoop):
         """Wrap a file in an async socket API."""
         return self.wrap_channel(IOCPSocket, socket)
 
+
 class IOCPInstance:
     def __init__(self, file, overlap):
         self.file = file
         self._queue = deque()
         self._overlap = overlap
-        
+
     def _io_ready(self, data):  # When we're ready to process IO
         if self._queue:
             _type, fut, _data = self._queue.pop()  # Apparently it processes LIFO? Or maybe I'm confused
             fut.set_result(data)
-            
+
     def close(self):
         try:
             self._overlap.cancel()
@@ -78,6 +82,7 @@ class IOCPInstance:
     @property
     def fileno(self):
         return self.file.fileno()
+
 
 class IOCPFile(BaseFile, IOCPInstance):
     def __init__(self, *args):
@@ -95,6 +100,7 @@ class IOCPFile(BaseFile, IOCPInstance):
         self._queue.append((1, fut, nbytes))
         await fut  # Ok this one is weird, we actually wait to be told we can read, rather than delegating the reading
         return self.file.read(nbytes)  # Like we do with writing
+
 
 class IOCPSocket(BaseSocket, IOCPInstance):  # Its literally all the same, except send and recv not write and read
     def __init__(self, *args):

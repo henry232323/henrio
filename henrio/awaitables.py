@@ -12,6 +12,50 @@ def sleep(seconds: typing.Union[float, int]):
         yield ("sleep", seconds)
 
 
+@coroutine
+def get_loop():
+    loop = yield ("loop",)
+    return loop
+
+
+@coroutine
+def create_reader(fileobj, callback, *args):
+    yield ("reader", fileobj, callback, args)
+
+
+@coroutine
+def create_writer(fileobj, callback, *args):
+    yield ("writer", fileobj, callback, args)
+
+
+@coroutine
+def remove_writer(fileobj):
+    yield ("rmwriter", fileobj)
+
+
+@coroutine
+def remove_reader(fileobj):
+    yield ("rmreader", fileobj)
+
+
+@coroutine
+def spawn(awaitable):
+    task = yield ("spawn", awaitable)
+    return task
+
+
+@coroutine
+def wrap_file(file):
+    wrapped = yield ("file", file)
+    return wrapped
+
+
+@coroutine
+def wrap_socket(socket):
+    wrapped = yield ("socket", socket)
+    return wrapped
+
+
 class Future:
     def __init__(self):
         self._data = None

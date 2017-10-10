@@ -6,8 +6,8 @@ from henrio import *
 
 
 async def sleeper(tim):
-    await sleep(tim)
-    print("banane")
+    a = await sleep(tim)
+    print(a)
     return "Bon hommie"
 
 
@@ -78,16 +78,19 @@ def run_socks():
     import socket
     loop = IOCPLoop()
     r, w = socket.socketpair()
-    reader, writer = loop.wrap_socket(r), loop.wrap_socket(w)
 
     # w.send(b"Elle me dit ecris un chanson")
     async def do_thing():
+        reader, writer = await wrap_socket(r), await wrap_socket(w)
         print(await writer.send(b"Fuckeroni!"), 3)
         print(r.recv(5), 1)
 
     loop.create_task(do_thing())
     d = loop.run_forever()
     print(d)
+
+
+run_socks()
 
 
 def run_stdio():
@@ -160,4 +163,14 @@ def async_working():
     print(f)
 
 
-async_working()
+def get_looper():
+    import types
+    l = SelectorLoop()
+
+    @types.coroutine
+    def gl():
+        l = yield ("loop",)
+        return l
+
+    print(l.run_until_complete(gl()))
+

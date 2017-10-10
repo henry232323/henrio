@@ -55,7 +55,7 @@ class SelectorLoop(BaseLoop):
             if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
                 time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
 
-    def register_reader(self, fileobj, callback: typing.Callable[..., None], *args):
+    def register_reader(self, fileobj, callback: typing.Callable[..., typing.Any], *args):
         """Register a reader, the given callback will be called with the given args when the file is ready to read"""
         if fileobj.fileno() in self.selector.get_map():
             if self.selector.get_key(fileobj).events == selectors.EVENT_WRITE:
@@ -65,7 +65,7 @@ class SelectorLoop(BaseLoop):
             self.selector.register(fileobj, selectors.EVENT_READ)
         self._readers[fileobj.fileno()] = (callback, args)  # Cache our callback, overwrites if one already exists
 
-    def register_writer(self, fileobj, callback: typing.Callable, *args):
+    def register_writer(self, fileobj, callback: typing.Callable[..., typing.Any], *args):
         """Register a writer, the given callback will be called with the given args when the file is ready to write"""
         if fileobj.fileno() in self.selector.get_map():
             if self.selector.get_key(fileobj).events == selectors.EVENT_READ:

@@ -1,22 +1,27 @@
 from threading import Thread
+from types import coroutine
 
-from . import Future, SelectorLoop
+from . import Future, get_loop
 
 
+@coroutine
 def worker(func, *args):
     fut = Future()
     runner = lambda: fut.set_result(func(*args))
     thread = Thread(target=runner)
     thread.start()
-    return fut
+    result = yield from fut
+    return result
 
 
+@coroutine
 def async_worker(func, *args):
     fut = Future()
+    loop = yield from get_loop()
 
     def runner():
         coro = func(*args)
-        l = SelectorLoop()
+        l = type(loop)()
         try:
             fut.set_result(l.run_until_complete(coro))
         except Exception as e:
@@ -24,4 +29,5 @@ def async_worker(func, *args):
 
     thread = Thread(target=runner)
     thread.start()
-    return fut
+    result = yield from fut
+    return result

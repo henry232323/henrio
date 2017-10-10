@@ -89,9 +89,28 @@ class BaseLoop(AbstractLoop):
                     print_exc()
                 else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
                     # A generator yielding us a tuple of `("sleep", time_in_seconds)`
-                    if isinstance(task._data, tuple) and task._data[0] == 'sleep':
-                        heappush(self._timers,
-                                 (self.time() + task._data[1], task))  # Add our time to our list of timers
+                    if isinstance(task._data, tuple):
+                        command = task._data[0]
+                        if command == 'sleep':
+                            heappush(self._timers,
+                                     (self.time() + task._data[1], task))  # Add our time to our list of timers
+                        else:
+                            if command == "loop":  # If we want the loop, give it to em
+                                task._data = self
+                            elif command == "reader":
+                                self.register_reader(*task._data[1:])
+                            elif command == "writer":
+                                self.register_writer(*task._data[1:])
+                            elif command == "rmreader":
+                                self.unregister_reader(task._data[1])
+                            elif command == "rmwriter":
+                                self.unregister_writer(task._data[1])
+                            elif command == "spawn":
+                                task._data = self.create_task(task._data[1])
+                            elif command == "file":
+                                task._data = self.wrap_file(task._data[1])
+                            elif command == "socket":
+                            self._tasks.append(task)
                     else:
                         if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
                             self._tasks.append(task._data)

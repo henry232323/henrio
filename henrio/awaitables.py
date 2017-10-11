@@ -20,12 +20,12 @@ def get_loop():
 
 @coroutine
 def create_reader(fileobj, callback, *args):
-    yield ("register_reader", fileobj, callback, args)
+    yield ("register_reader", fileobj, callback, *args)
 
 
 @coroutine
 def create_writer(fileobj, callback, *args):
-    yield ("register_writer", fileobj, callback, args)
+    yield ("register_writer", fileobj, callback, *args)
 
 
 @coroutine
@@ -60,7 +60,22 @@ def wrap_socket(socket):
 def unwrap_file(file):
     yield ("unwrap_file", file)
 
+
 unwrap_socket = unwrap_file
+
+
+@coroutine
+def socket_connect(socket, hostpair):
+    loop = yield from get_loop()
+    resp = yield from loop.socket_connect(socket, hostpair)
+    return resp
+
+
+@coroutine
+def socket_bind(socket, hostpair):
+    loop = yield from get_loop()
+    resp = yield from loop.socket_bind(socket, hostpair)
+    return resp
 
 
 class Future:
@@ -70,7 +85,6 @@ class Future:
         self._error = None
         self.complete = False
         self.cancelled = False
-        self._current = None
         self._running = False
         self._callback = None
 

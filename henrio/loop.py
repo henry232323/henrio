@@ -7,6 +7,7 @@ from traceback import print_exc
 
 from .awaitables import Task, Future
 from .bases import AbstractLoop
+from .workers import worker
 from . import CancelledError
 
 
@@ -58,7 +59,7 @@ class BaseLoop(AbstractLoop):
             self._tasks.clear()
             self._tasks.extend(self._queue)
             self._queue.clear()
-            while self._queue or self._tasks or self._timers and self.running:
+            while (self._queue or self._tasks or self._timers or self._readers, self._writers) and self.running:
                 self._loop_once()  # As long as were 'running' and have stuff to do just keep spinning our loop
         finally:
             self.running = False
@@ -126,3 +127,23 @@ class BaseLoop(AbstractLoop):
     def close(self):
         """Close the running event loop"""
         self.running = False
+
+    async def socket_connect(self, socket, hostpair):
+        socket.setblocking(False)
+        try:
+            resp = socket.connect(hostpair)
+            socket.setblocking(True)
+            return resp
+        except BlockingIOError:
+            socket.setblocking(True)
+            return await worker(socket.connect, hostpair)
+
+    async def socket_bind(self, socket, hostpair):
+        socket.setblocking(False)
+        try:
+            resp = socket.bind(hostpair)
+            socket.setblocking(True)
+            return resp
+        except BlockingIOError:
+            socket.setblocking(True)
+            return await worker(socket.bind, hostpair)

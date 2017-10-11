@@ -28,14 +28,14 @@ def run_readers():
     loop = SelectorLoop()
     my_socket = socket.socket()
     my_socket.connect(("irc.mindfang.org", 1413))
-    buffer = bytes()
+    buffer = bytearray()
 
-    def reader():
-        global buffer
+    async def reader():
+        nonlocal buffer
         received = my_socket.recv(1024)
         if received:
-            buffer += received
-            pts = buffer.split(b"\r\n")
+            buffer.extend(received)
+            pts = bytes(buffer).split(b"\r\n")
             buffer = pts.pop()
             for el in pts:
                 print(el)
@@ -88,9 +88,6 @@ def run_socks():
     loop.create_task(do_thing())
     d = loop.run_forever()
     print(d)
-
-
-run_socks()
 
 
 def run_stdio():
@@ -174,4 +171,17 @@ def get_looper():
 
     print(l.run_until_complete(gl()))
 
-get_looper()
+
+def test_spawn():
+    async def mf():
+        print("asd")
+        await spawn(f2())
+
+    async def f2():
+        await sleep(3)
+        print(1)
+
+    run(mf())
+
+
+test_spawn()

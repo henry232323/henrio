@@ -1,12 +1,14 @@
 from concurrent.futures import CancelledError
 from .awaitables import (Future, Task, sleep, get_loop, unwrap_file,
                          create_reader, create_writer, remove_reader,
-                         remove_writer, spawn, wrap_file, wrap_socket)
+                         remove_writer, spawn, wrap_file, wrap_socket,
+                         socket_connect, socket_bind)
 from .bases import AbstractLoop, BaseFile, BaseSocket
 from .loop import BaseLoop
 from .queue import Queue
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
 from .workers import worker, async_worker
+from .protocols import ConnectionBase, connect
 
 import sys
 

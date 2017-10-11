@@ -7,7 +7,13 @@ from . import Future, get_loop
 @coroutine
 def worker(func, *args):
     fut = Future()
-    runner = lambda: fut.set_result(func(*args))
+
+    def runner():
+        try:
+            fut.set_result(func(*args))
+        except Exception as e:
+            fut.set_exception(e)
+
     thread = Thread(target=runner)
     thread.start()
     result = yield from fut

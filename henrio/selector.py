@@ -4,7 +4,7 @@ import time
 import typing
 from collections import deque
 
-from . import Future, BaseLoop, BaseSocket, BaseFile, unwrap_file
+from . import Future, BaseLoop, BaseSocket, BaseFile, unwrap_file, socket_connect, socket_bind
 
 
 class SelectorLoop(BaseLoop):
@@ -20,7 +20,7 @@ class SelectorLoop(BaseLoop):
         if self.selector.get_map():  # Pray it doesn't block
             # We can block as long as we want if theres no tasks to process till we're done
             # We want our currently ready files
-            if not self._tasks or self._queue:
+            if not (self._tasks or self._queue):
                 if self._timers:
                     wait = max(0.0, self._timers[0][0] - self.time())
                 else:
@@ -188,6 +188,12 @@ class SelectorSocket(BaseSocket):
         fut = Future()
         self._write_queue.append((fut, data))
         return await fut
+
+    async def connect(self, hostpair):
+        await socket_connect(socket, hostpair)
+
+    async def bind(self, hostpair):
+        await socket_bind(socket, hostpair)
 
     @property
     def fileno(self):

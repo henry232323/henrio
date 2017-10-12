@@ -10,14 +10,14 @@ def worker(func, *args):
 
     def runner():
         try:
-            fut.set_result(func(*args))
+            result = func(*args)
+            fut.set_result(result)
         except Exception as e:
             fut.set_exception(e)
 
     thread = Thread(target=runner)
     thread.start()
-    result = yield from fut
-    return result
+    return fut
 
 
 @coroutine
@@ -35,5 +35,4 @@ def async_worker(func, *args):
 
     thread = Thread(target=runner)
     thread.start()
-    result = yield from fut
-    return result
+    return fut

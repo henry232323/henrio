@@ -5,10 +5,10 @@ from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
 
+from . import CancelledError
 from .awaitables import Task, Future
 from .bases import AbstractLoop
 from .workers import worker
-from . import CancelledError
 
 
 class BaseLoop(AbstractLoop):
@@ -90,7 +90,8 @@ class BaseLoop(AbstractLoop):
                     print_exc()
                 else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
                     # A generator yielding us a tuple of `("sleep", time_in_seconds)`
-                    if isinstance(task._data, tuple):  # These are all our 'commands' that can be yielded directly into the loop
+                    if isinstance(task._data,
+                                  tuple):  # These are all our 'commands' that can be yielded directly into the loop
                         command = task._data[0]  # Always ('command', *args) in the form of tuples
                         if command == 'sleep':
                             heappush(self._timers,
@@ -130,13 +131,10 @@ class BaseLoop(AbstractLoop):
 
     async def socket_connect(self, socket, hostpair):
         socket.setblocking(False)
-        try:
-            resp = socket.connect(hostpair)
+        val = socket.connect_ex(hostpair)
+        if val == 0:
             socket.setblocking(True)
-            return resp
-        except BlockingIOError:
-            socket.setblocking(True)
-            return await worker(socket.connect, hostpair)
+            await worker(socket.connect, hostpair)
 
     async def socket_bind(self, socket, hostpair):
         socket.setblocking(False)

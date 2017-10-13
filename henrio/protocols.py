@@ -1,7 +1,7 @@
 from collections import defaultdict, deque
 from socket import AF_INET, SOCK_STREAM, socket, SO_REUSEADDR, SOL_SOCKET
 
-from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader, get_loop
+from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader
 
 
 class ConnectionBase:
@@ -155,7 +155,8 @@ async def connect(protocol_factory, address=None, port=None, family=AF_INET,
 
 async def create_server(protocol_factory, address, port, family=AF_INET,
                         type=SOCK_STREAM, proto=0, fileno=None,
-                        bufsize=1024, sock=None, backlog=None):
+                        bufsize=1024, sock=None, backlog=None,
+                        sockopt=(SOL_SOCKET, SO_REUSEADDR, 1)):
     if sock is not None:
         if fileno is not None:
             raise ValueError("You cannot specify a fileno AND a socket!")
@@ -165,7 +166,7 @@ async def create_server(protocol_factory, address, port, family=AF_INET,
         bound = False
 
     connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)
-    sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+    sock.setsockopt(*sockopt)
     await create_reader(sock, connection._reader_callback)
 
     if not bound:  # We need to bind the sock if it isn't already
@@ -178,7 +179,7 @@ async def create_server(protocol_factory, address, port, family=AF_INET,
 
 class ServerSocket:
     def __init__(self, protocol, socket):
-        """Wraps a socket with async methods"""
+        """Wraps a socket with async send"""
         self._protocol = protocol
         self._socket = socket
 

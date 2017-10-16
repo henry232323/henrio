@@ -6,7 +6,7 @@ from inspect import iscoroutine, isawaitable
 from traceback import print_exc
 
 from . import CancelledError
-from .awaitables import Task, Future
+from .awaitables import Task, Future, sleep
 from .bases import AbstractLoop
 from .workers import worker
 
@@ -103,6 +103,8 @@ class BaseLoop(AbstractLoop):
                                 task._data = self.time()
                             else:
                                 task._data = getattr(self, command)(*task._data[1:])
+                                if iscoroutine(task._data):
+                                    self._tasks.append(task._data)
                             self._tasks.append(task)
                     else:
                         if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
@@ -130,11 +132,10 @@ class BaseLoop(AbstractLoop):
         self.running = False
 
     async def socket_connect(self, socket, hostpair):
-        socket.setblocking(False)
-        val = socket.connect_ex(hostpair)
-        if val == 0:
-            socket.setblocking(True)
-            await worker(socket.connect, hostpair)
+        #socket.setblocking(False)
+        #val = socket.connect_ex(hostpair)
+        socket.setblocking(True)
+        await worker(socket.connect, hostpair)
 
     async def socket_bind(self, socket, hostpair):
         socket.setblocking(False)

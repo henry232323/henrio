@@ -8,7 +8,7 @@ from .loop import BaseLoop
 from .queue import Queue
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
 from .workers import worker, async_worker
-from .protocols import ConnectionBase, connect, create_server, ServerBase
+from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect
 
 import sys
 

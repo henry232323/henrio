@@ -1,4 +1,4 @@
-from henrio import ConnectionBase, ServerBase, connect, create_server, get_default_loop
+from henrio import ConnectionBase, ServerBase, connect, create_server, get_default_loop, IOCPLoop, SelectorLoop, ssl_connect
 
 
 def run_client():
@@ -9,9 +9,11 @@ def run_client():
         async def data_received(self, data):
             print(data)
 
-    loop = get_default_loop()
-    loop.create_task(connect(MyProto, "irc.mindfang.org", 6667))
+    loop = SelectorLoop()
+    loop.create_task(ssl_connect(MyProto, "www.google.com", 443))
     loop.run_forever()
+
+run_client()
 
 
 def run_serv():
@@ -25,9 +27,9 @@ def run_serv():
         async def connection_made(self, socket):
             print(socket._socket.getpeername())
 
-    loop = get_default_loop()
+    loop = IOCPLoop()
     loop.create_task(create_server(MyProto, "127.0.0.1", 8888))
     loop.run_forever()
 
 
-run_serv()
+

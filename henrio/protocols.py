@@ -1,7 +1,14 @@
+import ssl
+import sys
 from collections import defaultdict, deque
 from socket import AF_INET, SOCK_STREAM, socket, SO_REUSEADDR, SOL_SOCKET
 
-from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader
+from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader, \
+    get_loop
+from .windows import IOCPLoop
+
+if sys.platform == "win32":
+    import _overlapped
 
 
 class ConnectionBase:
@@ -11,20 +18,24 @@ class ConnectionBase:
         self.addr, self.port = host  # Host to connect to
         self._bufsize = bufsize  # Max amount to read at a time
         self._writequeue = deque()  # Deque of (Future, message) to send
+        self.closed = False
 
     async def _reader_callback(self):
-        try:
-            received = self.socket.recv(self._bufsize)  # Try to receive
-            if received:  # Only fire if we received anything
-                await self.data_received(received)
-                return
-            else:  # If we didn't we EOF'd
-                await spawn(self.eof_received())
-                await spawn(self.connection_lost(None))  # Subclass callback
-        except OSError as e:  # Something errored trying to read
-            await spawn(self.connection_lost(e))
-
-        await self._connection_lost()  # Our callback
+        print(self.closed)
+        if not self.closed:
+            try:
+                received = self.socket.recv(self._bufsize)  # Try to receive
+                print(received)
+                if received:  # Only fire if we received anything
+                    await spawn(self.data_received(received))
+                    return
+                else:  # If we didn't we EOF'd
+                    await self._connection_lost()  # Our callback
+                    await spawn(self.eof_received())
+                    await spawn(self.connection_lost(None))  # Subclass callback
+            except OSError as e:  # Something errored trying to read
+                await self._connection_lost()  # Our callback
+                await spawn(self.connection_lost(e))
 
     async def _writer_callback(self):
         while self._writequeue:  # Write everything we can
@@ -37,9 +48,25 @@ class ConnectionBase:
         await spawn(self.connection_made())  # All callbacks are spawns, thus don't interfere with internals
 
     async def _connection_lost(self):
-        await remove_reader(self.socket)  # Connection dropped, we don't need to listen any more
-        await remove_writer(self.socket)
+        self.closed = True
+        loop = await get_loop()
+        loop.unregister_reader(self.socket)  # Connection dropped, we don't need to listen any more
+        if not isinstance(loop, IOCPLoop):
+            await remove_writer(self.socket)
         self.socket.close()
+
+    async def send(self, data):  # Same send style as usual
+        loop = await get_loop()
+        if isinstance(loop, IOCPLoop):
+            future = Future()
+            ov = _overlapped.Overlapped(0)
+            ov.WSASend(self.socket.fileno(), data, 0)
+            loop._writers[ov.address] = future
+            return await future
+        else:
+            future = Future()
+            self._writequeue.append((future, data))
+            return await future
 
     async def connection_made(self):
         pass
@@ -48,15 +75,15 @@ class ConnectionBase:
         pass
 
     async def connection_lost(self, exc):
-        pass
+        if exc is not None:
+            try:
+                raise exc
+            except:
+                import traceback
+                traceback.print_exc()
 
     async def eof_received(self):
         pass
-
-    def send(self, data):  # All we really do is add to the write queue
-        future = Future()
-        self._writequeue.append((future, data))
-        return future  # Then wait for it to actually get sent
 
     async def close(self):
         await self._connection_lost()
@@ -73,7 +100,8 @@ class ServerBase:
 
     async def _reader_callback(self):
         client, addr = self.socket.accept()  # If we're ready to read on a servery sock, then we're accepting
-        wrapped = ServerSocket(self, client)  # Wrap in async methods
+        loop = await get_loop()
+        wrapped = ServerSocket(self, client, loop)  # Wrap in async methods
         self.connections.append(wrapped)
         await create_reader(wrapped, self._client_readable, wrapped)
         await create_writer(wrapped, self._client_writable, wrapped)
@@ -90,10 +118,10 @@ class ServerBase:
         try:
             received = sock.recv(self._bufsize)
             if received:
-                await self.data_received(sock, received)
+                await spawn(self.data_received(sock, received))
                 return
             else:
-                await self.eof_received(sock)
+                await spawn(self.eof_received(sock))
         except OSError as e:
             error = e
 
@@ -144,11 +172,18 @@ async def connect(protocol_factory, address=None, port=None, family=AF_INET,
         connected = False
 
     connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)  # All protos need these args
-    await create_reader(sock, connection._reader_callback)
-    await create_writer(sock, connection._writer_callback)  # Create our reader and writer
 
     if not connected:
         await connection._connect()  # If the sock isn't connected, connect "asynchronously"
+
+    loop = await get_loop()
+    if not isinstance(loop, IOCPLoop):
+        await create_writer(sock, connection._writer_callback)  # Create our reader and writer
+    else:
+        if sock.fileno() not in loop._open_ports:
+            _overlapped.CreateIoCompletionPort(sock.fileno(), loop._port, 0, 0)
+            loop._open_ports.append(sock.fileno())
+    await create_reader(sock, connection._reader_callback)
 
     return connection
 
@@ -178,8 +213,9 @@ async def create_server(protocol_factory, address, port, family=AF_INET,
 
 
 class ServerSocket:
-    def __init__(self, protocol, socket):
+    def __init__(self, protocol, socket, loop):
         """Wraps a socket with async send"""
+        self._loop = loop
         self._protocol = protocol
         self._socket = socket
 
@@ -200,3 +236,18 @@ class ServerSocket:
 
     def recv(self, bufsize):
         return self._socket.recv(bufsize)
+
+
+async def ssl_connect(protocol_factory, address=None, port=None, bufsize=1024, ssl_context=None):
+    if ssl_context is None:
+        ssl_context = ssl.create_default_context()
+
+    sock = socket()
+    sock = ssl_context.wrap_socket(sock, server_hostname=address)
+    connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)  # All protos need these args
+
+    await connection._connect()
+    await create_writer(sock, connection._writer_callback)  # Create our reader and writer
+    await create_reader(sock, connection._reader_callback)
+
+    return connection

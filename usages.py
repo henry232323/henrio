@@ -82,24 +82,51 @@ def run_socks():
     # w.send(b"Elle me dit ecris un chanson")
     async def do_thing():
         reader, writer = await wrap_socket(r), await wrap_socket(w)
-        print(await writer.send(b"Fuckeroni!"), 3)
-        print(r.recv(5), 1)
+        await writer.send(b"abcdefg")
+        print(b'asd')
+        await writer.send(b"dsa")
+        print(b'dsa')
+        f = await reader.recv(12)
+        print(f, 1)
+        await writer.send(b"1234")
+        d = await reader.recv(1024)
+        print(d, 2)
 
     loop.create_task(do_thing())
-    d = loop.run_forever()
-    print(d)
+    loop.run_forever()
 
+def run_socks2():
+    import socket
+    loop = IOCPLoop()
+    rw = socket.socket()
+    rw.connect(("irc.mindfang.org", 6667))
+
+    # w.send(b"Elle me dit ecris un chanson")
+    async def do_thing():
+        sock = await wrap_socket(rw)
+        await sock.send(b"abcdefg")
+        print(b'asd')
+        await sock.send(b"dsa")
+        print(b'dsa')
+        f = await sock.recv(1024)
+        print(f, 1)
+        await sock.send(b"1234")
+        print(12321)
+        d = await sock.recv(15)
+        print(d, 2)
+
+    loop.create_task(do_thing())
+    loop.run_forever()
+
+run_socks2()
 
 def run_stdio():
     import sys
     loop = SelectorLoop()
     reader, writer = loop.wrap_file(sys.stdin), loop.wrap_file(sys.stdout)
-    loop.create_task(writer.write("fuck"))
+    loop.create_task(writer.write("asd"))
     resp = loop.run_until_complete(reader.read(10))
     print(resp)
-
-
-# run_files()
 
 
 def run_thing():
@@ -183,5 +210,3 @@ def test_spawn():
 
     run(mf())
 
-
-test_spawn()

@@ -2,12 +2,13 @@ import ssl
 import sys
 from collections import defaultdict, deque
 from socket import AF_INET, SOCK_STREAM, socket, SO_REUSEADDR, SOL_SOCKET
+from typing import Callable
 
 from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader, \
     get_loop
-from .windows import IOCPLoop
 
 if sys.platform == "win32":
+    from .windows import IOCPLoop
     import _overlapped
 
 
@@ -153,9 +154,26 @@ class ServerBase:
         del self._writequeue[self.socket]
 
 
-async def connect(protocol_factory, address=None, port=None, family=AF_INET,
+class SSLServer(ServerBase):
+    def __init__(self, *args, wrap_attrs, **kwargs):
+        super().__init__(self, *args, **kwargs)
+        self.wrap_attrs = wrap_attrs
+
+    async def _reader_callback(self):
+        client, addr = self.socket.accept()  # If we're ready to read on a servery sock, then we're accepting
+        client = ssl.wrap_socket(client, **self.wrap_attrs)
+        loop = await get_loop()
+        wrapped = ServerSocket(self, client, loop)  # Wrap in async methods
+        self.connections.append(wrapped)
+        await create_reader(wrapped, self._client_readable, wrapped)
+        await create_writer(wrapped, self._client_writable, wrapped)
+        await spawn(self.connection_made(wrapped))
+
+
+async def connect(protocol_factory: Callable[..., ConnectionBase], address: str = None,
+                  port: int = None, family=AF_INET,
                   type=SOCK_STREAM, proto=0, fileno=None,
-                  bufsize=1024, sock=None):
+                  bufsize: int = 1024, sock: socket = None):
     if sock is not None:
         if fileno is not None:
             raise ValueError("You cannot specify a fileno AND a socket!")
@@ -188,10 +206,25 @@ async def connect(protocol_factory, address=None, port=None, family=AF_INET,
     return connection
 
 
-async def create_server(protocol_factory, address, port, family=AF_INET,
+async def ssl_connect(protocol_factory, address=None, port=None, bufsize=1024, ssl_context=None):
+    if ssl_context is None:
+        ssl_context = ssl.create_default_context()
+
+    sock = socket()
+    sock = ssl_context.wrap_socket(sock, server_hostname=address)
+    connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)  # All protos need these args
+
+    await connection._connect()
+    await create_writer(sock, connection._writer_callback)  # Create our reader and writer
+    await create_reader(sock, connection._reader_callback)
+
+    return connection
+
+
+async def create_server(protocol_factory: Callable[..., ServerBase], address, port, family=AF_INET,
                         type=SOCK_STREAM, proto=0, fileno=None,
                         bufsize=1024, sock=None, backlog=None,
-                        sockopt=(SOL_SOCKET, SO_REUSEADDR, 1)):
+                        sockopt: tuple = (SOL_SOCKET, SO_REUSEADDR, 1)):
     if sock is not None:
         if fileno is not None:
             raise ValueError("You cannot specify a fileno AND a socket!")
@@ -201,6 +234,24 @@ async def create_server(protocol_factory, address, port, family=AF_INET,
         bound = False
 
     connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)
+    sock.setsockopt(*sockopt)
+    await create_reader(sock, connection._reader_callback)
+
+    if not bound:  # We need to bind the sock if it isn't already
+        await socket_bind(sock, (address, port))
+        sock.listen(backlog) if backlog is not None else sock.listen()
+    # We assume we're already listening if we're using an already bound socket, maybe this needs to change?
+
+    return connection
+
+
+async def create_ssl_server(address, port, bufsize=1024, backlog=None,
+                            sockopt: tuple = (SOL_SOCKET, SO_REUSEADDR, 1),
+                            ssl_wrap_attributes=dict(server_size=True)):
+    sock = socket()
+    bound = False
+
+    connection = SSLServer(socket=sock, host=(address, port), bufsize=bufsize, wrap_attrs=ssl_wrap_attributes)
     sock.setsockopt(*sockopt)
     await create_reader(sock, connection._reader_callback)
 
@@ -236,18 +287,3 @@ class ServerSocket:
 
     def recv(self, bufsize):
         return self._socket.recv(bufsize)
-
-
-async def ssl_connect(protocol_factory, address=None, port=None, bufsize=1024, ssl_context=None):
-    if ssl_context is None:
-        ssl_context = ssl.create_default_context()
-
-    sock = socket()
-    sock = ssl_context.wrap_socket(sock, server_hostname=address)
-    connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)  # All protos need these args
-
-    await connection._connect()
-    await create_writer(sock, connection._writer_callback)  # Create our reader and writer
-    await create_reader(sock, connection._reader_callback)
-
-    return connection

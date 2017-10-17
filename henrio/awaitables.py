@@ -1,7 +1,6 @@
 import typing
+from concurrent.futures import CancelledError
 from types import coroutine
-
-from . import CancelledError
 
 
 @coroutine

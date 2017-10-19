@@ -4,9 +4,9 @@ from collections import deque
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
+from concurrent.futures import CancelledError
 
-from . import CancelledError
-from .awaitables import Task, Future, sleep
+from .awaitables import Task, Future
 from .bases import AbstractLoop
 from .workers import worker
 
@@ -101,6 +101,8 @@ class BaseLoop(AbstractLoop):
                                 task._data = self
                             elif command == "time":
                                 task._data = self.time()
+                            elif command == "current_task":
+                                task._data = task
                             else:
                                 task._data = getattr(self, command)(*task._data[1:])
                                 if iscoroutine(task._data):

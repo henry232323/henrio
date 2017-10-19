@@ -65,20 +65,22 @@ unwrap_socket = unwrap_file
 
 @coroutine
 def socket_connect(socket, hostpair):
-    loop = yield from get_loop()
-    resp = yield from loop.socket_connect(socket, hostpair)
-    return resp
+    return (yield ("socket_connect", socket, hostpair))
 
 
 @coroutine
 def socket_bind(socket, hostpair):
-    loop = yield from get_loop()
-    resp = yield from loop.socket_bind(socket, hostpair)
-    return resp
+    return (yield ("socket_bind", socket, hostpair))
+
+
+@coroutine
+def current_task():
+    return (yield ("current_task",))
 
 
 class Future:
     def __init__(self):
+        self.__name__ = __class__.__name__
         self._data = None
         self._result = None
         self._error = None
@@ -147,9 +149,13 @@ class Task(Future):
         super().__init__()
         self._task = task
         self._data = data
+        self.__name__ = self._task.__name__
 
     def __repr__(self):
-        fmt = "{0} {1} {2}".format(self._result, self._error, self._data)
+        fmt = "{0} {1} {2} {3}".format(self._result if self._data is not self else "self",
+                                       self._error,
+                                       self._data if self._data is not self else "self",
+                                       self.__name__)
         if self.cancelled:
             return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
         else:

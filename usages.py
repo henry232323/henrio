@@ -95,6 +95,7 @@ def run_socks():
     loop.create_task(do_thing())
     loop.run_forever()
 
+
 def run_socks2():
     import socket
     loop = IOCPLoop()
@@ -118,7 +119,6 @@ def run_socks2():
     loop.create_task(do_thing())
     loop.run_forever()
 
-run_socks2()
 
 def run_stdio():
     import sys
@@ -210,3 +210,40 @@ def test_spawn():
 
     run(mf())
 
+
+def ctask():
+    async def pepe():
+        return await current_task()
+
+    l = SelectorLoop()
+    f = l.run_until_complete(pepe())
+    print(f, type(f), f.__name__)
+
+
+def locktests():
+    d = 0
+    lock = Lock()
+    async def pepe():
+        nonlocal d
+        async with lock:
+            print(2)
+            await sleep(4)
+            print(5)
+            d = 2
+
+    async def pepo():
+        nonlocal d
+        async with lock:
+            print(3)
+            await sleep(7)
+            print(4)
+            d = 3
+
+        print(lock._queue)
+
+    l = SelectorLoop()
+    l.create_task(pepo())
+    l.create_task(pepe())
+    f = l.run_forever()
+
+locktests()

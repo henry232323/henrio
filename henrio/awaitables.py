@@ -149,7 +149,7 @@ class Task(Future):
         super().__init__()
         self._task = task
         self._data = data
-        self.__name__ = self._task.__name__
+        self.__name__ = self._task.__name__ if hasattr(self._task, "__name__") else self._task.__name__
 
     def __repr__(self):
         fmt = "{0} {1} {2} {3}".format(self._result if self._data is not self else "self",

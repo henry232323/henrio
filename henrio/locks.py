@@ -1,7 +1,6 @@
 from collections import deque
 from weakref import ref
 
-
 from .awaitables import Future, current_task
 
 

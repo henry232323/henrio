@@ -223,6 +223,7 @@ def ctask():
 def locktests():
     d = 0
     lock = Lock()
+
     async def pepe():
         nonlocal d
         async with lock:
@@ -245,5 +246,6 @@ def locktests():
     l.create_task(pepo())
     l.create_task(pepe())
     f = l.run_forever()
+
 
 locktests()

@@ -22,11 +22,9 @@ class ConnectionBase:
         self.closed = False
 
     async def _reader_callback(self):
-        print(self.closed)
         if not self.closed:
             try:
                 received = self.socket.recv(self._bufsize)  # Try to receive
-                print(received)
                 if received:  # Only fire if we received anything
                     await spawn(self.data_received(received))
                     return
@@ -69,6 +67,9 @@ class ConnectionBase:
             self._writequeue.append((future, data))
             return await future
 
+    async def close(self):
+        await self._connection_lost()
+
     async def connection_made(self):
         pass
 
@@ -85,9 +86,6 @@ class ConnectionBase:
 
     async def eof_received(self):
         pass
-
-    async def close(self):
-        await self._connection_lost()
 
 
 class ServerBase:

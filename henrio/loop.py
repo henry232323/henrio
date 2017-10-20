@@ -105,7 +105,7 @@ class BaseLoop(AbstractLoop):
                                 task._data = task
                             else:
                                 task._data = getattr(self, command)(*task._data[1:])
-                                if iscoroutine(task._data):
+                                if iscoroutine(task._data) and command != "create_task":
                                     self._tasks.append(task._data)
                             self._tasks.append(task)
                     else:

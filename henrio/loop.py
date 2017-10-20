@@ -1,10 +1,10 @@
 import time
 import typing
 from collections import deque
+from concurrent.futures import CancelledError
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
-from concurrent.futures import CancelledError
 
 from .awaitables import Task, Future
 from .bases import AbstractLoop
@@ -24,9 +24,9 @@ class BaseLoop(AbstractLoop):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
         return time.monotonic()
 
-    def sleep(self, time):
+    def sleep(self, amount):
         """Sleep"""
-        return time.sleep(time)
+        return time.sleep(amount)
 
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
@@ -99,8 +99,6 @@ class BaseLoop(AbstractLoop):
                         else:
                             if command == "loop":  # If we want the loop, give it to em
                                 task._data = self
-                            elif command == "time":
-                                task._data = self.time()
                             elif command == "current_task":
                                 task._data = task
                             else:
@@ -134,8 +132,8 @@ class BaseLoop(AbstractLoop):
         self.running = False
 
     async def socket_connect(self, socket, hostpair):
-        #socket.setblocking(False)
-        #val = socket.connect_ex(hostpair)
+        # socket.setblocking(False)
+        # val = socket.connect_ex(hostpair)
         socket.setblocking(True)
         await worker(socket.connect, hostpair)
 

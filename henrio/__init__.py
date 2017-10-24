@@ -1,6 +1,7 @@
-from .awaitables import (Future, Task, sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
-                         remove_writer, spawn, wrap_file, wrap_socket, socket_connect, socket_bind, current_task,
-                         unwrap_socket)
+from .futures import Future, Task, timeout
+from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
+                    remove_writer, spawn, wrap_file, wrap_socket, socket_connect, socket_bind, current_task,
+                    unwrap_socket)
 from .bases import AbstractLoop, BaseFile, BaseSocket
 from .locks import Lock
 from .loop import BaseLoop

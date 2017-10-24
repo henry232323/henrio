@@ -248,4 +248,19 @@ def locktests():
     f = l.run_forever()
 
 
-locktests()
+def timeouts():
+    async def myfunc():
+        a = await get_loop()
+        print(a.time())
+        async with timeout(3):
+            print(a.time())
+            await sleep(5)
+            print(a.time())
+
+        print(a.time())
+
+    l = BaseLoop()
+    l.create_task(myfunc())
+    l.run_forever()
+
+timeouts()

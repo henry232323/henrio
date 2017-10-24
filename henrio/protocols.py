@@ -1,7 +1,7 @@
 import ssl
 import sys
 from collections import defaultdict, deque
-from socket import AF_INET, SOCK_STREAM, socket, SO_REUSEADDR, SOL_SOCKET
+from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, socket
 from typing import Callable
 
 from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader, \

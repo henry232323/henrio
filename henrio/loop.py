@@ -5,10 +5,12 @@ from concurrent.futures import CancelledError
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
+from functools import partial
 
-from .awaitables import Task, Future
+from .futures import Task, Future
 from .bases import AbstractLoop
 from .workers import worker
+from .yields import sleep
 
 
 class BaseLoop(AbstractLoop):
@@ -126,6 +128,14 @@ class BaseLoop(AbstractLoop):
         if task not in self._queue:
             self._queue.append(task)
         return task
+
+    async def schedule_after(self, coro, time):
+        await sleep(time)
+        self.create_task(coro)
+
+    async def call_after(self, func, time):
+        await sleep(time)
+        func()
 
     def close(self):
         """Close the running event loop"""

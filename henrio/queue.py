@@ -3,7 +3,7 @@ from collections import deque
 from . import Future
 
 
-class Queue(object):
+class Queue:
     def __init__(self, size=0, lifo=False):
         self._lifo = lifo
         self.size = size
@@ -15,7 +15,9 @@ class Queue(object):
         return len(self._queue)
 
     def __repr__(self):
-        return "Queue({0}, lifo={1}, size={2})".format(self._queue.__repr__()[6:-1], self._lifo, self.size)
+        return "{3}({0}, lifo={1}, size={2})".format(self._queue.__repr__()[6:-1],
+                                                     self._lifo, self.size,
+                                                     self.__class__.__name__)
 
     def empty(self):
         return not self._queue

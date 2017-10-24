@@ -1,7 +1,8 @@
-from collections import deque
 from weakref import ref
+from collections import deque
 
-from .awaitables import Future, current_task
+from .futures import Future
+from .yields import current_task
 
 
 class Lock:
@@ -55,3 +56,13 @@ class Lock:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.release()
+
+
+class ResourceLock(Lock):
+    def __init__(self, value):
+        super().__init__()
+        self._value = value
+
+    async def __aenter__(self):
+        await self.acquire()
+        return self._value

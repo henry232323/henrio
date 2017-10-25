@@ -250,17 +250,24 @@ def locktests():
 
 def timeouts():
     async def myfunc():
-        a = await get_loop()
-        print(a.time())
-        async with timeout(3):
-            print(a.time())
-            await sleep(5)
-            print(a.time())
-
-        print(a.time())
+        import time
+        try:
+            print(time.time())
+            async with timeout(3):
+                print("cake")
+                print((await get_loop())._timers, 'afd')
+                await sleep(10)
+                print("nyet")
+        except Exception as e:
+            print(type(e), "asd")
+            print(time.time())
+        else:
+            print(time.time())
+            print("shit!")
 
     l = BaseLoop()
     l.create_task(myfunc())
     l.run_forever()
+
 
 timeouts()

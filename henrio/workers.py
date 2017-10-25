@@ -3,6 +3,8 @@ from types import coroutine
 
 from . import Future, get_loop
 
+__all__ = ["worker", "async_worker"]
+
 
 @coroutine
 def worker(func, *args):

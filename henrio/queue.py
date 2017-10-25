@@ -2,6 +2,8 @@ from collections import deque
 
 from . import Future
 
+__all__ = ["Queue"]
+
 
 class Queue:
     def __init__(self, size=0, lifo=False):

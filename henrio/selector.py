@@ -6,6 +6,8 @@ from collections import deque
 
 from . import Future, BaseLoop, BaseSocket, BaseFile, unwrap_file, socket_connect, socket_bind
 
+__all__ = ["SelectorLoop", "SelectorFile", "SelectorSocket"]
+
 
 class SelectorLoop(BaseLoop):
     """An event loop using the the OS's builtin Selector."""

@@ -3,6 +3,8 @@ from concurrent.futures import CancelledError
 
 from .yields import postpone, current_task
 
+__all__ = ["Future", "Task", "timeout"]
+
 
 class Future:
     def __init__(self):

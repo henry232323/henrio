@@ -11,6 +11,8 @@ from .futures import Task, Future
 from .workers import worker
 from .yields import sleep
 
+__all__ = ["BaseLoop"]
+
 
 class BaseLoop(AbstractLoop):
     def __init__(self):

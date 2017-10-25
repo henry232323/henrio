@@ -1,8 +1,10 @@
-from weakref import ref
 from collections import deque
+from weakref import ref
 
 from .futures import Future
 from .yields import current_task
+
+__all__ = ["Lock", "ResourceLock"]
 
 
 class Lock:

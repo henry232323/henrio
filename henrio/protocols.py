@@ -11,6 +11,9 @@ if sys.platform == "win32":
     from .windows import IOCPLoop
     import _overlapped
 
+__all__ = ["ConnectionBase", "ServerBase", "SSLServer", "connect", "ssl_connect", "create_server", "create_ssl_server",
+           "ServerSocket"]
+
 
 class ConnectionBase:
     def __init__(self, socket, host, bufsize):

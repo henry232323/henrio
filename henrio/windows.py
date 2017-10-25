@@ -1,11 +1,11 @@
 import _overlapped
-import _winapi
+from _winapi import NULL, INFINITE, CloseHandle
 from collections import deque
 
 from . import BaseLoop, Future, BaseFile, BaseSocket
 
-NULL = 0
-INFINITE = 0xffffffff
+__all__ = ["IOCPLoop", "IOCPSocket", "IOCPInstance", "IOCPFile"]
+
 ERROR_CONNECTION_REFUSED = 1225
 ERROR_CONNECTION_ABORTED = 1236
 
@@ -42,7 +42,7 @@ class IOCPLoop(BaseLoop):
                         future.set_result(transferred)
                 except KeyError:
                     if key not in (0, _overlapped.INVALID_HANDLE_VALUE):
-                        _winapi.CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
+                        CloseHandle(key)  # If we get a handle that doesn't exist or got deleted: Close it
                     continue
         else:
             if self._timers:
@@ -64,7 +64,7 @@ class IOCPLoop(BaseLoop):
 
     def unwrap_file(self, file):
         if file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
-            _winapi.CloseHandle(file.fileno())
+            CloseHandle(file.fileno())
         del self._current_iocp[file._overlap.overlap.address]
 
     """
@@ -109,7 +109,7 @@ class IOCPInstance:
         try:
             # self._overlap.cancel()
             if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
-                _winapi.CloseHandle(self.file.fileno())
+                CloseHandle(self.file.fileno())
         finally:
             self.file.close()
 

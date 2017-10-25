@@ -1,11 +1,12 @@
 import typing
 from concurrent.futures import CancelledError
-from .yields import postpone, current_task, spawn_after
+
+from .yields import postpone, current_task
 
 
 class Future:
     def __init__(self):
-        self.__name__ = __class__.__name__
+        self.__name__ = self.__class__.__name__
         self._data = None
         self._result = None
         self._error = None
@@ -68,13 +69,16 @@ class Future:
     def add_done_callback(self, fn):
         self._callback = fn
 
+    def close(self):
+        self._error = StopIteration
+
 
 class Task(Future):
     def __init__(self, task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any):
         super().__init__()
         self._task = task
         self._data = data
-        self.__name__ = self._task.__name__ if hasattr(self._task, "__name__") else self._task.__name__
+        self.__name__ = self._task.__name__ if hasattr(self._task, "__name__") else self._task.__class__.__name__
 
     def __repr__(self):
         fmt = "{0} {1} {2} {3}".format(self._result if self._data is not self else "self",
@@ -106,34 +110,36 @@ class Task(Future):
             return False
         try:
             self.throw(CancelledError)
-        except CancelledError as err:
+        except CancelledError:
             self.cancelled = True
-            self.set_exception(err)
-            self._task.close()
+            self.set_exception(CancelledError)
+            return True
+        except StopIteration as err:
+            self.set_result(err.value)
+            return False
+        else:
+            return False
 
     def close(self):
         self._task.close()
 
 
 class timeout:
-    def __init__(self, timeout):
-        if timeout <= 0:
+    def __init__(self, time):
+        if time <= 0:
             raise ValueError("Timeout must be greater than 0!")
-        self.timeout = timeout
+        self.timeout = time
         self.exited = False
         self.task = None
 
     def canceller(self):
         if self.exited:
             return
-
-        cancelled = self.task.close()
-        if cancelled:
-            raise TimeoutError
+        self.task.cancel()
 
     async def __aenter__(self):
         self.task = await current_task()
-        await postpone(self.canceller(), self.timeout)
+        await postpone(self.canceller, self.timeout)
 
     async def __aexit__(self, exc_type, exc, tb):
         if exc:

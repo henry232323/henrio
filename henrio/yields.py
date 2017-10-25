@@ -38,8 +38,7 @@ def remove_reader(fileobj):
 
 @coroutine
 def spawn(awaitable):
-    task = yield ("create_task", awaitable)
-    return task
+    return (yield ("create_task", awaitable))
 
 
 @coroutine

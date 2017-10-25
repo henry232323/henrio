@@ -5,10 +5,9 @@ from concurrent.futures import CancelledError
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
-from functools import partial
 
-from .futures import Task, Future
 from .bases import AbstractLoop
+from .futures import Task, Future
 from .workers import worker
 from .yields import sleep
 
@@ -112,6 +111,9 @@ class BaseLoop(AbstractLoop):
                         if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
                             self._tasks.append(task._data)
                         self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task
+            else:
+                if task.cancelled:
+                    task.close()
 
     def _poll(self):
         """Poll IO once, base loop doesn't handle IO, thus nothing happens"""

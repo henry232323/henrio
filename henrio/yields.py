@@ -2,8 +2,8 @@ import typing
 from types import coroutine
 
 __all__ = ["sleep", "get_loop", "unwrap_file", "create_reader", "create_writer", "remove_reader",
-           "remove_writer", "spawn", "wrap_file", "wrap_socket", "socket_connect", "socket_bind", "current_task",
-           "unwrap_socket", "postpone", "spawn_after"]
+           "remove_writer", "spawn", "wrap_file", "wrap_socket", "current_task",
+           "unwrap_socket", "postpone", "spawn_after", "gethostbyname"]
 
 
 @coroutine
@@ -63,16 +63,6 @@ def unwrap_file(file):
 
 
 unwrap_socket = unwrap_file
-
-
-@coroutine
-def socket_connect(socket, hostpair):
-    return (yield ("socket_connect", socket, hostpair))
-
-
-@coroutine
-def socket_bind(socket, hostpair):
-    return (yield ("socket_bind", socket, hostpair))
 
 
 @coroutine

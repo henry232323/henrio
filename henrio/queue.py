@@ -1,4 +1,5 @@
 from collections import deque
+from heapq import heappush, heappop
 
 from . import Future
 
@@ -17,7 +18,7 @@ class Queue:
         return len(self._queue)
 
     def __repr__(self):
-        return "{3}({0}, lifo={1}, size={2})".format(self._queue.__repr__()[6:-1],
+        return "{3}({0}, lifo={1}, size={2})".format(repr(self._queue)[6:-1],
                                                      self._lifo, self.size,
                                                      self.__class__.__name__)
 
@@ -32,7 +33,7 @@ class Queue:
             result = self._pop()
             if self._putters:
                 future, item = self._putters.popleft()
-                self._queue.append(item)
+                self._append(item)
                 future.set_result(None)
             return result
 
@@ -45,7 +46,7 @@ class Queue:
             if self._getters:
                 self._getters.popleft().set_result(item)
                 return
-            self._queue.append(item)
+            self._append(item)
             return
 
         future = Future()
@@ -57,6 +58,9 @@ class Queue:
             return self._queue.pop()
         return self._queue.popleft()
 
+    def _append(self, item):
+        self._queue.append(item)
+
     def setlifo(self, bool: bool):
         self._lifo = bool
 
@@ -65,3 +69,24 @@ class Queue:
 
     async def __aiter__(self):
         return self
+
+
+class HeapQueue(Queue):
+    def __init__(self, size=0):
+        self.size = size
+        self._getters = deque()
+        self._putters = deque()
+        self._queue = list()
+
+    def __repr__(self):
+        return "{2}({0}, size={1})".format(repr(self._queue), self.size, self.__class__.__name__)
+
+    def _pop(self):
+        return heappop(self._queue)
+
+    def _append(self, item):
+        return heappush(self._queue, item)
+
+    @property
+    def setlifo(self):
+        raise AttributeError("'HeapQueue' object has no attribute 'setlifo'")

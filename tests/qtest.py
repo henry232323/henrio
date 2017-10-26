@@ -2,7 +2,7 @@ try:
     from henrio import *
 
     l = get_default_loop()
-    q = Queue(50, lifo=True)
+    q = HeapQueue(50)
     #q._queue.append(50)
 
     print(q)

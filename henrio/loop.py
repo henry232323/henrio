@@ -5,6 +5,7 @@ from concurrent.futures import CancelledError
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
+import socket
 
 from .bases import AbstractLoop
 from .futures import Task, Future
@@ -144,19 +145,3 @@ class BaseLoop(AbstractLoop):
     def close(self):
         """Close the running event loop"""
         self.running = False
-
-    async def socket_connect(self, socket, hostpair):
-        # socket.setblocking(False)
-        # val = socket.connect_ex(hostpair)
-        socket.setblocking(True)
-        await worker(socket.connect, hostpair)
-
-    async def socket_bind(self, socket, hostpair):
-        socket.setblocking(False)
-        try:
-            resp = socket.bind(hostpair)
-            socket.setblocking(True)
-            return resp
-        except BlockingIOError:
-            socket.setblocking(True)
-            return await worker(socket.bind, hostpair)

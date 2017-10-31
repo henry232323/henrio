@@ -3,7 +3,7 @@ from heapq import heappush, heappop
 
 from . import Future
 
-__all__ = ["Queue"]
+__all__ = ["Queue", "HeapQueue"]
 
 
 class Queue:
@@ -89,4 +89,4 @@ class HeapQueue(Queue):
 
     @property
     def setlifo(self):
-        raise AttributeError("'HeapQueue' object has no attribute 'setlifo'")
+        raise AttributeError("HeapQueue doesn't implement LIFO!")

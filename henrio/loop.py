@@ -5,11 +5,9 @@ from concurrent.futures import CancelledError
 from heapq import heappop, heappush
 from inspect import iscoroutine, isawaitable
 from traceback import print_exc
-import socket
 
 from .bases import AbstractLoop
 from .futures import Task, Future
-from .workers import worker
 from .yields import sleep
 
 __all__ = ["BaseLoop"]

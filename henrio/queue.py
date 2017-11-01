@@ -2,8 +2,13 @@ from collections import deque
 from heapq import heappush, heappop
 
 from . import Future
+from types import coroutine
 
 __all__ = ["Queue", "HeapQueue"]
+
+
+class QueueWouldBlock(Exception):
+    pass
 
 
 class Queue:
@@ -33,6 +38,8 @@ class Queue:
             result = self._pop()
             if self._putters:
                 future, item = self._putters.popleft()
+                while future.cancelled:
+                    future, item = self._putters.popleft()
                 self._append(item)
                 future.set_result(None)
             return result
@@ -44,7 +51,10 @@ class Queue:
     async def put(self, item):
         if not self.full():
             if self._getters:
-                self._getters.popleft().set_result(item)
+                getter = self._getters.popleft()
+                while getter.cancelled:
+                    getter = self._getters.popleft()
+                getter.set_result(item)
                 return
             self._append(item)
             return
@@ -52,6 +62,16 @@ class Queue:
         future = Future()
         self._putters.append((future, item))
         return await future
+
+    def get_nowait(self):
+        if self.empty():
+            raise QueueWouldBlock("Queue is empty!")
+        return self._pop()
+
+    def put_nowait(self, item):
+        if self.full():
+            raise QueueWouldBlock("Queue is full!")
+        return self._append(item)
 
     def _pop(self):
         if self._lifo:
@@ -69,6 +89,11 @@ class Queue:
 
     async def __aiter__(self):
         return self
+
+    @coroutine
+    def join(self):
+        while self._queue:
+            yield
 
 
 class HeapQueue(Queue):

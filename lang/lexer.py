@@ -1,13 +1,15 @@
-from ply import lex, yacc
 import ast
+from traceback import print_exc
+
+from ply import lex, yacc
 
 tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'PLUS', 'MINUS', 'TIMES', 'DIVIDE',
           'LPAREN', 'RPAREN', 'INVERT', 'DOT',
           'FXN', 'RBRACE', 'LBRACE', 'LBRACKET',
-          'RBRACKET', 'COMMA', 'INDENT')
+          'RBRACKET', 'COMMA', 'INDENT', 'COLON',
+          'WS')
 
-t_VAR = r'[a-zA-Z_][a-zA-Z0-9_]*'
 t_EQUALS = r'='
 t_PLUS = r'\+'
 t_MINUS = r'-'
@@ -24,8 +26,22 @@ t_DOT = r'.'
 t_FXN = r'func'
 t_COMMA = r'\,'
 t_INDENT = r'\s\s\s\s'
+t_COLON = r'\:'
 
 t_ignore = " \t"
+
+reserved = {
+    "func": "FXN",
+    "if": "IF",
+    "else": "ELSE",
+    "elif": "ELIF"
+}
+
+
+def t_VAR(t):
+    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    t.type = reserved.get(t.value, "VAR")
+    return t
 
 
 def t_FLOAT(t):
@@ -56,7 +72,7 @@ precedence = (
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
     ('right', 'UMINUS', 'INVERT'),
-    ('right' 'FXN', 'fargs')
+    # ('right' 'fargs', 'tuple')
 )
 
 
@@ -67,9 +83,8 @@ def p_statement_assign(p):
 
 def p_expression_csa(p):
     '''csa : VAR
+           | csa COMMA VAR
     '''
-    print("mathcedh)")
-    print(list(p))
     if len(p) == 2:
         p[0] = [p[1]]
     else:
@@ -81,21 +96,19 @@ def p_statement_func_args(p):
                     | LPAREN csa COMMA RPAREN
                     | LPAREN RPAREN
                     '''
-    print("matched?")
     if len(p) == 3:
         p[0] = ()
     else:
         p[0] = tuple(p[2])
 
 
-'''
 def p_expression_name(p):
     'expression : VAR'
     try:
         p[0] = names[p[1]]
     except LookupError:
         raise NameError(f"name '{p[1]}' is not defined!") from None
-'''
+
 
 def p_exp_fargs(p):
     'expression : FXN fargs'
@@ -107,10 +120,13 @@ def p_statement_expr(p):
     print(p[1])
 
 
+def p_body_stmts(p):
+    'body : LBRACE RBRACE'
+
+
 def p_statement_func(p):
-    'statement : FXN VAR fargs'
-    print(list(p))
-    p[0] = ast.AsyncFunctionDef(p[2], tuple(p[3]), p[5], (), None)
+    'statement : FXN VAR fargs body'
+    names[p[2]] = ast.AsyncFunctionDef(p[2], tuple(p[3]), p[4], (), None)
 
 
 def p_getattr_expr(p):
@@ -119,8 +135,8 @@ def p_getattr_expr(p):
 
 
 def p_call_expr(p):
-    'expression : expression LPAREN expression RPAREN'
-    p[0] = p[1](p[3])
+    'expression : expression tuple'
+    p[0] = p[1](p[2])
 
 
 def p_expression_csv(p):
@@ -132,9 +148,9 @@ def p_expression_csv(p):
     else:
         p[0] = p[1] + [p[3]]
 
-"""
-def p_expression_tuple(p):
-    '''expression : LPAREN csv RPAREN
+
+def p_tuple(p):
+    '''tuple : LPAREN csv RPAREN
                     | LPAREN csv COMMA RPAREN
                     | LPAREN RPAREN
     '''
@@ -142,7 +158,12 @@ def p_expression_tuple(p):
         p[0] = ()
     else:
         p[0] = tuple(p[2])
-"""
+
+
+def p_expression_tuple(p):
+    '''expression : tuple'''
+    p[0] = p[1]
+
 
 def p_expression_set(p):
     '''expression : LBRACE csv RBRACE

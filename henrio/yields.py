@@ -1,5 +1,6 @@
 import typing
 from types import coroutine
+from math import inf
 
 __all__ = ["sleep", "get_loop", "unwrap_file", "create_reader", "create_writer", "remove_reader",
            "remove_writer", "spawn", "wrap_file", "wrap_socket", "current_task",
@@ -10,8 +11,19 @@ __all__ = ["sleep", "get_loop", "unwrap_file", "create_reader", "create_writer",
 def sleep(seconds: typing.Union[float, int]):
     if seconds == 0:
         yield
+    elif seconds == inf:
+        yield from postpone()
     else:
         yield ("sleep", seconds)
+
+
+@coroutine
+def sleepinf():
+    try:
+        while True:
+            yield
+    except:
+        return
 
 
 @coroutine

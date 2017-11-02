@@ -78,15 +78,17 @@ class Future:
 class Task(Future):
     def __init__(self, task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any):
         super().__init__()
-        self._task = task
+        if hasattr(task, "__await__"):
+            self._task = task.__await__()
+        else:
+            self._task = task
         self._data = data
-        self.__name__ = self._task.__name__ if hasattr(self._task, "__name__") else self._task.__class__.__name__
 
     def __repr__(self):
         fmt = "{0} {1} {2} {3}".format(self._result if self._data is not self else "self",
                                        self._error,
                                        self._data if self._data is not self else "self",
-                                       self.__name__)
+                                       self._task.__class__.__name__)
         if self.cancelled:
             return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
         else:

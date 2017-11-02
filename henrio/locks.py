@@ -4,7 +4,7 @@ from weakref import ref
 from .futures import Future
 from .yields import current_task
 
-__all__ = ["Lock", "ResourceLock"]
+__all__ = ["Lock", "ResourceLock", "Semaphore"]
 
 
 class Lock:
@@ -29,6 +29,17 @@ class Lock:
     def locked(self):
         return self._held
 
+    async def acquire(self):
+        if not self._held:
+            self._held = True
+            ct = await current_task()
+            self.holder = ct
+        else:
+            fut = Future()
+            self._queue.append(fut)
+            await fut
+            self.holder = await current_task()
+
     async def release(self):
         ct = await current_task()
         if self.holder == ct:
@@ -40,17 +51,6 @@ class Lock:
                 self.holder = None
         else:
             raise RuntimeError("You don't currently hold this lock!")
-
-    async def acquire(self):
-        if not self._held:
-            self._held = True
-            ct = await current_task()
-            self.holder = ct
-        else:
-            fut = Future()
-            self._queue.append(fut)
-            await fut
-            self.holder = await current_task()
 
     async def __aenter__(self):
         await self.acquire()
@@ -70,3 +70,34 @@ class ResourceLock(Lock):
     async def __aenter__(self):
         await self.acquire()
         return self._value
+
+
+class Semaphore(Lock):
+    def __init__(self, maxholders=1):
+        super().__init__()
+        self.maxholders = maxholders
+        self.holders = []
+
+    @property
+    def locked(self):
+        return len(self.holders) == self.maxholders
+
+    async def acquire(self):
+        if not self.locked:
+            ct = await current_task()
+            self.holders.append(ct)
+        else:
+            fut = Future()
+            self._queue.append(fut)
+            await fut
+            self.holders.append(await current_task())
+
+    async def release(self):
+        ct = await current_task()
+        if ct in self.holders:
+            if self._queue:
+                self._queue.popleft().set_result(None)
+            else:
+                self.holders.remove(ct)
+        else:
+            raise RuntimeError("You don't currently hold this lock!")

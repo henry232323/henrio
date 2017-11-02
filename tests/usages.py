@@ -270,4 +270,16 @@ def timeouts():
     l.run_forever()
 
 
-timeouts()
+def dawait():
+    class AClass:
+        @staticmethod
+        def __iter__():
+            for x in range(3):
+                print("pass")
+                yield ("sleep", 2)
+
+        __await__ = __iter__
+
+    run(AClass)
+
+dawait()

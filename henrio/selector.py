@@ -24,7 +24,8 @@ class SelectorLoop(BaseLoop):
             # We want our currently ready files
             if not (self._tasks or self._queue):
                 if self._timers:
-                    wait = max(0.0, self._timers[0][0] - self.time())
+                    if not self._timers[0][0].cancelled and self._timers[0][0].complete:
+                        wait = max(0.0, self._timers[0][1] - self.time())
                 else:
                     wait = None
             else:
@@ -55,7 +56,8 @@ class SelectorLoop(BaseLoop):
                     file._write_ready(False)
         else:
             if not self._tasks and self._timers:  # We can sleep as long as we want if theres nothing to do
-                time.sleep(max(0.0, self._timers[0][0] - self.time()))  # Don't loop if we don't need to
+                if not self._timers[0][0].cancelled and self._timers[0][0].complete:
+                    self.sleep(max(0.0, self._timers[0][1] - self.time()))  # Don't loop if we don't need to
 
     def register_reader(self, fileobj, callback: typing.Callable[..., typing.Any], *args):
         """Register a reader, the given callback will be called with the given args when the file is ready to read"""

@@ -245,7 +245,7 @@ def locktests():
     l = SelectorLoop()
     l.create_task(pepo())
     l.create_task(pepe())
-    f = l.run_forever()
+    l.run_forever()
 
 
 def timeouts():
@@ -255,7 +255,8 @@ def timeouts():
             print(time.time())
             async with timeout(3):
                 print("cake")
-                print((await get_loop())._timers, 'afd')
+                loop = await get_loop()
+                print(loop._timers, 'afd', loop.time())
                 await sleep(10)
                 print("nyet")
         except Exception as e:
@@ -270,6 +271,8 @@ def timeouts():
     l.run_forever()
 
 
+timeouts()
+
 def dawait():
     class AClass:
         @staticmethod
@@ -281,5 +284,3 @@ def dawait():
         __await__ = __iter__
 
     run(AClass)
-
-dawait()

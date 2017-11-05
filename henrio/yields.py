@@ -85,9 +85,7 @@ def current_task():
 @coroutine
 def postpone(func, time):
     loop = yield from get_loop()
-    print(loop.time(), 12)
     loop.create_task(loop.call_after(func, time))
-    print(loop.time(), 13)
 
 
 @coroutine

@@ -1,4 +1,9 @@
-import lexer
+try:
+    import lexer
+except ImportError:
+    from . import lexer
+from traceback import print_exc
+
 from ply import yacc
 
 lexer.prep()
@@ -6,6 +11,15 @@ lexer.prep()
 while True:
     try:
         s = input('>>> ')
-    except EOFError:
+        if s.endswith("{"):
+            while not s.endswith("}"):
+                s += "\n"
+                s += input('... ')
+
+            yacc.parse(s)
+        else:
+            yacc.parse(s)
+    except (EOFError, KeyboardInterrupt):
         break
-    yacc.parse(s)
+    except:
+        print_exc()

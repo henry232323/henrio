@@ -4,6 +4,7 @@ import re
 
 from ply import lex, yacc
 
+
 paren_count = 0
 
 ESCAPE_SEQUENCE_RE = re.compile(r'''
@@ -55,7 +56,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'LPAREN', 'RPAREN', 'INVERT', 'DOT',
           'FXN', 'RBRACE', 'LBRACE', 'LBRACKET',
           'RBRACKET', 'COMMA', 'AND', 'OR', 'IS',
-          'IF', 'ELIF', 'ELSE', 'IMPORT',
+          'IF', 'ELIF', 'ELSE', 'IMPORT', #'COLON',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS')
 
@@ -69,6 +70,7 @@ t_INVERT = r'\~'
 t_DOT = r'\.'
 t_FXN = r'func'
 t_COMMA = r'\,'
+#t_COLON = r'\:'
 
 t_ignore = " \t"
 

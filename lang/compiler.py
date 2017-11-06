@@ -1,17 +1,16 @@
 import ast
+import importlib
 import marshal
 import os
 import sys
-import imp
-import struct
 import time
 from types import ModuleType
 
-from . import lexer
+from . import prep
 
 
 def parse(text):
-    psr = lexer.prep()
+    psr = prep()
     sequence = psr.parse(text)
     mod = ast.Module(sequence)
     ast.fix_missing_locations(mod)
@@ -52,6 +51,6 @@ def compile_hio(module_path, d):
     compiled = compile(mtree, filename, "exec")
 
     with open(f"{module}.pyc", 'wb') as cf:
-        cf.write(imp.util.MAGIC_NUMBER)
+        cf.write(importlib.util.MAGIC_NUMBER)
         cf.write(hex(int(time.time()))[2:].encode())
         marshal.dump(compiled, cf)

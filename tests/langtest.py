@@ -19,7 +19,10 @@ func asd(){
     a = 3
 }
 """
-impt = "import ast"
+impt = """
+import :testfile
+print(testfile.a())
+"""
 
 evald = compiler.eval(ml)
 

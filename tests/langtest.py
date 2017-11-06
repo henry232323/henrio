@@ -5,18 +5,26 @@ asm = "a = 5"
 fun = "func as(a, b) {}"
 ml = """
 a = 5
+c = 3
 print(a)
 func a() {
-    a = 5
-    b = 6
-    print(a, b)
+    a = (1,2)
+    c = 6
+    print(a, c)
 }
 """
 mfun = """
 func asd(){
     print("ouchie!".__class__)
+    a = 3
 }
 """
 impt = "import ast"
 
-evald = compiler.parse(mfun)
+evald = compiler.eval(ml)
+
+compiler.compile_hio("testfile.hio", ml)
+
+import henrio
+import testfile
+henrio.run(testfile.a())

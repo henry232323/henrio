@@ -144,21 +144,20 @@ def t_LPAREN(t):
 
 def t_RPAREN(t):
     r'\)'
-    # check for underflow?  should be the job of the parser
     global paren_count
     paren_count -= 1
     return t
 
 
 def t_LBRACE(t):
-    r'\{'
+    r'\{\n*'
     global paren_count
     paren_count += 1
     return t
 
 
 def t_RBRACE(t):
-    r'\}'
+    r'\n*\}'
     global paren_count
     paren_count -= 1
     return t
@@ -201,8 +200,8 @@ def p_statement_import(p):
 
 def p_statement_assign(p):
     'stmt : VAR EQUALS expression'
-    name = ast.Name(id=p[0], ctx=ast.Store())
-    p[0] = Assign(name, p[1])
+    name = ast.Name(id=p[1], ctx=ast.Store())
+    p[0] = Assign(name, p[3])
 
 
 def p_expression_csa(p):
@@ -217,9 +216,9 @@ def p_expression_csa(p):
 
 def p_statement_func_args(p):
     '''fargs : LPAREN csa RPAREN
-                    | LPAREN csa COMMA RPAREN
-                    | LPAREN RPAREN
-                    '''
+             | LPAREN csa COMMA RPAREN
+             | LPAREN RPAREN
+    '''
     if len(p) == 3:
         p[0] = ()
     else:
@@ -228,10 +227,12 @@ def p_statement_func_args(p):
 
 def p_stmts(p):
     '''stmts : stmt
-             | stmt NEWLINE
-             | stmts NEWLINE stmt'''
-    if len(p) in (2, 3):
+             | stmts NEWLINE stmt
+             | stmts NEWLINE'''
+    if len(p) == 2:
         p[0] = [p[1]]
+    elif len(p) == 3:
+        p[0] = p[1]
     else:
         p[1].append(p[3])
         p[0] = p[1]
@@ -259,11 +260,7 @@ def p_if_stmt(p):
 
 
 def p_body_stmts(p):
-    '''body : LBRACE stmts RBRACE
-            | LBRACE stmts NEWLINE RBRACE
-            | LBRACE NEWLINE stmts RBRACE
-            | LBRACE NEWLINE RBRACE
-            | LBRACE RBRACE'''
+    '''body : LBRACE stmts RBRACE'''
     if len(p) in (4, 5):
         if type(p[2]) is str:
             if len(p) == 5:
@@ -274,6 +271,11 @@ def p_body_stmts(p):
             p[0] = p[2]
     else:
         p[0] = []
+
+
+def p_body_empty(p):
+    '''body : LBRACE RBRACE'''
+    p[0] = []
 
 
 def p_expression_csv(p):
@@ -333,7 +335,7 @@ def p_expression_var(p):
 
 def p_tuple_litr(p):
     'expression : tuple'
-    p[0] = ast.Tuple(p[1], ast.Load())
+    p[0] = ast.Tuple(list(p[1]), ast.Load())
 
 
 def p_expression_set(p):

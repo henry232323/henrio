@@ -2,6 +2,7 @@ import ast
 import importlib
 import marshal
 import os
+import struct
 import sys
 import time
 from types import ModuleType
@@ -52,5 +53,5 @@ def compile_hio(module_path, d):
 
     with open(f"{module}.pyc", 'wb') as cf:
         cf.write(importlib.util.MAGIC_NUMBER)
-        cf.write(hex(int(time.time()))[2:].encode())
+        cf.write(struct.pack('L', int(time.time())))
         marshal.dump(compiled, cf)

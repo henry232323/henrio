@@ -1,0 +1,9 @@
+
+a = 5
+c = 3
+print(a)
+func a() {
+    a = (1,2)
+    c = 6
+    print(a, c)
+}

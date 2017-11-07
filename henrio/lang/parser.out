@@ -1,0 +1,3036 @@
+Created by PLY version 3.10 (http://www.dabeaz.com/ply)
+
+Unused terminals:
+
+    AND
+    OR
+    IS
+    ELIF
+    ELSE
+    DEL
+
+Grammar
+
+Rule 0     S' -> file_input_end
+Rule 1     stmt -> IMPORT VAR
+Rule 2     stmt -> IMPORT VAR AS VAR
+Rule 3     stmt -> VAR EQUALS expression
+Rule 4     csa -> VAR
+Rule 5     csa -> csa COMMA VAR
+Rule 6     fargs -> LPAREN csa RPAREN
+Rule 7     fargs -> LPAREN csa COMMA RPAREN
+Rule 8     fargs -> LPAREN RPAREN
+Rule 9     stmts -> stmt
+Rule 10    stmts -> stmts NEWLINE stmt
+Rule 11    stmts -> stmts NEWLINE
+Rule 12    stmt -> RETURN expression
+Rule 13    stmt -> if_stmt
+Rule 14    stmt -> funcdef
+Rule 15    stmt -> expression
+Rule 16    if_stmt -> IF expression body
+Rule 17    body -> LBRACE stmts RBRACE
+Rule 18    body -> LBRACE RBRACE
+Rule 19    csv -> expression
+Rule 20    csv -> csv COMMA expression
+Rule 21    tuple -> LPAREN csv RPAREN
+Rule 22    tuple -> LPAREN csv COMMA RPAREN
+Rule 23    tuple -> LPAREN RPAREN
+Rule 24    expression -> expression tuple
+Rule 25    funcdef -> FXN VAR fargs body
+Rule 26    expression -> expression DOT VAR
+Rule 27    expression -> STRING
+Rule 28    expression -> INT
+Rule 29    expression -> FLOAT
+Rule 30    expression -> COMPLEX
+Rule 31    expression -> VAR
+Rule 32    expression -> tuple
+Rule 33    expression -> LBRACE csv RBRACE
+Rule 34    expression -> LBRACE csv COMMA RBRACE
+Rule 35    expression -> LBRACE RBRACE
+Rule 36    expression -> LBRACKET csv RBRACKET
+Rule 37    expression -> LBRACKET csv COMMA RBRACKET
+Rule 38    expression -> LBRACKET RBRACKET
+Rule 39    expression -> expression PLUS expression
+Rule 40    expression -> expression MINUS expression
+Rule 41    expression -> expression TIMES expression
+Rule 42    expression -> expression DIVIDE expression
+Rule 43    expression -> expression POWER expression
+Rule 44    expression -> MINUS expression
+Rule 45    expression -> INVERT expression
+Rule 46    expression -> LPAREN expression RPAREN
+Rule 47    expression -> TRUE
+Rule 48    expression -> FALSE
+Rule 49    file_input_end -> file_input
+Rule 50    file_input -> file_input NEWLINE
+Rule 51    file_input -> file_input stmt
+Rule 52    file_input -> NEWLINE
+Rule 53    file_input -> stmt
+
+Terminals, with rules where they appear
+
+AND                  : 
+AS                   : 2
+COMMA                : 5 7 20 22 34 37
+COMPLEX              : 30
+DEL                  : 
+DIVIDE               : 42
+DOT                  : 26
+ELIF                 : 
+ELSE                 : 
+EQUALS               : 3
+FALSE                : 48
+FLOAT                : 29
+FXN                  : 25
+IF                   : 16
+IMPORT               : 1 2
+INT                  : 28
+INVERT               : 45
+IS                   : 
+LBRACE               : 17 18 33 34 35
+LBRACKET             : 36 37 38
+LPAREN               : 6 7 8 21 22 23 46
+MINUS                : 40 44
+NEWLINE              : 10 11 50 52
+OR                   : 
+PLUS                 : 39
+POWER                : 43
+RBRACE               : 17 18 33 34 35
+RBRACKET             : 36 37 38
+RETURN               : 12
+RPAREN               : 6 7 8 21 22 23 46
+STRING               : 27
+TIMES                : 41
+TRUE                 : 47
+VAR                  : 1 2 2 3 4 5 25 26 31
+error                : 
+
+Nonterminals, with rules where they appear
+
+body                 : 16 25
+csa                  : 5 6 7
+csv                  : 20 21 22 33 34 36 37
+expression           : 3 12 15 16 19 20 24 26 39 39 40 40 41 41 42 42 43 43 44 45 46
+fargs                : 25
+file_input           : 49 50 51
+file_input_end       : 0
+funcdef              : 14
+if_stmt              : 13
+stmt                 : 9 10 51 53
+stmts                : 10 11 17
+tuple                : 24 32
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . file_input_end
+    (49) file_input_end -> . file_input
+    (50) file_input -> . file_input NEWLINE
+    (51) file_input -> . file_input stmt
+    (52) file_input -> . NEWLINE
+    (53) file_input -> . stmt
+    (1) stmt -> . IMPORT VAR
+    (2) stmt -> . IMPORT VAR AS VAR
+    (3) stmt -> . VAR EQUALS expression
+    (12) stmt -> . RETURN expression
+    (13) stmt -> . if_stmt
+    (14) stmt -> . funcdef
+    (15) stmt -> . expression
+    (16) if_stmt -> . IF expression body
+    (25) funcdef -> . FXN VAR fargs body
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    NEWLINE         shift and go to state 3
+    IMPORT          shift and go to state 5
+    VAR             shift and go to state 6
+    RETURN          shift and go to state 8
+    IF              shift and go to state 11
+    FXN             shift and go to state 12
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    file_input_end                 shift and go to state 1
+    file_input                     shift and go to state 2
+    stmt                           shift and go to state 4
+    expression                     shift and go to state 7
+    if_stmt                        shift and go to state 9
+    funcdef                        shift and go to state 10
+    tuple                          shift and go to state 13
+
+state 1
+
+    (0) S' -> file_input_end .
+
+
+
+state 2
+
+    (49) file_input_end -> file_input .
+    (50) file_input -> file_input . NEWLINE
+    (51) file_input -> file_input . stmt
+    (1) stmt -> . IMPORT VAR
+    (2) stmt -> . IMPORT VAR AS VAR
+    (3) stmt -> . VAR EQUALS expression
+    (12) stmt -> . RETURN expression
+    (13) stmt -> . if_stmt
+    (14) stmt -> . funcdef
+    (15) stmt -> . expression
+    (16) if_stmt -> . IF expression body
+    (25) funcdef -> . FXN VAR fargs body
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    $end            reduce using rule 49 (file_input_end -> file_input .)
+    NEWLINE         shift and go to state 25
+    IMPORT          shift and go to state 5
+    VAR             shift and go to state 6
+    RETURN          shift and go to state 8
+    IF              shift and go to state 11
+    FXN             shift and go to state 12
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    stmt                           shift and go to state 26
+    expression                     shift and go to state 7
+    if_stmt                        shift and go to state 9
+    funcdef                        shift and go to state 10
+    tuple                          shift and go to state 13
+
+state 3
+
+    (52) file_input -> NEWLINE .
+
+    NEWLINE         reduce using rule 52 (file_input -> NEWLINE .)
+    IMPORT          reduce using rule 52 (file_input -> NEWLINE .)
+    VAR             reduce using rule 52 (file_input -> NEWLINE .)
+    RETURN          reduce using rule 52 (file_input -> NEWLINE .)
+    IF              reduce using rule 52 (file_input -> NEWLINE .)
+    FXN             reduce using rule 52 (file_input -> NEWLINE .)
+    STRING          reduce using rule 52 (file_input -> NEWLINE .)
+    INT             reduce using rule 52 (file_input -> NEWLINE .)
+    FLOAT           reduce using rule 52 (file_input -> NEWLINE .)
+    COMPLEX         reduce using rule 52 (file_input -> NEWLINE .)
+    LBRACE          reduce using rule 52 (file_input -> NEWLINE .)
+    LBRACKET        reduce using rule 52 (file_input -> NEWLINE .)
+    MINUS           reduce using rule 52 (file_input -> NEWLINE .)
+    INVERT          reduce using rule 52 (file_input -> NEWLINE .)
+    LPAREN          reduce using rule 52 (file_input -> NEWLINE .)
+    TRUE            reduce using rule 52 (file_input -> NEWLINE .)
+    FALSE           reduce using rule 52 (file_input -> NEWLINE .)
+    $end            reduce using rule 52 (file_input -> NEWLINE .)
+
+
+state 4
+
+    (53) file_input -> stmt .
+
+    NEWLINE         reduce using rule 53 (file_input -> stmt .)
+    IMPORT          reduce using rule 53 (file_input -> stmt .)
+    VAR             reduce using rule 53 (file_input -> stmt .)
+    RETURN          reduce using rule 53 (file_input -> stmt .)
+    IF              reduce using rule 53 (file_input -> stmt .)
+    FXN             reduce using rule 53 (file_input -> stmt .)
+    STRING          reduce using rule 53 (file_input -> stmt .)
+    INT             reduce using rule 53 (file_input -> stmt .)
+    FLOAT           reduce using rule 53 (file_input -> stmt .)
+    COMPLEX         reduce using rule 53 (file_input -> stmt .)
+    LBRACE          reduce using rule 53 (file_input -> stmt .)
+    LBRACKET        reduce using rule 53 (file_input -> stmt .)
+    MINUS           reduce using rule 53 (file_input -> stmt .)
+    INVERT          reduce using rule 53 (file_input -> stmt .)
+    LPAREN          reduce using rule 53 (file_input -> stmt .)
+    TRUE            reduce using rule 53 (file_input -> stmt .)
+    FALSE           reduce using rule 53 (file_input -> stmt .)
+    $end            reduce using rule 53 (file_input -> stmt .)
+
+
+state 5
+
+    (1) stmt -> IMPORT . VAR
+    (2) stmt -> IMPORT . VAR AS VAR
+
+    VAR             shift and go to state 27
+
+
+state 6
+
+    (3) stmt -> VAR . EQUALS expression
+    (31) expression -> VAR .
+
+    EQUALS          shift and go to state 28
+    DOT             reduce using rule 31 (expression -> VAR .)
+    PLUS            reduce using rule 31 (expression -> VAR .)
+    MINUS           reduce using rule 31 (expression -> VAR .)
+    TIMES           reduce using rule 31 (expression -> VAR .)
+    DIVIDE          reduce using rule 31 (expression -> VAR .)
+    POWER           reduce using rule 31 (expression -> VAR .)
+    LPAREN          reduce using rule 31 (expression -> VAR .)
+    NEWLINE         reduce using rule 31 (expression -> VAR .)
+    IMPORT          reduce using rule 31 (expression -> VAR .)
+    VAR             reduce using rule 31 (expression -> VAR .)
+    RETURN          reduce using rule 31 (expression -> VAR .)
+    IF              reduce using rule 31 (expression -> VAR .)
+    FXN             reduce using rule 31 (expression -> VAR .)
+    STRING          reduce using rule 31 (expression -> VAR .)
+    INT             reduce using rule 31 (expression -> VAR .)
+    FLOAT           reduce using rule 31 (expression -> VAR .)
+    COMPLEX         reduce using rule 31 (expression -> VAR .)
+    LBRACE          reduce using rule 31 (expression -> VAR .)
+    LBRACKET        reduce using rule 31 (expression -> VAR .)
+    INVERT          reduce using rule 31 (expression -> VAR .)
+    TRUE            reduce using rule 31 (expression -> VAR .)
+    FALSE           reduce using rule 31 (expression -> VAR .)
+    $end            reduce using rule 31 (expression -> VAR .)
+    RBRACE          reduce using rule 31 (expression -> VAR .)
+
+
+state 7
+
+    (15) stmt -> expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+    NEWLINE         reduce using rule 15 (stmt -> expression .)
+    IMPORT          reduce using rule 15 (stmt -> expression .)
+    VAR             reduce using rule 15 (stmt -> expression .)
+    RETURN          reduce using rule 15 (stmt -> expression .)
+    IF              reduce using rule 15 (stmt -> expression .)
+    FXN             reduce using rule 15 (stmt -> expression .)
+    STRING          reduce using rule 15 (stmt -> expression .)
+    INT             reduce using rule 15 (stmt -> expression .)
+    FLOAT           reduce using rule 15 (stmt -> expression .)
+    COMPLEX         reduce using rule 15 (stmt -> expression .)
+    LBRACE          reduce using rule 15 (stmt -> expression .)
+    LBRACKET        reduce using rule 15 (stmt -> expression .)
+    INVERT          reduce using rule 15 (stmt -> expression .)
+    TRUE            reduce using rule 15 (stmt -> expression .)
+    FALSE           reduce using rule 15 (stmt -> expression .)
+    $end            reduce using rule 15 (stmt -> expression .)
+    RBRACE          reduce using rule 15 (stmt -> expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+  ! MINUS           [ reduce using rule 15 (stmt -> expression .) ]
+  ! LPAREN          [ reduce using rule 15 (stmt -> expression .) ]
+
+    tuple                          shift and go to state 29
+
+state 8
+
+    (12) stmt -> RETURN . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 37
+    tuple                          shift and go to state 13
+
+state 9
+
+    (13) stmt -> if_stmt .
+
+    NEWLINE         reduce using rule 13 (stmt -> if_stmt .)
+    IMPORT          reduce using rule 13 (stmt -> if_stmt .)
+    VAR             reduce using rule 13 (stmt -> if_stmt .)
+    RETURN          reduce using rule 13 (stmt -> if_stmt .)
+    IF              reduce using rule 13 (stmt -> if_stmt .)
+    FXN             reduce using rule 13 (stmt -> if_stmt .)
+    STRING          reduce using rule 13 (stmt -> if_stmt .)
+    INT             reduce using rule 13 (stmt -> if_stmt .)
+    FLOAT           reduce using rule 13 (stmt -> if_stmt .)
+    COMPLEX         reduce using rule 13 (stmt -> if_stmt .)
+    LBRACE          reduce using rule 13 (stmt -> if_stmt .)
+    LBRACKET        reduce using rule 13 (stmt -> if_stmt .)
+    MINUS           reduce using rule 13 (stmt -> if_stmt .)
+    INVERT          reduce using rule 13 (stmt -> if_stmt .)
+    LPAREN          reduce using rule 13 (stmt -> if_stmt .)
+    TRUE            reduce using rule 13 (stmt -> if_stmt .)
+    FALSE           reduce using rule 13 (stmt -> if_stmt .)
+    $end            reduce using rule 13 (stmt -> if_stmt .)
+    RBRACE          reduce using rule 13 (stmt -> if_stmt .)
+
+
+state 10
+
+    (14) stmt -> funcdef .
+
+    NEWLINE         reduce using rule 14 (stmt -> funcdef .)
+    IMPORT          reduce using rule 14 (stmt -> funcdef .)
+    VAR             reduce using rule 14 (stmt -> funcdef .)
+    RETURN          reduce using rule 14 (stmt -> funcdef .)
+    IF              reduce using rule 14 (stmt -> funcdef .)
+    FXN             reduce using rule 14 (stmt -> funcdef .)
+    STRING          reduce using rule 14 (stmt -> funcdef .)
+    INT             reduce using rule 14 (stmt -> funcdef .)
+    FLOAT           reduce using rule 14 (stmt -> funcdef .)
+    COMPLEX         reduce using rule 14 (stmt -> funcdef .)
+    LBRACE          reduce using rule 14 (stmt -> funcdef .)
+    LBRACKET        reduce using rule 14 (stmt -> funcdef .)
+    MINUS           reduce using rule 14 (stmt -> funcdef .)
+    INVERT          reduce using rule 14 (stmt -> funcdef .)
+    LPAREN          reduce using rule 14 (stmt -> funcdef .)
+    TRUE            reduce using rule 14 (stmt -> funcdef .)
+    FALSE           reduce using rule 14 (stmt -> funcdef .)
+    $end            reduce using rule 14 (stmt -> funcdef .)
+    RBRACE          reduce using rule 14 (stmt -> funcdef .)
+
+
+state 11
+
+    (16) if_stmt -> IF . expression body
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 39
+    tuple                          shift and go to state 13
+
+state 12
+
+    (25) funcdef -> FXN . VAR fargs body
+
+    VAR             shift and go to state 40
+
+
+state 13
+
+    (32) expression -> tuple .
+
+    DOT             reduce using rule 32 (expression -> tuple .)
+    PLUS            reduce using rule 32 (expression -> tuple .)
+    MINUS           reduce using rule 32 (expression -> tuple .)
+    TIMES           reduce using rule 32 (expression -> tuple .)
+    DIVIDE          reduce using rule 32 (expression -> tuple .)
+    POWER           reduce using rule 32 (expression -> tuple .)
+    LPAREN          reduce using rule 32 (expression -> tuple .)
+    NEWLINE         reduce using rule 32 (expression -> tuple .)
+    IMPORT          reduce using rule 32 (expression -> tuple .)
+    VAR             reduce using rule 32 (expression -> tuple .)
+    RETURN          reduce using rule 32 (expression -> tuple .)
+    IF              reduce using rule 32 (expression -> tuple .)
+    FXN             reduce using rule 32 (expression -> tuple .)
+    STRING          reduce using rule 32 (expression -> tuple .)
+    INT             reduce using rule 32 (expression -> tuple .)
+    FLOAT           reduce using rule 32 (expression -> tuple .)
+    COMPLEX         reduce using rule 32 (expression -> tuple .)
+    LBRACE          reduce using rule 32 (expression -> tuple .)
+    LBRACKET        reduce using rule 32 (expression -> tuple .)
+    INVERT          reduce using rule 32 (expression -> tuple .)
+    TRUE            reduce using rule 32 (expression -> tuple .)
+    FALSE           reduce using rule 32 (expression -> tuple .)
+    $end            reduce using rule 32 (expression -> tuple .)
+    RBRACE          reduce using rule 32 (expression -> tuple .)
+    COMMA           reduce using rule 32 (expression -> tuple .)
+    RBRACKET        reduce using rule 32 (expression -> tuple .)
+    RPAREN          reduce using rule 32 (expression -> tuple .)
+
+
+state 14
+
+    (27) expression -> STRING .
+
+    DOT             reduce using rule 27 (expression -> STRING .)
+    PLUS            reduce using rule 27 (expression -> STRING .)
+    MINUS           reduce using rule 27 (expression -> STRING .)
+    TIMES           reduce using rule 27 (expression -> STRING .)
+    DIVIDE          reduce using rule 27 (expression -> STRING .)
+    POWER           reduce using rule 27 (expression -> STRING .)
+    LPAREN          reduce using rule 27 (expression -> STRING .)
+    NEWLINE         reduce using rule 27 (expression -> STRING .)
+    IMPORT          reduce using rule 27 (expression -> STRING .)
+    VAR             reduce using rule 27 (expression -> STRING .)
+    RETURN          reduce using rule 27 (expression -> STRING .)
+    IF              reduce using rule 27 (expression -> STRING .)
+    FXN             reduce using rule 27 (expression -> STRING .)
+    STRING          reduce using rule 27 (expression -> STRING .)
+    INT             reduce using rule 27 (expression -> STRING .)
+    FLOAT           reduce using rule 27 (expression -> STRING .)
+    COMPLEX         reduce using rule 27 (expression -> STRING .)
+    LBRACE          reduce using rule 27 (expression -> STRING .)
+    LBRACKET        reduce using rule 27 (expression -> STRING .)
+    INVERT          reduce using rule 27 (expression -> STRING .)
+    TRUE            reduce using rule 27 (expression -> STRING .)
+    FALSE           reduce using rule 27 (expression -> STRING .)
+    $end            reduce using rule 27 (expression -> STRING .)
+    RBRACE          reduce using rule 27 (expression -> STRING .)
+    COMMA           reduce using rule 27 (expression -> STRING .)
+    RBRACKET        reduce using rule 27 (expression -> STRING .)
+    RPAREN          reduce using rule 27 (expression -> STRING .)
+
+
+state 15
+
+    (28) expression -> INT .
+
+    DOT             reduce using rule 28 (expression -> INT .)
+    PLUS            reduce using rule 28 (expression -> INT .)
+    MINUS           reduce using rule 28 (expression -> INT .)
+    TIMES           reduce using rule 28 (expression -> INT .)
+    DIVIDE          reduce using rule 28 (expression -> INT .)
+    POWER           reduce using rule 28 (expression -> INT .)
+    LPAREN          reduce using rule 28 (expression -> INT .)
+    NEWLINE         reduce using rule 28 (expression -> INT .)
+    IMPORT          reduce using rule 28 (expression -> INT .)
+    VAR             reduce using rule 28 (expression -> INT .)
+    RETURN          reduce using rule 28 (expression -> INT .)
+    IF              reduce using rule 28 (expression -> INT .)
+    FXN             reduce using rule 28 (expression -> INT .)
+    STRING          reduce using rule 28 (expression -> INT .)
+    INT             reduce using rule 28 (expression -> INT .)
+    FLOAT           reduce using rule 28 (expression -> INT .)
+    COMPLEX         reduce using rule 28 (expression -> INT .)
+    LBRACE          reduce using rule 28 (expression -> INT .)
+    LBRACKET        reduce using rule 28 (expression -> INT .)
+    INVERT          reduce using rule 28 (expression -> INT .)
+    TRUE            reduce using rule 28 (expression -> INT .)
+    FALSE           reduce using rule 28 (expression -> INT .)
+    $end            reduce using rule 28 (expression -> INT .)
+    RBRACE          reduce using rule 28 (expression -> INT .)
+    COMMA           reduce using rule 28 (expression -> INT .)
+    RBRACKET        reduce using rule 28 (expression -> INT .)
+    RPAREN          reduce using rule 28 (expression -> INT .)
+
+
+state 16
+
+    (29) expression -> FLOAT .
+
+    DOT             reduce using rule 29 (expression -> FLOAT .)
+    PLUS            reduce using rule 29 (expression -> FLOAT .)
+    MINUS           reduce using rule 29 (expression -> FLOAT .)
+    TIMES           reduce using rule 29 (expression -> FLOAT .)
+    DIVIDE          reduce using rule 29 (expression -> FLOAT .)
+    POWER           reduce using rule 29 (expression -> FLOAT .)
+    LPAREN          reduce using rule 29 (expression -> FLOAT .)
+    NEWLINE         reduce using rule 29 (expression -> FLOAT .)
+    IMPORT          reduce using rule 29 (expression -> FLOAT .)
+    VAR             reduce using rule 29 (expression -> FLOAT .)
+    RETURN          reduce using rule 29 (expression -> FLOAT .)
+    IF              reduce using rule 29 (expression -> FLOAT .)
+    FXN             reduce using rule 29 (expression -> FLOAT .)
+    STRING          reduce using rule 29 (expression -> FLOAT .)
+    INT             reduce using rule 29 (expression -> FLOAT .)
+    FLOAT           reduce using rule 29 (expression -> FLOAT .)
+    COMPLEX         reduce using rule 29 (expression -> FLOAT .)
+    LBRACE          reduce using rule 29 (expression -> FLOAT .)
+    LBRACKET        reduce using rule 29 (expression -> FLOAT .)
+    INVERT          reduce using rule 29 (expression -> FLOAT .)
+    TRUE            reduce using rule 29 (expression -> FLOAT .)
+    FALSE           reduce using rule 29 (expression -> FLOAT .)
+    $end            reduce using rule 29 (expression -> FLOAT .)
+    RBRACE          reduce using rule 29 (expression -> FLOAT .)
+    COMMA           reduce using rule 29 (expression -> FLOAT .)
+    RBRACKET        reduce using rule 29 (expression -> FLOAT .)
+    RPAREN          reduce using rule 29 (expression -> FLOAT .)
+
+
+state 17
+
+    (30) expression -> COMPLEX .
+
+    DOT             reduce using rule 30 (expression -> COMPLEX .)
+    PLUS            reduce using rule 30 (expression -> COMPLEX .)
+    MINUS           reduce using rule 30 (expression -> COMPLEX .)
+    TIMES           reduce using rule 30 (expression -> COMPLEX .)
+    DIVIDE          reduce using rule 30 (expression -> COMPLEX .)
+    POWER           reduce using rule 30 (expression -> COMPLEX .)
+    LPAREN          reduce using rule 30 (expression -> COMPLEX .)
+    NEWLINE         reduce using rule 30 (expression -> COMPLEX .)
+    IMPORT          reduce using rule 30 (expression -> COMPLEX .)
+    VAR             reduce using rule 30 (expression -> COMPLEX .)
+    RETURN          reduce using rule 30 (expression -> COMPLEX .)
+    IF              reduce using rule 30 (expression -> COMPLEX .)
+    FXN             reduce using rule 30 (expression -> COMPLEX .)
+    STRING          reduce using rule 30 (expression -> COMPLEX .)
+    INT             reduce using rule 30 (expression -> COMPLEX .)
+    FLOAT           reduce using rule 30 (expression -> COMPLEX .)
+    COMPLEX         reduce using rule 30 (expression -> COMPLEX .)
+    LBRACE          reduce using rule 30 (expression -> COMPLEX .)
+    LBRACKET        reduce using rule 30 (expression -> COMPLEX .)
+    INVERT          reduce using rule 30 (expression -> COMPLEX .)
+    TRUE            reduce using rule 30 (expression -> COMPLEX .)
+    FALSE           reduce using rule 30 (expression -> COMPLEX .)
+    $end            reduce using rule 30 (expression -> COMPLEX .)
+    RBRACE          reduce using rule 30 (expression -> COMPLEX .)
+    COMMA           reduce using rule 30 (expression -> COMPLEX .)
+    RBRACKET        reduce using rule 30 (expression -> COMPLEX .)
+    RPAREN          reduce using rule 30 (expression -> COMPLEX .)
+
+
+state 18
+
+    (33) expression -> LBRACE . csv RBRACE
+    (34) expression -> LBRACE . csv COMMA RBRACE
+    (35) expression -> LBRACE . RBRACE
+    (19) csv -> . expression
+    (20) csv -> . csv COMMA expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          shift and go to state 42
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    csv                            shift and go to state 41
+    expression                     shift and go to state 43
+    tuple                          shift and go to state 13
+
+state 19
+
+    (36) expression -> LBRACKET . csv RBRACKET
+    (37) expression -> LBRACKET . csv COMMA RBRACKET
+    (38) expression -> LBRACKET . RBRACKET
+    (19) csv -> . expression
+    (20) csv -> . csv COMMA expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACKET        shift and go to state 45
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    csv                            shift and go to state 44
+    expression                     shift and go to state 43
+    tuple                          shift and go to state 13
+
+state 20
+
+    (44) expression -> MINUS . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 46
+    tuple                          shift and go to state 13
+
+state 21
+
+    (45) expression -> INVERT . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 47
+    tuple                          shift and go to state 13
+
+state 22
+
+    (46) expression -> LPAREN . expression RPAREN
+    (21) tuple -> LPAREN . csv RPAREN
+    (22) tuple -> LPAREN . csv COMMA RPAREN
+    (23) tuple -> LPAREN . RPAREN
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (19) csv -> . expression
+    (20) csv -> . csv COMMA expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RPAREN          shift and go to state 49
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 48
+    csv                            shift and go to state 50
+    tuple                          shift and go to state 13
+
+state 23
+
+    (47) expression -> TRUE .
+
+    DOT             reduce using rule 47 (expression -> TRUE .)
+    PLUS            reduce using rule 47 (expression -> TRUE .)
+    MINUS           reduce using rule 47 (expression -> TRUE .)
+    TIMES           reduce using rule 47 (expression -> TRUE .)
+    DIVIDE          reduce using rule 47 (expression -> TRUE .)
+    POWER           reduce using rule 47 (expression -> TRUE .)
+    LPAREN          reduce using rule 47 (expression -> TRUE .)
+    NEWLINE         reduce using rule 47 (expression -> TRUE .)
+    IMPORT          reduce using rule 47 (expression -> TRUE .)
+    VAR             reduce using rule 47 (expression -> TRUE .)
+    RETURN          reduce using rule 47 (expression -> TRUE .)
+    IF              reduce using rule 47 (expression -> TRUE .)
+    FXN             reduce using rule 47 (expression -> TRUE .)
+    STRING          reduce using rule 47 (expression -> TRUE .)
+    INT             reduce using rule 47 (expression -> TRUE .)
+    FLOAT           reduce using rule 47 (expression -> TRUE .)
+    COMPLEX         reduce using rule 47 (expression -> TRUE .)
+    LBRACE          reduce using rule 47 (expression -> TRUE .)
+    LBRACKET        reduce using rule 47 (expression -> TRUE .)
+    INVERT          reduce using rule 47 (expression -> TRUE .)
+    TRUE            reduce using rule 47 (expression -> TRUE .)
+    FALSE           reduce using rule 47 (expression -> TRUE .)
+    $end            reduce using rule 47 (expression -> TRUE .)
+    RBRACE          reduce using rule 47 (expression -> TRUE .)
+    COMMA           reduce using rule 47 (expression -> TRUE .)
+    RBRACKET        reduce using rule 47 (expression -> TRUE .)
+    RPAREN          reduce using rule 47 (expression -> TRUE .)
+
+
+state 24
+
+    (48) expression -> FALSE .
+
+    DOT             reduce using rule 48 (expression -> FALSE .)
+    PLUS            reduce using rule 48 (expression -> FALSE .)
+    MINUS           reduce using rule 48 (expression -> FALSE .)
+    TIMES           reduce using rule 48 (expression -> FALSE .)
+    DIVIDE          reduce using rule 48 (expression -> FALSE .)
+    POWER           reduce using rule 48 (expression -> FALSE .)
+    LPAREN          reduce using rule 48 (expression -> FALSE .)
+    NEWLINE         reduce using rule 48 (expression -> FALSE .)
+    IMPORT          reduce using rule 48 (expression -> FALSE .)
+    VAR             reduce using rule 48 (expression -> FALSE .)
+    RETURN          reduce using rule 48 (expression -> FALSE .)
+    IF              reduce using rule 48 (expression -> FALSE .)
+    FXN             reduce using rule 48 (expression -> FALSE .)
+    STRING          reduce using rule 48 (expression -> FALSE .)
+    INT             reduce using rule 48 (expression -> FALSE .)
+    FLOAT           reduce using rule 48 (expression -> FALSE .)
+    COMPLEX         reduce using rule 48 (expression -> FALSE .)
+    LBRACE          reduce using rule 48 (expression -> FALSE .)
+    LBRACKET        reduce using rule 48 (expression -> FALSE .)
+    INVERT          reduce using rule 48 (expression -> FALSE .)
+    TRUE            reduce using rule 48 (expression -> FALSE .)
+    FALSE           reduce using rule 48 (expression -> FALSE .)
+    $end            reduce using rule 48 (expression -> FALSE .)
+    RBRACE          reduce using rule 48 (expression -> FALSE .)
+    COMMA           reduce using rule 48 (expression -> FALSE .)
+    RBRACKET        reduce using rule 48 (expression -> FALSE .)
+    RPAREN          reduce using rule 48 (expression -> FALSE .)
+
+
+state 25
+
+    (50) file_input -> file_input NEWLINE .
+
+    NEWLINE         reduce using rule 50 (file_input -> file_input NEWLINE .)
+    IMPORT          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    VAR             reduce using rule 50 (file_input -> file_input NEWLINE .)
+    RETURN          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    IF              reduce using rule 50 (file_input -> file_input NEWLINE .)
+    FXN             reduce using rule 50 (file_input -> file_input NEWLINE .)
+    STRING          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    INT             reduce using rule 50 (file_input -> file_input NEWLINE .)
+    FLOAT           reduce using rule 50 (file_input -> file_input NEWLINE .)
+    COMPLEX         reduce using rule 50 (file_input -> file_input NEWLINE .)
+    LBRACE          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    LBRACKET        reduce using rule 50 (file_input -> file_input NEWLINE .)
+    MINUS           reduce using rule 50 (file_input -> file_input NEWLINE .)
+    INVERT          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    LPAREN          reduce using rule 50 (file_input -> file_input NEWLINE .)
+    TRUE            reduce using rule 50 (file_input -> file_input NEWLINE .)
+    FALSE           reduce using rule 50 (file_input -> file_input NEWLINE .)
+    $end            reduce using rule 50 (file_input -> file_input NEWLINE .)
+
+
+state 26
+
+    (51) file_input -> file_input stmt .
+
+    NEWLINE         reduce using rule 51 (file_input -> file_input stmt .)
+    IMPORT          reduce using rule 51 (file_input -> file_input stmt .)
+    VAR             reduce using rule 51 (file_input -> file_input stmt .)
+    RETURN          reduce using rule 51 (file_input -> file_input stmt .)
+    IF              reduce using rule 51 (file_input -> file_input stmt .)
+    FXN             reduce using rule 51 (file_input -> file_input stmt .)
+    STRING          reduce using rule 51 (file_input -> file_input stmt .)
+    INT             reduce using rule 51 (file_input -> file_input stmt .)
+    FLOAT           reduce using rule 51 (file_input -> file_input stmt .)
+    COMPLEX         reduce using rule 51 (file_input -> file_input stmt .)
+    LBRACE          reduce using rule 51 (file_input -> file_input stmt .)
+    LBRACKET        reduce using rule 51 (file_input -> file_input stmt .)
+    MINUS           reduce using rule 51 (file_input -> file_input stmt .)
+    INVERT          reduce using rule 51 (file_input -> file_input stmt .)
+    LPAREN          reduce using rule 51 (file_input -> file_input stmt .)
+    TRUE            reduce using rule 51 (file_input -> file_input stmt .)
+    FALSE           reduce using rule 51 (file_input -> file_input stmt .)
+    $end            reduce using rule 51 (file_input -> file_input stmt .)
+
+
+state 27
+
+    (1) stmt -> IMPORT VAR .
+    (2) stmt -> IMPORT VAR . AS VAR
+
+    NEWLINE         reduce using rule 1 (stmt -> IMPORT VAR .)
+    IMPORT          reduce using rule 1 (stmt -> IMPORT VAR .)
+    VAR             reduce using rule 1 (stmt -> IMPORT VAR .)
+    RETURN          reduce using rule 1 (stmt -> IMPORT VAR .)
+    IF              reduce using rule 1 (stmt -> IMPORT VAR .)
+    FXN             reduce using rule 1 (stmt -> IMPORT VAR .)
+    STRING          reduce using rule 1 (stmt -> IMPORT VAR .)
+    INT             reduce using rule 1 (stmt -> IMPORT VAR .)
+    FLOAT           reduce using rule 1 (stmt -> IMPORT VAR .)
+    COMPLEX         reduce using rule 1 (stmt -> IMPORT VAR .)
+    LBRACE          reduce using rule 1 (stmt -> IMPORT VAR .)
+    LBRACKET        reduce using rule 1 (stmt -> IMPORT VAR .)
+    MINUS           reduce using rule 1 (stmt -> IMPORT VAR .)
+    INVERT          reduce using rule 1 (stmt -> IMPORT VAR .)
+    LPAREN          reduce using rule 1 (stmt -> IMPORT VAR .)
+    TRUE            reduce using rule 1 (stmt -> IMPORT VAR .)
+    FALSE           reduce using rule 1 (stmt -> IMPORT VAR .)
+    $end            reduce using rule 1 (stmt -> IMPORT VAR .)
+    RBRACE          reduce using rule 1 (stmt -> IMPORT VAR .)
+    AS              shift and go to state 51
+
+
+state 28
+
+    (3) stmt -> VAR EQUALS . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 52
+    tuple                          shift and go to state 13
+
+state 29
+
+    (24) expression -> expression tuple .
+
+    DOT             reduce using rule 24 (expression -> expression tuple .)
+    PLUS            reduce using rule 24 (expression -> expression tuple .)
+    MINUS           reduce using rule 24 (expression -> expression tuple .)
+    TIMES           reduce using rule 24 (expression -> expression tuple .)
+    DIVIDE          reduce using rule 24 (expression -> expression tuple .)
+    POWER           reduce using rule 24 (expression -> expression tuple .)
+    LPAREN          reduce using rule 24 (expression -> expression tuple .)
+    NEWLINE         reduce using rule 24 (expression -> expression tuple .)
+    IMPORT          reduce using rule 24 (expression -> expression tuple .)
+    VAR             reduce using rule 24 (expression -> expression tuple .)
+    RETURN          reduce using rule 24 (expression -> expression tuple .)
+    IF              reduce using rule 24 (expression -> expression tuple .)
+    FXN             reduce using rule 24 (expression -> expression tuple .)
+    STRING          reduce using rule 24 (expression -> expression tuple .)
+    INT             reduce using rule 24 (expression -> expression tuple .)
+    FLOAT           reduce using rule 24 (expression -> expression tuple .)
+    COMPLEX         reduce using rule 24 (expression -> expression tuple .)
+    LBRACE          reduce using rule 24 (expression -> expression tuple .)
+    LBRACKET        reduce using rule 24 (expression -> expression tuple .)
+    INVERT          reduce using rule 24 (expression -> expression tuple .)
+    TRUE            reduce using rule 24 (expression -> expression tuple .)
+    FALSE           reduce using rule 24 (expression -> expression tuple .)
+    $end            reduce using rule 24 (expression -> expression tuple .)
+    RBRACE          reduce using rule 24 (expression -> expression tuple .)
+    COMMA           reduce using rule 24 (expression -> expression tuple .)
+    RBRACKET        reduce using rule 24 (expression -> expression tuple .)
+    RPAREN          reduce using rule 24 (expression -> expression tuple .)
+
+
+state 30
+
+    (26) expression -> expression DOT . VAR
+
+    VAR             shift and go to state 53
+
+
+state 31
+
+    (39) expression -> expression PLUS . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 54
+    tuple                          shift and go to state 13
+
+state 32
+
+    (40) expression -> expression MINUS . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 55
+    tuple                          shift and go to state 13
+
+state 33
+
+    (41) expression -> expression TIMES . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 56
+    tuple                          shift and go to state 13
+
+state 34
+
+    (42) expression -> expression DIVIDE . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 57
+    tuple                          shift and go to state 13
+
+state 35
+
+    (43) expression -> expression POWER . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 58
+    tuple                          shift and go to state 13
+
+state 36
+
+    (21) tuple -> LPAREN . csv RPAREN
+    (22) tuple -> LPAREN . csv COMMA RPAREN
+    (23) tuple -> LPAREN . RPAREN
+    (19) csv -> . expression
+    (20) csv -> . csv COMMA expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RPAREN          shift and go to state 49
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    csv                            shift and go to state 50
+    expression                     shift and go to state 43
+    tuple                          shift and go to state 13
+
+state 37
+
+    (12) stmt -> RETURN expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+    NEWLINE         reduce using rule 12 (stmt -> RETURN expression .)
+    IMPORT          reduce using rule 12 (stmt -> RETURN expression .)
+    VAR             reduce using rule 12 (stmt -> RETURN expression .)
+    RETURN          reduce using rule 12 (stmt -> RETURN expression .)
+    IF              reduce using rule 12 (stmt -> RETURN expression .)
+    FXN             reduce using rule 12 (stmt -> RETURN expression .)
+    STRING          reduce using rule 12 (stmt -> RETURN expression .)
+    INT             reduce using rule 12 (stmt -> RETURN expression .)
+    FLOAT           reduce using rule 12 (stmt -> RETURN expression .)
+    COMPLEX         reduce using rule 12 (stmt -> RETURN expression .)
+    LBRACE          reduce using rule 12 (stmt -> RETURN expression .)
+    LBRACKET        reduce using rule 12 (stmt -> RETURN expression .)
+    INVERT          reduce using rule 12 (stmt -> RETURN expression .)
+    TRUE            reduce using rule 12 (stmt -> RETURN expression .)
+    FALSE           reduce using rule 12 (stmt -> RETURN expression .)
+    $end            reduce using rule 12 (stmt -> RETURN expression .)
+    RBRACE          reduce using rule 12 (stmt -> RETURN expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+  ! MINUS           [ reduce using rule 12 (stmt -> RETURN expression .) ]
+  ! LPAREN          [ reduce using rule 12 (stmt -> RETURN expression .) ]
+
+    tuple                          shift and go to state 29
+
+state 38
+
+    (31) expression -> VAR .
+
+    DOT             reduce using rule 31 (expression -> VAR .)
+    PLUS            reduce using rule 31 (expression -> VAR .)
+    MINUS           reduce using rule 31 (expression -> VAR .)
+    TIMES           reduce using rule 31 (expression -> VAR .)
+    DIVIDE          reduce using rule 31 (expression -> VAR .)
+    POWER           reduce using rule 31 (expression -> VAR .)
+    LPAREN          reduce using rule 31 (expression -> VAR .)
+    NEWLINE         reduce using rule 31 (expression -> VAR .)
+    IMPORT          reduce using rule 31 (expression -> VAR .)
+    VAR             reduce using rule 31 (expression -> VAR .)
+    RETURN          reduce using rule 31 (expression -> VAR .)
+    IF              reduce using rule 31 (expression -> VAR .)
+    FXN             reduce using rule 31 (expression -> VAR .)
+    STRING          reduce using rule 31 (expression -> VAR .)
+    INT             reduce using rule 31 (expression -> VAR .)
+    FLOAT           reduce using rule 31 (expression -> VAR .)
+    COMPLEX         reduce using rule 31 (expression -> VAR .)
+    LBRACE          reduce using rule 31 (expression -> VAR .)
+    LBRACKET        reduce using rule 31 (expression -> VAR .)
+    INVERT          reduce using rule 31 (expression -> VAR .)
+    TRUE            reduce using rule 31 (expression -> VAR .)
+    FALSE           reduce using rule 31 (expression -> VAR .)
+    $end            reduce using rule 31 (expression -> VAR .)
+    RBRACE          reduce using rule 31 (expression -> VAR .)
+    COMMA           reduce using rule 31 (expression -> VAR .)
+    RBRACKET        reduce using rule 31 (expression -> VAR .)
+    RPAREN          reduce using rule 31 (expression -> VAR .)
+
+
+state 39
+
+    (16) if_stmt -> IF expression . body
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (17) body -> . LBRACE stmts RBRACE
+    (18) body -> . LBRACE RBRACE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LBRACE          shift and go to state 60
+    LPAREN          shift and go to state 36
+
+    body                           shift and go to state 59
+    tuple                          shift and go to state 29
+
+state 40
+
+    (25) funcdef -> FXN VAR . fargs body
+    (6) fargs -> . LPAREN csa RPAREN
+    (7) fargs -> . LPAREN csa COMMA RPAREN
+    (8) fargs -> . LPAREN RPAREN
+
+    LPAREN          shift and go to state 62
+
+    fargs                          shift and go to state 61
+
+state 41
+
+    (33) expression -> LBRACE csv . RBRACE
+    (34) expression -> LBRACE csv . COMMA RBRACE
+    (20) csv -> csv . COMMA expression
+
+    RBRACE          shift and go to state 63
+    COMMA           shift and go to state 64
+
+
+state 42
+
+    (35) expression -> LBRACE RBRACE .
+
+    DOT             reduce using rule 35 (expression -> LBRACE RBRACE .)
+    PLUS            reduce using rule 35 (expression -> LBRACE RBRACE .)
+    MINUS           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    TIMES           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    DIVIDE          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    POWER           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    LPAREN          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    NEWLINE         reduce using rule 35 (expression -> LBRACE RBRACE .)
+    IMPORT          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    VAR             reduce using rule 35 (expression -> LBRACE RBRACE .)
+    RETURN          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    IF              reduce using rule 35 (expression -> LBRACE RBRACE .)
+    FXN             reduce using rule 35 (expression -> LBRACE RBRACE .)
+    STRING          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    INT             reduce using rule 35 (expression -> LBRACE RBRACE .)
+    FLOAT           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    COMPLEX         reduce using rule 35 (expression -> LBRACE RBRACE .)
+    LBRACE          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    LBRACKET        reduce using rule 35 (expression -> LBRACE RBRACE .)
+    INVERT          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    TRUE            reduce using rule 35 (expression -> LBRACE RBRACE .)
+    FALSE           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    $end            reduce using rule 35 (expression -> LBRACE RBRACE .)
+    RBRACE          reduce using rule 35 (expression -> LBRACE RBRACE .)
+    COMMA           reduce using rule 35 (expression -> LBRACE RBRACE .)
+    RBRACKET        reduce using rule 35 (expression -> LBRACE RBRACE .)
+    RPAREN          reduce using rule 35 (expression -> LBRACE RBRACE .)
+
+
+state 43
+
+    (19) csv -> expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          reduce using rule 19 (csv -> expression .)
+    COMMA           reduce using rule 19 (csv -> expression .)
+    RBRACKET        reduce using rule 19 (csv -> expression .)
+    RPAREN          reduce using rule 19 (csv -> expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+    tuple                          shift and go to state 29
+
+state 44
+
+    (36) expression -> LBRACKET csv . RBRACKET
+    (37) expression -> LBRACKET csv . COMMA RBRACKET
+    (20) csv -> csv . COMMA expression
+
+    RBRACKET        shift and go to state 65
+    COMMA           shift and go to state 66
+
+
+state 45
+
+    (38) expression -> LBRACKET RBRACKET .
+
+    DOT             reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    PLUS            reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    MINUS           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    TIMES           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    DIVIDE          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    POWER           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    LPAREN          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    NEWLINE         reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    IMPORT          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    VAR             reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    RETURN          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    IF              reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    FXN             reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    STRING          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    INT             reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    FLOAT           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    COMPLEX         reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    LBRACE          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    LBRACKET        reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    INVERT          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    TRUE            reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    FALSE           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    $end            reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    RBRACE          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    COMMA           reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    RBRACKET        reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+    RPAREN          reduce using rule 38 (expression -> LBRACKET RBRACKET .)
+
+
+state 46
+
+    (44) expression -> MINUS expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 44 (expression -> MINUS expression .)
+    PLUS            reduce using rule 44 (expression -> MINUS expression .)
+    MINUS           reduce using rule 44 (expression -> MINUS expression .)
+    TIMES           reduce using rule 44 (expression -> MINUS expression .)
+    DIVIDE          reduce using rule 44 (expression -> MINUS expression .)
+    POWER           reduce using rule 44 (expression -> MINUS expression .)
+    LPAREN          reduce using rule 44 (expression -> MINUS expression .)
+    NEWLINE         reduce using rule 44 (expression -> MINUS expression .)
+    IMPORT          reduce using rule 44 (expression -> MINUS expression .)
+    VAR             reduce using rule 44 (expression -> MINUS expression .)
+    RETURN          reduce using rule 44 (expression -> MINUS expression .)
+    IF              reduce using rule 44 (expression -> MINUS expression .)
+    FXN             reduce using rule 44 (expression -> MINUS expression .)
+    STRING          reduce using rule 44 (expression -> MINUS expression .)
+    INT             reduce using rule 44 (expression -> MINUS expression .)
+    FLOAT           reduce using rule 44 (expression -> MINUS expression .)
+    COMPLEX         reduce using rule 44 (expression -> MINUS expression .)
+    LBRACE          reduce using rule 44 (expression -> MINUS expression .)
+    LBRACKET        reduce using rule 44 (expression -> MINUS expression .)
+    INVERT          reduce using rule 44 (expression -> MINUS expression .)
+    TRUE            reduce using rule 44 (expression -> MINUS expression .)
+    FALSE           reduce using rule 44 (expression -> MINUS expression .)
+    $end            reduce using rule 44 (expression -> MINUS expression .)
+    RBRACE          reduce using rule 44 (expression -> MINUS expression .)
+    COMMA           reduce using rule 44 (expression -> MINUS expression .)
+    RBRACKET        reduce using rule 44 (expression -> MINUS expression .)
+    RPAREN          reduce using rule 44 (expression -> MINUS expression .)
+
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! TIMES           [ shift and go to state 33 ]
+  ! DIVIDE          [ shift and go to state 34 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 47
+
+    (45) expression -> INVERT expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 45 (expression -> INVERT expression .)
+    PLUS            reduce using rule 45 (expression -> INVERT expression .)
+    MINUS           reduce using rule 45 (expression -> INVERT expression .)
+    TIMES           reduce using rule 45 (expression -> INVERT expression .)
+    DIVIDE          reduce using rule 45 (expression -> INVERT expression .)
+    POWER           reduce using rule 45 (expression -> INVERT expression .)
+    LPAREN          reduce using rule 45 (expression -> INVERT expression .)
+    NEWLINE         reduce using rule 45 (expression -> INVERT expression .)
+    IMPORT          reduce using rule 45 (expression -> INVERT expression .)
+    VAR             reduce using rule 45 (expression -> INVERT expression .)
+    RETURN          reduce using rule 45 (expression -> INVERT expression .)
+    IF              reduce using rule 45 (expression -> INVERT expression .)
+    FXN             reduce using rule 45 (expression -> INVERT expression .)
+    STRING          reduce using rule 45 (expression -> INVERT expression .)
+    INT             reduce using rule 45 (expression -> INVERT expression .)
+    FLOAT           reduce using rule 45 (expression -> INVERT expression .)
+    COMPLEX         reduce using rule 45 (expression -> INVERT expression .)
+    LBRACE          reduce using rule 45 (expression -> INVERT expression .)
+    LBRACKET        reduce using rule 45 (expression -> INVERT expression .)
+    INVERT          reduce using rule 45 (expression -> INVERT expression .)
+    TRUE            reduce using rule 45 (expression -> INVERT expression .)
+    FALSE           reduce using rule 45 (expression -> INVERT expression .)
+    $end            reduce using rule 45 (expression -> INVERT expression .)
+    RBRACE          reduce using rule 45 (expression -> INVERT expression .)
+    COMMA           reduce using rule 45 (expression -> INVERT expression .)
+    RBRACKET        reduce using rule 45 (expression -> INVERT expression .)
+    RPAREN          reduce using rule 45 (expression -> INVERT expression .)
+
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! TIMES           [ shift and go to state 33 ]
+  ! DIVIDE          [ shift and go to state 34 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 48
+
+    (46) expression -> LPAREN expression . RPAREN
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (19) csv -> expression .
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+  ! shift/reduce conflict for RPAREN resolved as shift
+    RPAREN          shift and go to state 67
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    COMMA           reduce using rule 19 (csv -> expression .)
+    LPAREN          shift and go to state 36
+
+  ! RPAREN          [ reduce using rule 19 (csv -> expression .) ]
+
+    tuple                          shift and go to state 29
+
+state 49
+
+    (23) tuple -> LPAREN RPAREN .
+
+    DOT             reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    PLUS            reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    MINUS           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    TIMES           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    DIVIDE          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    POWER           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    LPAREN          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    NEWLINE         reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    IMPORT          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    VAR             reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    RETURN          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    IF              reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    FXN             reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    STRING          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    INT             reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    FLOAT           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    COMPLEX         reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    LBRACE          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    LBRACKET        reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    INVERT          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    TRUE            reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    FALSE           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    $end            reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    RBRACE          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    COMMA           reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    RBRACKET        reduce using rule 23 (tuple -> LPAREN RPAREN .)
+    RPAREN          reduce using rule 23 (tuple -> LPAREN RPAREN .)
+
+
+state 50
+
+    (21) tuple -> LPAREN csv . RPAREN
+    (22) tuple -> LPAREN csv . COMMA RPAREN
+    (20) csv -> csv . COMMA expression
+
+    RPAREN          shift and go to state 68
+    COMMA           shift and go to state 69
+
+
+state 51
+
+    (2) stmt -> IMPORT VAR AS . VAR
+
+    VAR             shift and go to state 70
+
+
+state 52
+
+    (3) stmt -> VAR EQUALS expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+    NEWLINE         reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    IMPORT          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    VAR             reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    RETURN          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    IF              reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    FXN             reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    STRING          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    INT             reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    FLOAT           reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    COMPLEX         reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    LBRACE          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    LBRACKET        reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    INVERT          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    TRUE            reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    FALSE           reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    $end            reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    RBRACE          reduce using rule 3 (stmt -> VAR EQUALS expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+  ! MINUS           [ reduce using rule 3 (stmt -> VAR EQUALS expression .) ]
+  ! LPAREN          [ reduce using rule 3 (stmt -> VAR EQUALS expression .) ]
+
+    tuple                          shift and go to state 29
+
+state 53
+
+    (26) expression -> expression DOT VAR .
+
+    DOT             reduce using rule 26 (expression -> expression DOT VAR .)
+    PLUS            reduce using rule 26 (expression -> expression DOT VAR .)
+    MINUS           reduce using rule 26 (expression -> expression DOT VAR .)
+    TIMES           reduce using rule 26 (expression -> expression DOT VAR .)
+    DIVIDE          reduce using rule 26 (expression -> expression DOT VAR .)
+    POWER           reduce using rule 26 (expression -> expression DOT VAR .)
+    LPAREN          reduce using rule 26 (expression -> expression DOT VAR .)
+    NEWLINE         reduce using rule 26 (expression -> expression DOT VAR .)
+    IMPORT          reduce using rule 26 (expression -> expression DOT VAR .)
+    VAR             reduce using rule 26 (expression -> expression DOT VAR .)
+    RETURN          reduce using rule 26 (expression -> expression DOT VAR .)
+    IF              reduce using rule 26 (expression -> expression DOT VAR .)
+    FXN             reduce using rule 26 (expression -> expression DOT VAR .)
+    STRING          reduce using rule 26 (expression -> expression DOT VAR .)
+    INT             reduce using rule 26 (expression -> expression DOT VAR .)
+    FLOAT           reduce using rule 26 (expression -> expression DOT VAR .)
+    COMPLEX         reduce using rule 26 (expression -> expression DOT VAR .)
+    LBRACE          reduce using rule 26 (expression -> expression DOT VAR .)
+    LBRACKET        reduce using rule 26 (expression -> expression DOT VAR .)
+    INVERT          reduce using rule 26 (expression -> expression DOT VAR .)
+    TRUE            reduce using rule 26 (expression -> expression DOT VAR .)
+    FALSE           reduce using rule 26 (expression -> expression DOT VAR .)
+    $end            reduce using rule 26 (expression -> expression DOT VAR .)
+    RBRACE          reduce using rule 26 (expression -> expression DOT VAR .)
+    COMMA           reduce using rule 26 (expression -> expression DOT VAR .)
+    RBRACKET        reduce using rule 26 (expression -> expression DOT VAR .)
+    RPAREN          reduce using rule 26 (expression -> expression DOT VAR .)
+
+
+state 54
+
+    (39) expression -> expression PLUS expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 39 (expression -> expression PLUS expression .)
+    PLUS            reduce using rule 39 (expression -> expression PLUS expression .)
+    MINUS           reduce using rule 39 (expression -> expression PLUS expression .)
+    POWER           reduce using rule 39 (expression -> expression PLUS expression .)
+    LPAREN          reduce using rule 39 (expression -> expression PLUS expression .)
+    NEWLINE         reduce using rule 39 (expression -> expression PLUS expression .)
+    IMPORT          reduce using rule 39 (expression -> expression PLUS expression .)
+    VAR             reduce using rule 39 (expression -> expression PLUS expression .)
+    RETURN          reduce using rule 39 (expression -> expression PLUS expression .)
+    IF              reduce using rule 39 (expression -> expression PLUS expression .)
+    FXN             reduce using rule 39 (expression -> expression PLUS expression .)
+    STRING          reduce using rule 39 (expression -> expression PLUS expression .)
+    INT             reduce using rule 39 (expression -> expression PLUS expression .)
+    FLOAT           reduce using rule 39 (expression -> expression PLUS expression .)
+    COMPLEX         reduce using rule 39 (expression -> expression PLUS expression .)
+    LBRACE          reduce using rule 39 (expression -> expression PLUS expression .)
+    LBRACKET        reduce using rule 39 (expression -> expression PLUS expression .)
+    INVERT          reduce using rule 39 (expression -> expression PLUS expression .)
+    TRUE            reduce using rule 39 (expression -> expression PLUS expression .)
+    FALSE           reduce using rule 39 (expression -> expression PLUS expression .)
+    $end            reduce using rule 39 (expression -> expression PLUS expression .)
+    RBRACE          reduce using rule 39 (expression -> expression PLUS expression .)
+    COMMA           reduce using rule 39 (expression -> expression PLUS expression .)
+    RBRACKET        reduce using rule 39 (expression -> expression PLUS expression .)
+    RPAREN          reduce using rule 39 (expression -> expression PLUS expression .)
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+
+  ! TIMES           [ reduce using rule 39 (expression -> expression PLUS expression .) ]
+  ! DIVIDE          [ reduce using rule 39 (expression -> expression PLUS expression .) ]
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 55
+
+    (40) expression -> expression MINUS expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 40 (expression -> expression MINUS expression .)
+    PLUS            reduce using rule 40 (expression -> expression MINUS expression .)
+    MINUS           reduce using rule 40 (expression -> expression MINUS expression .)
+    POWER           reduce using rule 40 (expression -> expression MINUS expression .)
+    LPAREN          reduce using rule 40 (expression -> expression MINUS expression .)
+    NEWLINE         reduce using rule 40 (expression -> expression MINUS expression .)
+    IMPORT          reduce using rule 40 (expression -> expression MINUS expression .)
+    VAR             reduce using rule 40 (expression -> expression MINUS expression .)
+    RETURN          reduce using rule 40 (expression -> expression MINUS expression .)
+    IF              reduce using rule 40 (expression -> expression MINUS expression .)
+    FXN             reduce using rule 40 (expression -> expression MINUS expression .)
+    STRING          reduce using rule 40 (expression -> expression MINUS expression .)
+    INT             reduce using rule 40 (expression -> expression MINUS expression .)
+    FLOAT           reduce using rule 40 (expression -> expression MINUS expression .)
+    COMPLEX         reduce using rule 40 (expression -> expression MINUS expression .)
+    LBRACE          reduce using rule 40 (expression -> expression MINUS expression .)
+    LBRACKET        reduce using rule 40 (expression -> expression MINUS expression .)
+    INVERT          reduce using rule 40 (expression -> expression MINUS expression .)
+    TRUE            reduce using rule 40 (expression -> expression MINUS expression .)
+    FALSE           reduce using rule 40 (expression -> expression MINUS expression .)
+    $end            reduce using rule 40 (expression -> expression MINUS expression .)
+    RBRACE          reduce using rule 40 (expression -> expression MINUS expression .)
+    COMMA           reduce using rule 40 (expression -> expression MINUS expression .)
+    RBRACKET        reduce using rule 40 (expression -> expression MINUS expression .)
+    RPAREN          reduce using rule 40 (expression -> expression MINUS expression .)
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+
+  ! TIMES           [ reduce using rule 40 (expression -> expression MINUS expression .) ]
+  ! DIVIDE          [ reduce using rule 40 (expression -> expression MINUS expression .) ]
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 56
+
+    (41) expression -> expression TIMES expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 41 (expression -> expression TIMES expression .)
+    PLUS            reduce using rule 41 (expression -> expression TIMES expression .)
+    MINUS           reduce using rule 41 (expression -> expression TIMES expression .)
+    TIMES           reduce using rule 41 (expression -> expression TIMES expression .)
+    DIVIDE          reduce using rule 41 (expression -> expression TIMES expression .)
+    POWER           reduce using rule 41 (expression -> expression TIMES expression .)
+    LPAREN          reduce using rule 41 (expression -> expression TIMES expression .)
+    NEWLINE         reduce using rule 41 (expression -> expression TIMES expression .)
+    IMPORT          reduce using rule 41 (expression -> expression TIMES expression .)
+    VAR             reduce using rule 41 (expression -> expression TIMES expression .)
+    RETURN          reduce using rule 41 (expression -> expression TIMES expression .)
+    IF              reduce using rule 41 (expression -> expression TIMES expression .)
+    FXN             reduce using rule 41 (expression -> expression TIMES expression .)
+    STRING          reduce using rule 41 (expression -> expression TIMES expression .)
+    INT             reduce using rule 41 (expression -> expression TIMES expression .)
+    FLOAT           reduce using rule 41 (expression -> expression TIMES expression .)
+    COMPLEX         reduce using rule 41 (expression -> expression TIMES expression .)
+    LBRACE          reduce using rule 41 (expression -> expression TIMES expression .)
+    LBRACKET        reduce using rule 41 (expression -> expression TIMES expression .)
+    INVERT          reduce using rule 41 (expression -> expression TIMES expression .)
+    TRUE            reduce using rule 41 (expression -> expression TIMES expression .)
+    FALSE           reduce using rule 41 (expression -> expression TIMES expression .)
+    $end            reduce using rule 41 (expression -> expression TIMES expression .)
+    RBRACE          reduce using rule 41 (expression -> expression TIMES expression .)
+    COMMA           reduce using rule 41 (expression -> expression TIMES expression .)
+    RBRACKET        reduce using rule 41 (expression -> expression TIMES expression .)
+    RPAREN          reduce using rule 41 (expression -> expression TIMES expression .)
+
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! TIMES           [ shift and go to state 33 ]
+  ! DIVIDE          [ shift and go to state 34 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 57
+
+    (42) expression -> expression DIVIDE expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    DOT             reduce using rule 42 (expression -> expression DIVIDE expression .)
+    PLUS            reduce using rule 42 (expression -> expression DIVIDE expression .)
+    MINUS           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    TIMES           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    DIVIDE          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    POWER           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    LPAREN          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    NEWLINE         reduce using rule 42 (expression -> expression DIVIDE expression .)
+    IMPORT          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    VAR             reduce using rule 42 (expression -> expression DIVIDE expression .)
+    RETURN          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    IF              reduce using rule 42 (expression -> expression DIVIDE expression .)
+    FXN             reduce using rule 42 (expression -> expression DIVIDE expression .)
+    STRING          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    INT             reduce using rule 42 (expression -> expression DIVIDE expression .)
+    FLOAT           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    COMPLEX         reduce using rule 42 (expression -> expression DIVIDE expression .)
+    LBRACE          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    LBRACKET        reduce using rule 42 (expression -> expression DIVIDE expression .)
+    INVERT          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    TRUE            reduce using rule 42 (expression -> expression DIVIDE expression .)
+    FALSE           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    $end            reduce using rule 42 (expression -> expression DIVIDE expression .)
+    RBRACE          reduce using rule 42 (expression -> expression DIVIDE expression .)
+    COMMA           reduce using rule 42 (expression -> expression DIVIDE expression .)
+    RBRACKET        reduce using rule 42 (expression -> expression DIVIDE expression .)
+    RPAREN          reduce using rule 42 (expression -> expression DIVIDE expression .)
+
+  ! DOT             [ shift and go to state 30 ]
+  ! PLUS            [ shift and go to state 31 ]
+  ! MINUS           [ shift and go to state 32 ]
+  ! TIMES           [ shift and go to state 33 ]
+  ! DIVIDE          [ shift and go to state 34 ]
+  ! POWER           [ shift and go to state 35 ]
+  ! LPAREN          [ shift and go to state 36 ]
+
+    tuple                          shift and go to state 29
+
+state 58
+
+    (43) expression -> expression POWER expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+  ! shift/reduce conflict for DOT resolved as shift
+  ! shift/reduce conflict for PLUS resolved as shift
+  ! shift/reduce conflict for MINUS resolved as shift
+  ! shift/reduce conflict for TIMES resolved as shift
+  ! shift/reduce conflict for DIVIDE resolved as shift
+  ! shift/reduce conflict for POWER resolved as shift
+  ! shift/reduce conflict for LPAREN resolved as shift
+    NEWLINE         reduce using rule 43 (expression -> expression POWER expression .)
+    IMPORT          reduce using rule 43 (expression -> expression POWER expression .)
+    VAR             reduce using rule 43 (expression -> expression POWER expression .)
+    RETURN          reduce using rule 43 (expression -> expression POWER expression .)
+    IF              reduce using rule 43 (expression -> expression POWER expression .)
+    FXN             reduce using rule 43 (expression -> expression POWER expression .)
+    STRING          reduce using rule 43 (expression -> expression POWER expression .)
+    INT             reduce using rule 43 (expression -> expression POWER expression .)
+    FLOAT           reduce using rule 43 (expression -> expression POWER expression .)
+    COMPLEX         reduce using rule 43 (expression -> expression POWER expression .)
+    LBRACE          reduce using rule 43 (expression -> expression POWER expression .)
+    LBRACKET        reduce using rule 43 (expression -> expression POWER expression .)
+    INVERT          reduce using rule 43 (expression -> expression POWER expression .)
+    TRUE            reduce using rule 43 (expression -> expression POWER expression .)
+    FALSE           reduce using rule 43 (expression -> expression POWER expression .)
+    $end            reduce using rule 43 (expression -> expression POWER expression .)
+    RBRACE          reduce using rule 43 (expression -> expression POWER expression .)
+    COMMA           reduce using rule 43 (expression -> expression POWER expression .)
+    RBRACKET        reduce using rule 43 (expression -> expression POWER expression .)
+    RPAREN          reduce using rule 43 (expression -> expression POWER expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+  ! DOT             [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! PLUS            [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! MINUS           [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! TIMES           [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! DIVIDE          [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! POWER           [ reduce using rule 43 (expression -> expression POWER expression .) ]
+  ! LPAREN          [ reduce using rule 43 (expression -> expression POWER expression .) ]
+
+    tuple                          shift and go to state 29
+
+state 59
+
+    (16) if_stmt -> IF expression body .
+
+    NEWLINE         reduce using rule 16 (if_stmt -> IF expression body .)
+    IMPORT          reduce using rule 16 (if_stmt -> IF expression body .)
+    VAR             reduce using rule 16 (if_stmt -> IF expression body .)
+    RETURN          reduce using rule 16 (if_stmt -> IF expression body .)
+    IF              reduce using rule 16 (if_stmt -> IF expression body .)
+    FXN             reduce using rule 16 (if_stmt -> IF expression body .)
+    STRING          reduce using rule 16 (if_stmt -> IF expression body .)
+    INT             reduce using rule 16 (if_stmt -> IF expression body .)
+    FLOAT           reduce using rule 16 (if_stmt -> IF expression body .)
+    COMPLEX         reduce using rule 16 (if_stmt -> IF expression body .)
+    LBRACE          reduce using rule 16 (if_stmt -> IF expression body .)
+    LBRACKET        reduce using rule 16 (if_stmt -> IF expression body .)
+    MINUS           reduce using rule 16 (if_stmt -> IF expression body .)
+    INVERT          reduce using rule 16 (if_stmt -> IF expression body .)
+    LPAREN          reduce using rule 16 (if_stmt -> IF expression body .)
+    TRUE            reduce using rule 16 (if_stmt -> IF expression body .)
+    FALSE           reduce using rule 16 (if_stmt -> IF expression body .)
+    $end            reduce using rule 16 (if_stmt -> IF expression body .)
+    RBRACE          reduce using rule 16 (if_stmt -> IF expression body .)
+
+
+state 60
+
+    (17) body -> LBRACE . stmts RBRACE
+    (18) body -> LBRACE . RBRACE
+    (9) stmts -> . stmt
+    (10) stmts -> . stmts NEWLINE stmt
+    (11) stmts -> . stmts NEWLINE
+    (1) stmt -> . IMPORT VAR
+    (2) stmt -> . IMPORT VAR AS VAR
+    (3) stmt -> . VAR EQUALS expression
+    (12) stmt -> . RETURN expression
+    (13) stmt -> . if_stmt
+    (14) stmt -> . funcdef
+    (15) stmt -> . expression
+    (16) if_stmt -> . IF expression body
+    (25) funcdef -> . FXN VAR fargs body
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          shift and go to state 72
+    IMPORT          shift and go to state 5
+    VAR             shift and go to state 6
+    RETURN          shift and go to state 8
+    IF              shift and go to state 11
+    FXN             shift and go to state 12
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    stmts                          shift and go to state 71
+    stmt                           shift and go to state 73
+    expression                     shift and go to state 7
+    if_stmt                        shift and go to state 9
+    funcdef                        shift and go to state 10
+    tuple                          shift and go to state 13
+
+state 61
+
+    (25) funcdef -> FXN VAR fargs . body
+    (17) body -> . LBRACE stmts RBRACE
+    (18) body -> . LBRACE RBRACE
+
+    LBRACE          shift and go to state 60
+
+    body                           shift and go to state 74
+
+state 62
+
+    (6) fargs -> LPAREN . csa RPAREN
+    (7) fargs -> LPAREN . csa COMMA RPAREN
+    (8) fargs -> LPAREN . RPAREN
+    (4) csa -> . VAR
+    (5) csa -> . csa COMMA VAR
+
+    RPAREN          shift and go to state 76
+    VAR             shift and go to state 77
+
+    csa                            shift and go to state 75
+
+state 63
+
+    (33) expression -> LBRACE csv RBRACE .
+
+    DOT             reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    PLUS            reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    MINUS           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    TIMES           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    DIVIDE          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    POWER           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    LPAREN          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    NEWLINE         reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    IMPORT          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    VAR             reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    RETURN          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    IF              reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    FXN             reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    STRING          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    INT             reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    FLOAT           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    COMPLEX         reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    LBRACE          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    LBRACKET        reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    INVERT          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    TRUE            reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    FALSE           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    $end            reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    RBRACE          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    COMMA           reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    RBRACKET        reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+    RPAREN          reduce using rule 33 (expression -> LBRACE csv RBRACE .)
+
+
+state 64
+
+    (34) expression -> LBRACE csv COMMA . RBRACE
+    (20) csv -> csv COMMA . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          shift and go to state 78
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 79
+    tuple                          shift and go to state 13
+
+state 65
+
+    (36) expression -> LBRACKET csv RBRACKET .
+
+    DOT             reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    PLUS            reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    MINUS           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    TIMES           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    DIVIDE          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    POWER           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    LPAREN          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    NEWLINE         reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    IMPORT          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    VAR             reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    RETURN          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    IF              reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    FXN             reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    STRING          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    INT             reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    FLOAT           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    COMPLEX         reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    LBRACE          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    LBRACKET        reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    INVERT          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    TRUE            reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    FALSE           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    $end            reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    RBRACE          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    COMMA           reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    RBRACKET        reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+    RPAREN          reduce using rule 36 (expression -> LBRACKET csv RBRACKET .)
+
+
+state 66
+
+    (37) expression -> LBRACKET csv COMMA . RBRACKET
+    (20) csv -> csv COMMA . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACKET        shift and go to state 80
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 79
+    tuple                          shift and go to state 13
+
+state 67
+
+    (46) expression -> LPAREN expression RPAREN .
+
+    DOT             reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    PLUS            reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    MINUS           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    TIMES           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    DIVIDE          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    POWER           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    LPAREN          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    NEWLINE         reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    IMPORT          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    VAR             reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    RETURN          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    IF              reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    FXN             reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    STRING          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    INT             reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    FLOAT           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    COMPLEX         reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    LBRACE          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    LBRACKET        reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    INVERT          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    TRUE            reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    FALSE           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    $end            reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    RBRACE          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    COMMA           reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    RBRACKET        reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 46 (expression -> LPAREN expression RPAREN .)
+
+
+state 68
+
+    (21) tuple -> LPAREN csv RPAREN .
+
+    DOT             reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    PLUS            reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    MINUS           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    TIMES           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    DIVIDE          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    POWER           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    LPAREN          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    NEWLINE         reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    IMPORT          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    VAR             reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    RETURN          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    IF              reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    FXN             reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    STRING          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    INT             reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    FLOAT           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    COMPLEX         reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    LBRACE          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    LBRACKET        reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    INVERT          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    TRUE            reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    FALSE           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    $end            reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    RBRACE          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    COMMA           reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    RBRACKET        reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+    RPAREN          reduce using rule 21 (tuple -> LPAREN csv RPAREN .)
+
+
+state 69
+
+    (22) tuple -> LPAREN csv COMMA . RPAREN
+    (20) csv -> csv COMMA . expression
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RPAREN          shift and go to state 81
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    VAR             shift and go to state 38
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    expression                     shift and go to state 79
+    tuple                          shift and go to state 13
+
+state 70
+
+    (2) stmt -> IMPORT VAR AS VAR .
+
+    NEWLINE         reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    IMPORT          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    VAR             reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    RETURN          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    IF              reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    FXN             reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    STRING          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    INT             reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    FLOAT           reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    COMPLEX         reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    LBRACE          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    LBRACKET        reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    MINUS           reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    INVERT          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    LPAREN          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    TRUE            reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    FALSE           reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    $end            reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+    RBRACE          reduce using rule 2 (stmt -> IMPORT VAR AS VAR .)
+
+
+state 71
+
+    (17) body -> LBRACE stmts . RBRACE
+    (10) stmts -> stmts . NEWLINE stmt
+    (11) stmts -> stmts . NEWLINE
+
+    RBRACE          shift and go to state 82
+    NEWLINE         shift and go to state 83
+
+
+state 72
+
+    (18) body -> LBRACE RBRACE .
+
+    NEWLINE         reduce using rule 18 (body -> LBRACE RBRACE .)
+    IMPORT          reduce using rule 18 (body -> LBRACE RBRACE .)
+    VAR             reduce using rule 18 (body -> LBRACE RBRACE .)
+    RETURN          reduce using rule 18 (body -> LBRACE RBRACE .)
+    IF              reduce using rule 18 (body -> LBRACE RBRACE .)
+    FXN             reduce using rule 18 (body -> LBRACE RBRACE .)
+    STRING          reduce using rule 18 (body -> LBRACE RBRACE .)
+    INT             reduce using rule 18 (body -> LBRACE RBRACE .)
+    FLOAT           reduce using rule 18 (body -> LBRACE RBRACE .)
+    COMPLEX         reduce using rule 18 (body -> LBRACE RBRACE .)
+    LBRACE          reduce using rule 18 (body -> LBRACE RBRACE .)
+    LBRACKET        reduce using rule 18 (body -> LBRACE RBRACE .)
+    MINUS           reduce using rule 18 (body -> LBRACE RBRACE .)
+    INVERT          reduce using rule 18 (body -> LBRACE RBRACE .)
+    LPAREN          reduce using rule 18 (body -> LBRACE RBRACE .)
+    TRUE            reduce using rule 18 (body -> LBRACE RBRACE .)
+    FALSE           reduce using rule 18 (body -> LBRACE RBRACE .)
+    $end            reduce using rule 18 (body -> LBRACE RBRACE .)
+    RBRACE          reduce using rule 18 (body -> LBRACE RBRACE .)
+
+
+state 73
+
+    (9) stmts -> stmt .
+
+    RBRACE          reduce using rule 9 (stmts -> stmt .)
+    NEWLINE         reduce using rule 9 (stmts -> stmt .)
+
+
+state 74
+
+    (25) funcdef -> FXN VAR fargs body .
+
+    NEWLINE         reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    IMPORT          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    VAR             reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    RETURN          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    IF              reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    FXN             reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    STRING          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    INT             reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    FLOAT           reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    COMPLEX         reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    LBRACE          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    LBRACKET        reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    MINUS           reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    INVERT          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    LPAREN          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    TRUE            reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    FALSE           reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    $end            reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+    RBRACE          reduce using rule 25 (funcdef -> FXN VAR fargs body .)
+
+
+state 75
+
+    (6) fargs -> LPAREN csa . RPAREN
+    (7) fargs -> LPAREN csa . COMMA RPAREN
+    (5) csa -> csa . COMMA VAR
+
+    RPAREN          shift and go to state 84
+    COMMA           shift and go to state 85
+
+
+state 76
+
+    (8) fargs -> LPAREN RPAREN .
+
+    LBRACE          reduce using rule 8 (fargs -> LPAREN RPAREN .)
+
+
+state 77
+
+    (4) csa -> VAR .
+
+    RPAREN          reduce using rule 4 (csa -> VAR .)
+    COMMA           reduce using rule 4 (csa -> VAR .)
+
+
+state 78
+
+    (34) expression -> LBRACE csv COMMA RBRACE .
+
+    DOT             reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    PLUS            reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    MINUS           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    TIMES           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    DIVIDE          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    POWER           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    LPAREN          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    NEWLINE         reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    IMPORT          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    VAR             reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    RETURN          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    IF              reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    FXN             reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    STRING          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    INT             reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    FLOAT           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    COMPLEX         reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    LBRACE          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    LBRACKET        reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    INVERT          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    TRUE            reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    FALSE           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    $end            reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    RBRACE          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    COMMA           reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    RBRACKET        reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+    RPAREN          reduce using rule 34 (expression -> LBRACE csv COMMA RBRACE .)
+
+
+state 79
+
+    (20) csv -> csv COMMA expression .
+    (24) expression -> expression . tuple
+    (26) expression -> expression . DOT VAR
+    (39) expression -> expression . PLUS expression
+    (40) expression -> expression . MINUS expression
+    (41) expression -> expression . TIMES expression
+    (42) expression -> expression . DIVIDE expression
+    (43) expression -> expression . POWER expression
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          reduce using rule 20 (csv -> csv COMMA expression .)
+    COMMA           reduce using rule 20 (csv -> csv COMMA expression .)
+    RBRACKET        reduce using rule 20 (csv -> csv COMMA expression .)
+    RPAREN          reduce using rule 20 (csv -> csv COMMA expression .)
+    DOT             shift and go to state 30
+    PLUS            shift and go to state 31
+    MINUS           shift and go to state 32
+    TIMES           shift and go to state 33
+    DIVIDE          shift and go to state 34
+    POWER           shift and go to state 35
+    LPAREN          shift and go to state 36
+
+    tuple                          shift and go to state 29
+
+state 80
+
+    (37) expression -> LBRACKET csv COMMA RBRACKET .
+
+    DOT             reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    PLUS            reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    MINUS           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    TIMES           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    DIVIDE          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    POWER           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    LPAREN          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    NEWLINE         reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    IMPORT          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    VAR             reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    RETURN          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    IF              reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    FXN             reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    STRING          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    INT             reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    FLOAT           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    COMPLEX         reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    LBRACE          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    LBRACKET        reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    INVERT          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    TRUE            reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    FALSE           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    $end            reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    RBRACE          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    COMMA           reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    RBRACKET        reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+    RPAREN          reduce using rule 37 (expression -> LBRACKET csv COMMA RBRACKET .)
+
+
+state 81
+
+    (22) tuple -> LPAREN csv COMMA RPAREN .
+
+    DOT             reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    PLUS            reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    MINUS           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    TIMES           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    DIVIDE          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    POWER           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    LPAREN          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    NEWLINE         reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    IMPORT          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    VAR             reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    RETURN          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    IF              reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    FXN             reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    STRING          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    INT             reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    FLOAT           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    COMPLEX         reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    LBRACE          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    LBRACKET        reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    INVERT          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    TRUE            reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    FALSE           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    $end            reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    RBRACE          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    COMMA           reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    RBRACKET        reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+    RPAREN          reduce using rule 22 (tuple -> LPAREN csv COMMA RPAREN .)
+
+
+state 82
+
+    (17) body -> LBRACE stmts RBRACE .
+
+    NEWLINE         reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    IMPORT          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    VAR             reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    RETURN          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    IF              reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    FXN             reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    STRING          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    INT             reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    FLOAT           reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    COMPLEX         reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    LBRACE          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    LBRACKET        reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    MINUS           reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    INVERT          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    LPAREN          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    TRUE            reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    FALSE           reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    $end            reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+    RBRACE          reduce using rule 17 (body -> LBRACE stmts RBRACE .)
+
+
+state 83
+
+    (10) stmts -> stmts NEWLINE . stmt
+    (11) stmts -> stmts NEWLINE .
+    (1) stmt -> . IMPORT VAR
+    (2) stmt -> . IMPORT VAR AS VAR
+    (3) stmt -> . VAR EQUALS expression
+    (12) stmt -> . RETURN expression
+    (13) stmt -> . if_stmt
+    (14) stmt -> . funcdef
+    (15) stmt -> . expression
+    (16) if_stmt -> . IF expression body
+    (25) funcdef -> . FXN VAR fargs body
+    (24) expression -> . expression tuple
+    (26) expression -> . expression DOT VAR
+    (27) expression -> . STRING
+    (28) expression -> . INT
+    (29) expression -> . FLOAT
+    (30) expression -> . COMPLEX
+    (31) expression -> . VAR
+    (32) expression -> . tuple
+    (33) expression -> . LBRACE csv RBRACE
+    (34) expression -> . LBRACE csv COMMA RBRACE
+    (35) expression -> . LBRACE RBRACE
+    (36) expression -> . LBRACKET csv RBRACKET
+    (37) expression -> . LBRACKET csv COMMA RBRACKET
+    (38) expression -> . LBRACKET RBRACKET
+    (39) expression -> . expression PLUS expression
+    (40) expression -> . expression MINUS expression
+    (41) expression -> . expression TIMES expression
+    (42) expression -> . expression DIVIDE expression
+    (43) expression -> . expression POWER expression
+    (44) expression -> . MINUS expression
+    (45) expression -> . INVERT expression
+    (46) expression -> . LPAREN expression RPAREN
+    (47) expression -> . TRUE
+    (48) expression -> . FALSE
+    (21) tuple -> . LPAREN csv RPAREN
+    (22) tuple -> . LPAREN csv COMMA RPAREN
+    (23) tuple -> . LPAREN RPAREN
+
+    RBRACE          reduce using rule 11 (stmts -> stmts NEWLINE .)
+    NEWLINE         reduce using rule 11 (stmts -> stmts NEWLINE .)
+    IMPORT          shift and go to state 5
+    VAR             shift and go to state 6
+    RETURN          shift and go to state 8
+    IF              shift and go to state 11
+    FXN             shift and go to state 12
+    STRING          shift and go to state 14
+    INT             shift and go to state 15
+    FLOAT           shift and go to state 16
+    COMPLEX         shift and go to state 17
+    LBRACE          shift and go to state 18
+    LBRACKET        shift and go to state 19
+    MINUS           shift and go to state 20
+    INVERT          shift and go to state 21
+    LPAREN          shift and go to state 22
+    TRUE            shift and go to state 23
+    FALSE           shift and go to state 24
+
+    stmt                           shift and go to state 86
+    expression                     shift and go to state 7
+    if_stmt                        shift and go to state 9
+    funcdef                        shift and go to state 10
+    tuple                          shift and go to state 13
+
+state 84
+
+    (6) fargs -> LPAREN csa RPAREN .
+
+    LBRACE          reduce using rule 6 (fargs -> LPAREN csa RPAREN .)
+
+
+state 85
+
+    (7) fargs -> LPAREN csa COMMA . RPAREN
+    (5) csa -> csa COMMA . VAR
+
+    RPAREN          shift and go to state 87
+    VAR             shift and go to state 88
+
+
+state 86
+
+    (10) stmts -> stmts NEWLINE stmt .
+
+    RBRACE          reduce using rule 10 (stmts -> stmts NEWLINE stmt .)
+    NEWLINE         reduce using rule 10 (stmts -> stmts NEWLINE stmt .)
+
+
+state 87
+
+    (7) fargs -> LPAREN csa COMMA RPAREN .
+
+    LBRACE          reduce using rule 7 (fargs -> LPAREN csa COMMA RPAREN .)
+
+
+state 88
+
+    (5) csa -> csa COMMA VAR .
+
+    RPAREN          reduce using rule 5 (csa -> csa COMMA VAR .)
+    COMMA           reduce using rule 5 (csa -> csa COMMA VAR .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for MINUS in state 7 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 7 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 37 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 37 resolved as shift
+WARNING: shift/reduce conflict for RPAREN in state 48 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 52 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 52 resolved as shift
+WARNING: shift/reduce conflict for DOT in state 58 resolved as shift
+WARNING: shift/reduce conflict for PLUS in state 58 resolved as shift
+WARNING: shift/reduce conflict for MINUS in state 58 resolved as shift
+WARNING: shift/reduce conflict for TIMES in state 58 resolved as shift
+WARNING: shift/reduce conflict for DIVIDE in state 58 resolved as shift
+WARNING: shift/reduce conflict for POWER in state 58 resolved as shift
+WARNING: shift/reduce conflict for LPAREN in state 58 resolved as shift

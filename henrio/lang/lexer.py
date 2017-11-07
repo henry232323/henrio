@@ -4,7 +4,6 @@ import re
 
 from ply import lex, yacc
 
-
 paren_count = 0
 
 ESCAPE_SEQUENCE_RE = re.compile(r'''
@@ -56,7 +55,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'LPAREN', 'RPAREN', 'INVERT', 'DOT',
           'FXN', 'RBRACE', 'LBRACE', 'LBRACKET',
           'RBRACKET', 'COMMA', 'AND', 'OR', 'IS',
-          'IF', 'ELIF', 'ELSE', 'IMPORT', #'COLON',
+          'IF', 'ELIF', 'ELSE', 'IMPORT',  # 'COLON',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS')
 
@@ -70,7 +69,7 @@ t_INVERT = r'\~'
 t_DOT = r'\.'
 t_FXN = r'func'
 t_COMMA = r'\,'
-#t_COLON = r'\:'
+# t_COLON = r'\:'
 
 t_ignore = " \t"
 
@@ -258,7 +257,7 @@ def p_expr_stmt(p):
 
 def p_if_stmt(p):
     'if_stmt : IF expression body'
-    p[0] = ast.If([(p[2], p[4])], None)
+    p[0] = ast.If(p[2], p[3], [])
 
 
 def p_body_stmts(p):
@@ -303,7 +302,11 @@ def p_tuple(p):
 
 def p_call_expr(p):
     'expression : expression tuple'
-    p[0] = ast.Call(p[1], list(p[2]), [])
+    runner = ast.Name("_hio_interpret_call", ast.Load())
+    args = list(p[2])
+    args.insert(0, p[1])
+    call = ast.Call(runner, args, [])
+    p[0] = ast.Await(call)
 
 
 def p_funcdef(p):
@@ -384,12 +387,12 @@ def p_expression_group(p):
 
 def p_expression_bool(p):
     'expression : TRUE'
-    p[0] = True
+    p[0] = ast.NameConstant(True)
 
 
 def p_expression_fbool(p):
     'expression : FALSE'
-    p[0] = False
+    p[0] = ast.NameConstant(True)
 
 
 def p_file_input_end(p):

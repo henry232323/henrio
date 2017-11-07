@@ -1,7 +1,8 @@
 from threading import Thread
 from types import coroutine
 
-from . import Future, get_loop
+from .yields import get_loop
+from . import Future
 
 __all__ = ["worker", "async_worker"]
 

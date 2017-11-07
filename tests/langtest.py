@@ -1,4 +1,4 @@
-from lang import compiler
+from henrio.lang import compiler
 
 sl = "print(1,2,3)"
 asm = "a = 5"
@@ -18,16 +18,14 @@ func asd(){
     print("ouchie!".__class__)
     a = 3
 }
+print(asd())
 """
 impt = """
 import :testfile
 print(testfile.a())
 """
 
-evald = compiler.eval(ml)
+#evald = compiler.eval(mfun)
 
-compiler.compile_hio("testfile.hio", ml)
-
-import henrio
+compiler.compile_hio("testfile.hio")
 import testfile
-henrio.run(testfile.a())

@@ -55,7 +55,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'LPAREN', 'RPAREN', 'INVERT', 'DOT',
           'FXN', 'RBRACE', 'LBRACE', 'LBRACKET',
           'RBRACKET', 'COMMA', 'AND', 'OR', 'IS',
-          'IF', 'ELIF', 'ELSE', 'IMPORT',  # 'COLON',
+          'IF', 'ELIF', 'ELSE', 'IMPORT', 'IMPNAME',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS')
 
@@ -69,7 +69,6 @@ t_INVERT = r'\~'
 t_DOT = r'\.'
 t_FXN = r'func'
 t_COMMA = r'\,'
-# t_COLON = r'\:'
 
 t_ignore = " \t"
 
@@ -93,6 +92,13 @@ reserved = {
 def t_VAR(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, "VAR")
+    return t
+
+
+def t_IMPNAME(t):
+    r'\:[a-zA-Z_][a-zA-Z0-9_]*'
+    if t.value[1:] in reserved:
+        raise SyntaxError("Bad import name!")
     return t
 
 
@@ -189,6 +195,18 @@ precedence = (
 )
 
 
+def p_statement_hio_import(p):
+    '''stmt : IMPORT IMPNAME
+            | IMPORT IMPNAME AS VAR'''
+    if len(p) == 5:
+        alias = p[4]
+    else:
+        alias = p[2]
+    loader = ast.Call(ast.Name("load_hio", ast.Load()), [p[2][1:] + ".hio"], [])
+    importer = ast.Import([ast.alias(p[2][1:], alias)], lineno=p.lexer.lineno)
+    p[0] = [ast.Expr(loader, lineno=p.lexer.lineno), importer]
+
+
 def p_statement_import(p):
     '''stmt : IMPORT VAR
             | IMPORT VAR AS VAR'''
@@ -231,11 +249,11 @@ def p_stmts(p):
              | stmts NEWLINE stmt
              | stmts NEWLINE'''
     if len(p) == 2:
-        p[0] = [p[1]]
+        p[0] = [] if type(p[1]) is not list else p[1]
     elif len(p) == 3:
         p[0] = p[1]
     else:
-        p[1].append(p[3])
+        p[1].append(p[3]) if type(p[1]) is not list else p[1].extend(p[3])
         p[0] = p[1]
 
 

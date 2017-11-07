@@ -12,6 +12,7 @@ from . import prep
 runner = ast.parse("""
 import henrio as hio
 _hio_interpret_call = hio._hio_interpret_call
+load_hio = hio.load_hio
 """, "<ast>", "exec").body
 
 import inspect
@@ -27,6 +28,9 @@ async def _hio_interpret_call(func, *args, **kwargs):
 def parse(text):
     psr = prep()
     sequence = psr.parse(text)
+    for i, item in enumerate(sequence):
+        if isinstance(item, list):
+            sequence[i:i+1] = item
     walk_tree(sequence)
     mod = ast.Module(sequence)
     ast.fix_missing_locations(mod)
@@ -39,8 +43,8 @@ def execute(mod, globals, locals):
     return exec(compile(mod, "<ast>", "exec"), globals=globals, locals=locals)
 
 
-def eval(text):
-    return execute(parse(text))
+def eval(text, *args):
+    return execute(parse(text), *args)
 
 
 def load_hio(module_path):

@@ -4,8 +4,10 @@ from collections import defaultdict, deque
 from socket import AF_INET, SOCK_STREAM, SO_REUSEADDR, SOL_SOCKET, socket
 from typing import Callable
 
-from . import create_writer, create_reader, socket_connect, socket_bind, spawn, Future, remove_writer, remove_reader, \
+from .yields import create_writer, create_reader, spawn, remove_writer, remove_reader, \
     get_loop
+from .io import socket_connect, socket_bind
+from . import Future
 
 if sys.platform == "win32":
     from .windows import IOCPLoop

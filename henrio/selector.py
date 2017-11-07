@@ -4,7 +4,9 @@ import time
 import typing
 from collections import deque
 
-from . import Future, BaseLoop, BaseSocket, BaseFile, unwrap_file, socket_connect, socket_bind
+from .yields import unwrap_file
+from .io import socket_connect, socket_bind
+from . import Future, BaseLoop, BaseSocket, BaseFile
 
 __all__ = ["SelectorLoop", "SelectorFile", "SelectorSocket"]
 

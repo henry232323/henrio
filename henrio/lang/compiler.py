@@ -97,10 +97,10 @@ def walk_tree(tree):
                                               "run",
                                               ast.Load())
                     if parent is None:
-                        tree[i] = ast.Call(attribute, [item.value], [])
+                        tree[i] = ast.Call(attribute, [fitem.value], [])
                         fitem = tree[i]
                     else:
-                        parent.value = ast.Call(attribute, [item.value], [])
+                        parent.value = ast.Call(attribute, [fitem.value], [])
                         fitem = parent.value
 
                 if hasattr(fitem, "args"):
@@ -114,6 +114,4 @@ def walk_tree(tree):
                 attribute = ast.Attribute(ast.Name("hio", ast.Load()),
                                           "run",
                                           ast.Load())
-
-                print(item.value, item.value.args, item.value.args[0].id)
                 tree[i] = ast.Call(attribute, [item.value], [])

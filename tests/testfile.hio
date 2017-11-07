@@ -2,5 +2,6 @@
 func asd(){
     print("ouchie!".__class__)
     a = 3
+    return 23
 }
 print(asd())

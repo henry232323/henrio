@@ -101,5 +101,5 @@ ENV/
 .mypy_cache/
 
 .idea/
-lang/parser.out
-lang/parsetab.py
+henrio/lang/parser.out
+henrio/lang/parsetab.py

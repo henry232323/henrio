@@ -1,11 +1,15 @@
 import ast
-import importlib
 import marshal
 import os
 import struct
 import sys
 import time
 from types import ModuleType
+
+try:
+    from importlib.util import MAGIC_NUMBER
+except ImportError:
+    from imp.util import MAGIC_NUMBER
 
 from . import prep
 
@@ -28,19 +32,19 @@ async def _hio_interpret_call(func, *args, **kwargs):
 def parse(text):
     psr = prep()
     sequence = psr.parse(text)
-    for i, item in enumerate(sequence):
-        if isinstance(item, list):
-            sequence[i:i+1] = item
     walk_tree(sequence)
     mod = ast.Module(sequence)
-    ast.fix_missing_locations(mod)
+    for i, item in enumerate(sequence):
+        if isinstance(item, list):
+            sequence[i:i + 1] = item
     for item in reversed(runner):
         mod.body.insert(0, item)
+    ast.fix_missing_locations(mod)
     return mod
 
 
 def execute(mod, globals, locals):
-    return exec(compile(mod, "<ast>", "exec"), globals=globals, locals=locals)
+    return exec(compile(mod, "<ast>", "exec"), globals, locals)
 
 
 def eval(text, *args):
@@ -73,7 +77,7 @@ def compile_hio(module_path):
     compiled = compile(mtree, filename, "exec")
 
     with open(f"{module}.pyc", 'wb') as cf:
-        cf.write(importlib.util.MAGIC_NUMBER)
+        cf.write(MAGIC_NUMBER)
         cf.write(struct.pack('L', int(time.time())))
         data = marshal.dumps(compiled)
         cf.write(struct.pack('I', len(data)))
@@ -82,6 +86,8 @@ def compile_hio(module_path):
 
 def walk_tree(tree):
     for i, item in enumerate(tree):
+        if isinstance(item, list):
+            tree[i:i + 1] = item
         if not isinstance(item,
                           (ast.FunctionDef, ast.AsyncFunctionDef)):  # We dont care about functions (we want top lvl)
             if hasattr(item, "body"):  # If it has a body it has children to check (Ifs etc)

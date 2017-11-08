@@ -1,7 +1,9 @@
 
 func asd(){
-    print("ouchie!".__class__)
+    f = 3
+    a = 4
+    print("ouchie!")
+    print("fuck", a)
     a = 3
     return 23
 }
-print(asd())

@@ -20,9 +20,9 @@ func asd(){
 }
 print(asd())
 """
-impt = """import :testfile"""
+impt = """
+import :testfile
+print(testfile.asd())
+"""
 
 evald = compiler.eval(impt, globals(), locals())
-
-compiler.compile_hio("testfile.hio")
-import testfile

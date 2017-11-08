@@ -195,16 +195,17 @@ precedence = (
 )
 
 
-def p_statement_hio_import(p):
+def p_statement_hio_import(p):  # note use importlib loaders?
     '''stmt : IMPORT IMPNAME
             | IMPORT IMPNAME AS VAR'''
     if len(p) == 5:
         alias = p[4]
     else:
-        alias = p[2]
-    loader = ast.Call(ast.Name("load_hio", ast.Load()), [p[2][1:] + ".hio"], [])
+        alias = p[2][1:]
+    loader = ast.Call(ast.Name("load_hio", ast.Load()), [ast.Str(p[2][1:] + ".hio")], [], lineno=p.lexer.lineno)
+    lexpr = ast.Expr(loader, lineno=p.lexer.lineno, col_offset=paren_count)
     importer = ast.Import([ast.alias(p[2][1:], alias)], lineno=p.lexer.lineno)
-    p[0] = [ast.Expr(loader, lineno=p.lexer.lineno), importer]
+    p[0] = [lexpr, importer]
 
 
 def p_statement_import(p):
@@ -248,12 +249,13 @@ def p_stmts(p):
     '''stmts : stmt
              | stmts NEWLINE stmt
              | stmts NEWLINE'''
+
     if len(p) == 2:
-        p[0] = [] if type(p[1]) is not list else p[1]
+        p[0] = [p[1]] if type(p[1]) is not list else p[1]
     elif len(p) == 3:
         p[0] = p[1]
     else:
-        p[1].append(p[3]) if type(p[1]) is not list else p[1].extend(p[3])
+        p[1].append(p[3]) if type(p[3]) is not list else p[1].extend(p[3])
         p[0] = p[1]
 
 

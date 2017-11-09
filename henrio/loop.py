@@ -33,10 +33,10 @@ class BaseLoop(AbstractLoop):
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
         try:
-            if self.running:
-                raise RuntimeError("Loop is already running!")
-            else:
-                self.running = True
+            #if self.running:
+            #    raise RuntimeError("Loop is already running!")
+            #else:
+            #    self.running = True
 
             self._tasks.clear()
             if not isinstance(starting_task, Future):

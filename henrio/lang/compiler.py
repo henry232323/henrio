@@ -33,13 +33,15 @@ def parse(text):
     psr = prep()
     sequence = psr.parse(text)
     walk_tree(sequence)
+    if sequence is None:
+        raise SyntaxError("Failed to parse!")
     mod = ast.Module(sequence)
     for i, item in enumerate(sequence):
         if isinstance(item, list):
             sequence[i:i + 1] = item
+    ast.fix_missing_locations(mod)
     for item in reversed(runner):
         mod.body.insert(0, item)
-    ast.fix_missing_locations(mod)
     return mod
 
 
@@ -59,7 +61,7 @@ def load_hio(module_path):
         text = rf.read()
     mtree = parse(text)
     mod = ModuleType(module)
-    mod.__file__ = module_path
+    mod.__file__ = os.path.realpath(module_path)
     compiled = compile(mtree, filename, "exec")
     exec(compiled, mod.__dict__, mod.__dict__)
     sys.modules[module] = mod
@@ -88,20 +90,23 @@ def walk_tree(tree):
     for i, item in enumerate(tree):
         if isinstance(item, list):
             tree[i:i + 1] = item
-        if not isinstance(item,
-                          (ast.FunctionDef, ast.AsyncFunctionDef)):  # We dont care about functions (we want top lvl)
-            if hasattr(item, "body"):  # If it has a body it has children to check (Ifs etc)
+            if item:
+                item = item[0]
+            else:
+                continue
+        if not isinstance(item, ast.AsyncFunctionDef):  # We dont care about functions (we want top lvl)
+            if getattr(item, "body", None):  # If it has a body it has children to check (Ifs etc)
                 walk_tree(item.body)
-            elif hasattr(item, "orelse"):
+            if getattr(item, "orelse", None):
                 walk_tree(item.orelse)
-            elif hasattr(item, "args") or hasattr(item, "kwargs"):
-                if hasattr(item, "args"):
+            if getattr(item, "args", None):
+                if not isinstance(item.args, ast.arguments):
                     walk_tree(item.args)
-                if hasattr(item, "keywords"):
-                    walk_tree(item.keywords)
+            if getattr(item, "keywords", None):
+                walk_tree(item.keywords)
 
             fitem, parent = item, None
-            while hasattr(fitem, "value"):
+            while getattr(fitem, "value", None):
                 if isinstance(fitem, ast.Await):
                     attribute = ast.Attribute(ast.Name("hio", ast.Load()),
                                               "run",
@@ -113,12 +118,27 @@ def walk_tree(tree):
                         parent.value = ast.Call(attribute, [fitem.value], [])
                         fitem = parent.value
 
-                if hasattr(fitem, "args"):
+                if getattr(fitem, "args", None):
                     walk_tree(fitem.args)
-                if hasattr(fitem, "keywords"):
+                if getattr(fitem, "keywords", None):
                     walk_tree(fitem.keywords)
-                if hasattr(fitem, "value"):
+                if getattr(fitem, "value", None):
                     fitem, parent = fitem.value, fitem
+
+            _ = item
+            if getattr(item, "test", None):
+                if isinstance(fitem.test, ast.Await):
+                    attribute = ast.Attribute(ast.Name("hio", ast.Load()),
+                                              "run",
+                                              ast.Load())
+                    fitem.test = ast.Call(attribute, [item.test.value], [])
+
+            if getattr(item, "iter", None):
+                if isinstance(fitem.iter, ast.Await):
+                    attribute = ast.Attribute(ast.Name("hio", ast.Load()),
+                                              "run",
+                                              ast.Load())
+                    fitem.iter = ast.Call(attribute, [item.iter.value], [])
 
             if isinstance(item, ast.Await):
                 attribute = ast.Attribute(ast.Name("hio", ast.Load()),

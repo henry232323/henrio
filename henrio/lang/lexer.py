@@ -23,6 +23,12 @@ def decode_escapes(s):
     return ESCAPE_SEQUENCE_RE.sub(decode_match, s)
 
 
+bracetypes = {
+    "{": ast.SetComp,
+    "(": ast.GeneratorExp,
+    "[": ast.ListComp,
+}
+
 binops = {
     "+": ast.Add,
     "-": ast.Sub,
@@ -57,7 +63,9 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'RBRACKET', 'COMMA', 'AND', 'OR', 'IS',
           'IF', 'ELIF', 'ELSE', 'IMPORT', 'IMPNAME',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
-          'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS')
+          'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS',
+          'FOR', 'IN', 'WHILE', 'BREAK', 'CONTINUE',
+          'TAKES', 'CLASS')
 
 t_EQUALS = r'='
 t_PLUS = r'\+'
@@ -67,8 +75,8 @@ t_DIVIDE = r'/'
 t_POWER = r'\*\*'
 t_INVERT = r'\~'
 t_DOT = r'\.'
-t_FXN = r'func'
 t_COMMA = r'\,'
+t_TAKES = r'<-'
 
 t_ignore = " \t"
 
@@ -85,7 +93,13 @@ reserved = {
     "and": "AND",
     "or": "OR",
     "del": "DEL",
-    "as": "AS"
+    "as": "AS",
+    "for": "FOR",
+    "in": "IN",
+    "while": "WHILE",
+    "break": "BREAK",
+    "continue": "CONTINUE",
+    "class": "CLASS",
 }
 
 
@@ -219,9 +233,15 @@ def p_statement_import(p):
 
 
 def p_statement_assign(p):
-    'stmt : VAR EQUALS expression'
+    '''stmt : VAR EQUALS expression
+            | fargs EQUALS expression'''
     name = ast.Name(id=p[1], ctx=ast.Store())
     p[0] = Assign(name, p[3])
+
+
+def p_setattr(p):
+    '''stmt : expression DOT VAR EQUALS expression'''
+    p[0] = Assign(ast.Attribute(p[1], p[3], ast.Store()), p[5])
 
 
 def p_expression_csa(p):
@@ -266,18 +286,81 @@ def p_return_stmt(p):
 
 def p_compound_stmt(p):
     """stmt : if_stmt
-            | funcdef"""
+            | funcdef
+            | classdef"""
     p[0] = p[1]
 
 
 def p_expr_stmt(p):
-    'stmt : expression'
+    'expr_stmt : expression'
     p[0] = ast.Expr(p[1])
+
+
+def p_stmt_expr(p):
+    'stmt : expr_stmt'
+    p[0] = p[1]
 
 
 def p_if_stmt(p):
     'if_stmt : IF expression body'
     p[0] = ast.If(p[2], p[3], [])
+
+
+def p_foreach_stmt(p):
+    '''stmt : FOR VAR TAKES expression body
+            | FOR csa TAKES expression body
+            | FOR VAR TAKES expression body ELSE body
+            | FOR csa TAKES expression body ELSE body'''
+    orelse = []
+    if len(p) == 8:
+        orelse = p[7]
+    if isinstance(p[2], list):
+        p[2] = ast.Tuple(p[2], ast.Store())
+    else:
+        p[2] = ast.Name(p[2], ast.Store())
+    p[0] = ast.For(p[2], p[4], p[5], orelse)
+
+
+def p_for_stmt(p):
+    '''stmt : FOR expression body body body
+            | FOR expression body body body ELSE body'''
+    if len(p) == 8:
+        orelse = p[7]
+    else:
+        orelse = []
+
+    p[5].extend(p[4])
+    whilel = ast.While(p[2], p[5], orelse)
+    p[3].append(whilel)
+    p[0] = whilel
+
+
+def p_while_stmt(p):
+    '''stmt : WHILE expression body
+            | WHILE expression body ELSE body'''
+    if len(p) == 6:
+        orelse = p[5]
+    else:
+        orelse = []
+    p[0] = ast.While(p[2], p[3], orelse)
+
+
+def p_comprehension(p):
+    '''expression : LBRACE expression FOR VAR TAKES expression RBRACE
+                  | LPAREN expression FOR VAR TAKES expression RPAREN
+                  | LBRACKET expression FOR VAR TAKES expression RBRACKET'''
+    name = ast.Name(p[4], ast.Store())
+    p[0] = ast.comprehension(p[2], [bracetypes[p[1]](name, p[7])], [], 0)
+
+
+def p_break_stmt(p):
+    'stmt : BREAK'
+    p[0] = ast.Break()
+
+
+def p_continue_stmt(p):
+    'stmt : CONTINUE'
+    p[0] = ast.Continue()
 
 
 def p_body_stmts(p):
@@ -331,12 +414,25 @@ def p_call_expr(p):
 
 def p_funcdef(p):
     '''funcdef : FXN VAR fargs body'''
-    p[0] = ast.AsyncFunctionDef(p[2],
-                                ast.arguments(args=[ast.arg(arg=x, annotation=None) for x in p[3]], vararg=None,
-                                              kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
-                                p[4],
-                                [],
-                                None)
+    if p[2].startswith("__") and p[2].endswith("__"):
+        p[0] = ast.FunctionDef(p[2],
+                               ast.arguments(args=[ast.arg(arg=x, annotation=None) for x in p[3]], vararg=None,
+                                             kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
+                               p[4],
+                               [],
+                               None)
+    else:
+        p[0] = ast.AsyncFunctionDef(p[2],
+                                    ast.arguments(args=[ast.arg(arg=x, annotation=None) for x in p[3]], vararg=None,
+                                                  kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
+                                    p[4],
+                                    [],
+                                    None)
+
+
+def p_classdef(p):
+    'classdef : CLASS VAR tuple body'
+    p[0] = ast.ClassDef(p[2], list(p[3]), [], p[4], [])
 
 
 def p_getattr_expr(p):
@@ -365,8 +461,8 @@ def p_tuple_litr(p):
 
 def p_expression_set(p):
     '''expression : LBRACE csv RBRACE
-                    | LBRACE csv COMMA RBRACE
-                    | LBRACE RBRACE
+                  | LBRACE csv COMMA RBRACE
+                  | LBRACE RBRACE
     '''
     if len(p) == 3:
         p[0] = ast.Set((), ast.Store())
@@ -391,7 +487,7 @@ def p_expression_binop(p):
               | expression TIMES expression
               | expression DIVIDE expression
               | expression POWER expression'''
-    p[0] = binops[p[2]](left=p[1], right=p[3])
+    p[0] = ast.BinOp(p[1], binops[p[2]](), p[3])
 
 
 def p_expression_unop(p):
@@ -445,12 +541,13 @@ def p_error(p):
 
 
 def Assign(left, right):
-    if isinstance(left, ast.Name):
+    if isinstance(left, (ast.Name, ast.Attribute)):
         # Single assignment on left
         assignment = ast.Assign([left], right)
         return assignment
-    elif isinstance(left, (ast.Tuple, ast.List)):
+    elif isinstance(left, (tuple, list)):
         # List of things - make sure they are Name nodes
+        left = ast.Tuple(left) if isinstance(left, tuple) else ast.List(left)
         return ast.Assign(left, right)
     else:
         raise SyntaxError("Can't do that yet")

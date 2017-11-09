@@ -24,9 +24,15 @@ if sys.platform == "win32":
 
 del sys  # Not for export
 
+_current_loops = []
+
 
 def get_default_loop():
-    return SelectorLoop()
+    if _current_loops:
+        return _current_loops[0]
+    else:
+        _current_loops.append(SelectorLoop())
+    return get_default_loop()
 
 
 def run(awaitable):

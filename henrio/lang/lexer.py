@@ -65,7 +65,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS',
           'FOR', 'IN', 'WHILE', 'BREAK', 'CONTINUE',
-          'TAKES', 'CLASS')
+          'TAKES', 'CLASS', 'PURE', 'YIELD')
 
 t_EQUALS = r'='
 t_PLUS = r'\+'
@@ -77,6 +77,7 @@ t_INVERT = r'\~'
 t_DOT = r'\.'
 t_COMMA = r'\,'
 t_TAKES = r'<-'
+t_PURE = r'\$'
 
 t_ignore = " \t"
 
@@ -100,6 +101,7 @@ reserved = {
     "break": "BREAK",
     "continue": "CONTINUE",
     "class": "CLASS",
+    "yield": "YIELD"
 }
 
 
@@ -232,16 +234,23 @@ def p_statement_import(p):
     p[0] = ast.Import([ast.alias(p[2], alias)], lineno=p.lexer.lineno)
 
 
-def p_statement_assign(p):
-    '''stmt : VAR EQUALS expression
-            | fargs EQUALS expression'''
-    name = ast.Name(id=p[1], ctx=ast.Store())
-    p[0] = Assign(name, p[3])
+def p_assign_left(p):
+    '''assignment : VAR EQUALS
+                  | fargs EQUALS
+                  | csv EQUALS
+                  | expression DOT VAR EQUALS'''
+    if len(p) == 5:
+        p[0] = ast.Attribute(p[1], p[3], ast.Store())
+    elif isinstance(p[0], str):
+        p[0] = ast.Name(id=p[1], ctx=ast.Store())
+    else:
+        p[0] = ast.Tuple(p[1], ast.Store())
 
 
-def p_setattr(p):
-    '''stmt : expression DOT VAR EQUALS expression'''
-    p[0] = Assign(ast.Attribute(p[1], p[3], ast.Store()), p[5])
+def p_assign_complete(p):
+    '''stmt : assignment expression
+            | assignment csv'''
+    p[0] = Assign(p[1], p[2])
 
 
 def p_expression_csa(p):
@@ -282,6 +291,16 @@ def p_stmts(p):
 def p_return_stmt(p):
     "stmt : RETURN expression"
     p[0] = ast.Return(p[2])
+
+
+def p_yield_stmt(p):
+    """stmt : YIELD expression
+            | assignment YIELD expression"""
+
+    p[0] = ast.Yield(p[2])
+
+    if len(p) == 4:
+        p[0] = Assign(p[1], p[0])
 
 
 def p_compound_stmt(p):
@@ -404,12 +423,16 @@ def p_tuple(p):
 
 
 def p_call_expr(p):
-    'expression : expression tuple'
-    runner = ast.Name("_hio_interpret_call", ast.Load())
-    args = list(p[2])
-    args.insert(0, p[1])
-    call = ast.Call(runner, args, [])
-    p[0] = ast.Await(call)
+    '''expression : expression tuple
+                  | PURE expression tuple'''
+    if len(p) == 3:
+        runner = ast.Name("_hio_interpret_call", ast.Load())
+        args = list(p[2])
+        args.insert(0, p[1])
+        call = ast.Call(runner, args, [])
+        p[0] = ast.Await(call)
+    else:
+        p[0] = ast.Call(p[2], list(p[3]))
 
 
 def p_funcdef(p):

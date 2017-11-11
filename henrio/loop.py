@@ -20,7 +20,7 @@ class BaseLoop(AbstractLoop):
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
-        self.running = False
+        self.running = 0
 
     def time(self):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
@@ -33,23 +33,22 @@ class BaseLoop(AbstractLoop):
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
         try:
-            #if self.running:
+            # if self.running:
             #    raise RuntimeError("Loop is already running!")
-            #else:
+            # else:
             #    self.running = True
-
-            self._tasks.clear()
+            self.running += 1
             if not isinstance(starting_task, Future):
                 starting_task = Task(starting_task, None)  # Convert any coros to tasks
             if starting_task not in self._tasks:
-                self._tasks.appendleft(starting_task)  # Make it priority over already queued tasks
-            while self._tasks or self._timers:
+                self._queue.appendleft(starting_task)  # Make it priority over already queued tasks
+            while not starting_task.complete and not starting_task.cancelled:
                 self._loop_once()  # Loop until we're out of tasks
 
             # Loop is done, return our result
             return starting_task.result()
         finally:
-            self.running = False
+            self.running -= 1
 
     def run_forever(self):
         """Run the current tasks queue forever"""
@@ -57,14 +56,11 @@ class BaseLoop(AbstractLoop):
             if self.running:
                 raise RuntimeError("Loop is already running!")
             else:
-                self.running = True
-            self._tasks.clear()
-            self._tasks.extend(self._queue)
-            self._queue.clear()
+                self.running += 1
             while (self._queue or self._tasks or self._timers or self._readers or self._writers) and self.running:
                 self._loop_once()  # As long as were 'running' and have stuff to do just keep spinning our loop
         finally:
-            self.running = False
+            self.running -= 1
 
     def _loop_once(self):
         """Check timers, IO, and run the queue once"""

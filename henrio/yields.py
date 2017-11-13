@@ -84,11 +84,20 @@ def current_task():
 
 @coroutine
 def postpone(func, time):
-    loop = yield from get_loop()
-    loop.create_task(loop.call_after(func, time))
+    return spawn(call_after(func, time))
 
 
 @coroutine
 def spawn_after(coro, time):
-    loop = yield from get_loop()
-    loop.create_task(loop.schedule_after(coro, time))
+    return spawn(schedule_after(coro, time))
+
+
+async def schedule_after(coro, time):
+    await sleep(time)
+    loop = await get_loop()
+    loop.create_task(coro)
+
+
+async def call_after(func, time):
+    await sleep(time)
+    func()

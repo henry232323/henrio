@@ -136,14 +136,6 @@ class BaseLoop(AbstractLoop):
             self._queue.append(task)
         return task
 
-    async def schedule_after(self, coro, time):
-        await sleep(time)
-        self.create_task(coro)
-
-    async def call_after(self, func, time):
-        await sleep(time)
-        func()
-
     def close(self):
         """Close the running event loop"""
         self.running = 0

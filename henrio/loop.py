@@ -48,7 +48,8 @@ class BaseLoop(AbstractLoop):
             # Loop is done, return our result
             return starting_task.result()
         finally:
-            self.running -= 1
+            if self.running:
+                self.running -= 1
 
     def run_forever(self):
         """Run the current tasks queue forever"""
@@ -60,7 +61,8 @@ class BaseLoop(AbstractLoop):
             while (self._queue or self._tasks or self._timers or self._readers or self._writers) and self.running:
                 self._loop_once()  # As long as were 'running' and have stuff to do just keep spinning our loop
         finally:
-            self.running -= 1
+            if self.running:
+                self.running -= 1
 
     def _loop_once(self):
         """Check timers, IO, and run the queue once"""
@@ -144,4 +146,4 @@ class BaseLoop(AbstractLoop):
 
     def close(self):
         """Close the running event loop"""
-        self.running = False
+        self.running = 0

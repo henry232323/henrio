@@ -72,7 +72,7 @@ class Future:
         self._callback = fn
 
     def close(self):
-        self._error = StopIteration
+        self._error = StopIteration("Closed!")
 
 
 class Task(Future):

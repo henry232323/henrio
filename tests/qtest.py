@@ -1,27 +1,32 @@
-try:
-    from henrio import *
+from henrio import *
+import unittest
 
-    l = get_default_loop()
-    q = HeapQueue(50)
-    #q._queue.append(50)
 
-    print(q)
-    async def d():
-        return await q.get()
+class QueueTest(unittest.TestCase):
+    def test_queue(self):
+        try:
 
-    async def a(i):
-        await sleep(3)
-        await q.put(i)
+            l = get_default_loop()
+            q = HeapQueue(50)
 
-    for x in range(100):
-        l.create_task(a(x))
-        l.create_task(d())
+            print(q)
 
-    async def task():
-        await sleep(5)
-        print(len(l._queue), len(l._tasks))
+            async def d():
+                return await q.get()
 
-    l.run_until_complete(task())
+            async def a(i):
+                await sleep(3)
+                await q.put(i)
 
-finally:
-    print(q)
+            for x in range(100):
+                l.create_task(a(x))
+                l.create_task(d())
+
+            async def task():
+                await sleep(5)
+                print(len(l._queue), len(l._tasks))
+
+            l.run_until_complete(task())
+
+        finally:
+            self.assertEqual(len(q), 0)

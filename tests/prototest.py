@@ -1,4 +1,5 @@
-from henrio import ConnectionBase, ServerBase, connect, create_server, get_default_loop, IOCPLoop, SelectorLoop, ssl_connect
+from henrio import ConnectionBase, ServerBase, connect, create_server, get_default_loop, IOCPLoop, SelectorLoop, \
+    ssl_connect
 
 
 def run_client():
@@ -12,6 +13,7 @@ def run_client():
     loop = SelectorLoop()
     loop.create_task(ssl_connect(MyProto, "www.google.com", 443))
     loop.run_forever()
+
 
 run_client()
 
@@ -30,6 +32,3 @@ def run_serv():
     loop = IOCPLoop()
     loop.create_task(create_server(MyProto, "127.0.0.1", 8888))
     loop.run_forever()
-
-
-

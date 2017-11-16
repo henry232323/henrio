@@ -5,7 +5,7 @@ from .futures import Future, Task, timeout
 from .locks import Lock, ResourceLock
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue
-from .workers import worker, async_worker
+from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
 from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
                      remove_writer, spawn, wrap_file, wrap_socket, current_task,
                      unwrap_socket, postpone, spawn_after)

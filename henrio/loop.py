@@ -21,6 +21,8 @@ class BaseLoop(AbstractLoop):
         self._readers = dict()
         self._writers = dict()
         self.running = 0
+        self.threadpool = None
+        self.processpool = None
 
     def time(self):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
@@ -68,7 +70,6 @@ class BaseLoop(AbstractLoop):
         """Check timers, IO, and run the queue once"""
         self._queue.extend(self._tasks)
         self._tasks.clear()
-
         while self._timers:  # Check for overdue timers
             if self._timers[0][0].cancelled or self._timers[0][0].complete:
                 task, _ = heappop(self._timers)  # Get the smallest timer

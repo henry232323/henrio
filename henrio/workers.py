@@ -1,41 +1,73 @@
-from threading import Thread
+from multiprocessing import Pool as ProcessPool
+from multiprocessing.dummy import Pool as ThreadPool
 from types import coroutine
+from functools import partial
 
 from .yields import get_loop
 from . import Future
 
-__all__ = ["worker", "async_worker"]
+__all__ = ["threadworker", "async_threadworker", "processworker", "async_processworker", "AsyncFuture"]
 
 
 @coroutine
-def worker(func, *args):
-    fut = Future()
-
-    def runner():
-        try:
-            result = func(*args)
-            fut.set_result(result)
-        except Exception as e:
-            fut.set_exception(e)
-
-    thread = Thread(target=runner)
-    thread.start()
-    return fut
-
-
-@coroutine
-def async_worker(func, *args):
+def async_worker(pooltype, func, *args, **kwargs):
     fut = Future()
     loop = yield from get_loop()
 
     def runner():
-        coro = func(*args)
+        coro = func(*args, **kwargs)
         l = type(loop)()
-        try:
-            fut.set_result(l.run_until_complete(coro))
-        except Exception as e:
-            fut.set_exception(e)
+        return l.run_until_complete(coro)
 
-    thread = Thread(target=runner)
-    thread.start()
+    pool = get_pool(pooltype, loop)
+
+    pool.apply_async(runner, callback=fut.set_result, error_callback=fut.set_exception)
+
     return fut
+
+
+@coroutine
+def worker(pooltype, func, *args, **kwargs):
+    fut = Future()
+    loop = yield from get_loop()
+    pool = get_pool(pooltype, loop)
+    pool.apply_async(func, args=args, kwds=kwargs, callback=fut.set_result, error_callback=fut.set_exception)
+
+    return fut
+
+
+def get_pool(pooltype, loop):
+    if pooltype:
+        if loop.processpool:
+            pool = loop.processpool
+        else:
+            pool = loop.processpool = ProcessPool()
+    else:
+        if loop.threadpool:
+            pool = loop.threadpool
+        else:
+            pool = loop.threadpool = ThreadPool()
+    return pool
+
+
+threadworker = partial(worker, 0)
+processworker = partial(worker, 1)
+async_threadworker = partial(async_worker, 0)
+async_processworker = partial(async_worker, 1)
+
+
+class AsyncFuture:
+    def __init__(self, async_result):
+        self._async_result = async_result
+
+    def __iter__(self):
+        while not self._async_result.ready():
+            yield self
+        return self._async_result.get(0)
+
+    __await__ = __iter__
+
+    def send(self, data):
+        if not self._async_result.ready():
+            return self
+        return self._async_result.get(0)

@@ -1,6 +1,6 @@
 import socket
 
-from .workers import worker
+from .workers import threadworker
 
 __all__ = ["socket_connect", "socket_bind", "gethostbyname", "create_socketpair"]
 
@@ -18,11 +18,11 @@ async def socket_bind(socket, hostpair):
         return resp
     except BlockingIOError:
         socket.setblocking(True)
-        return await worker(socket.bind, hostpair)
+        return await threadworker(socket.bind, hostpair)
 
 
 async def gethostbyname(name):
-    return await worker(socket.gethostbyname, name)
+    return await threadworker(socket.gethostbyname, name)
 
 
 async def create_socketpair(*args, **kwargs):

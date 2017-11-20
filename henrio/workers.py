@@ -4,6 +4,7 @@ from types import coroutine
 from functools import partial
 
 from .yields import get_loop
+from .locks import Semaphore
 from . import Future
 
 __all__ = ["threadworker", "async_threadworker", "processworker", "async_processworker", "AsyncFuture"]
@@ -23,7 +24,8 @@ def async_worker(pooltype, func, *args, **kwargs):
 
     pool.apply_async(runner, callback=fut.set_result, error_callback=fut.set_exception)
 
-    return fut
+    res = yield from fut
+    return res
 
 
 @coroutine
@@ -32,8 +34,8 @@ def worker(pooltype, func, *args, **kwargs):
     loop = yield from get_loop()
     pool = get_pool(pooltype, loop)
     pool.apply_async(func, args=args, kwds=kwargs, callback=fut.set_result, error_callback=fut.set_exception)
-
-    return fut
+    res = yield from fut
+    return res
 
 
 def get_pool(pooltype, loop):
@@ -71,3 +73,23 @@ class AsyncFuture:
         if not self._async_result.ready():
             return self
         return self._async_result.get(0)
+
+
+class Pool:
+    def __init__(self, factory, workers):
+        self.waiter = Semaphore(workers)
+        self.factory = factory
+        self.workers = [factory() for i in range(workers)]
+
+    def shutdown(self):
+        for worker in self.workers:
+            worker.shutdown()
+        self.workers = []
+
+    async def acquire(self):
+        await self.waiter.acquire()
+        return self.workers.pop()
+
+    async def release(self, worker):
+        await self.waiter.release()
+        self.workers.append(worker)

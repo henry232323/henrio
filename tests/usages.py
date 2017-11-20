@@ -47,8 +47,6 @@ class Tests(TestCase):
                 loop.unregister_reader(my_socket)
                 my_socket.close()
 
-        from types import coroutine
-        @coroutine
         async def runner():
             print("fuck!")
             while count < 400:
@@ -72,7 +70,7 @@ class Tests(TestCase):
 
     def test_run_files(self):
         loop = IOCPLoop()
-        with open("LICENSE", 'rb') as file:
+        with open("testfile.hio", 'rb') as file:
             print(file.fileno())
             wrapped = loop.wrap_file(file)
 
@@ -276,3 +274,6 @@ class Tests(TestCase):
             __await__ = __iter__
 
         run(AClass)
+
+    def test_workers(self):
+        run(processworker(print, 123, 456, 32))

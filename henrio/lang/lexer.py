@@ -237,7 +237,7 @@ def p_statement_import(p):
 def p_assign_left(p):
     '''assignment : VAR EQUALS
                   | fargs EQUALS
-                  | csv EQUALS
+                  | csa EQUALS
                   | expression DOT VAR EQUALS'''
     if len(p) == 5:
         p[0] = ast.Attribute(p[1], p[3], ast.Store())
@@ -277,8 +277,8 @@ def p_statement_func_args(p):
 def p_stmts(p):
     '''stmts : stmt
              | stmts NEWLINE stmt
-             | stmts NEWLINE'''
-
+             | stmts NEWLINE
+    '''
     if len(p) == 2:
         p[0] = [p[1]] if type(p[1]) is not list else p[1]
     elif len(p) == 3:
@@ -365,8 +365,8 @@ def p_while_stmt(p):
 
 
 def p_comprehension(p):
-    '''expression : LBRACE expression FOR VAR TAKES expression RBRACE
-                  | LPAREN expression FOR VAR TAKES expression RPAREN
+    '''expression : LPAREN expression FOR VAR TAKES expression RPAREN
+                  | LBRACE expression FOR VAR TAKES expression RBRACE
                   | LBRACKET expression FOR VAR TAKES expression RBRACKET'''
     name = ast.Name(p[4], ast.Store())
     p[0] = ast.comprehension(p[2], [bracetypes[p[1]](name, p[7])], [], 0)

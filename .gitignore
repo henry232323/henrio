@@ -101,5 +101,6 @@ ENV/
 .mypy_cache/
 
 .idea/
+.DS_STORE
 henrio/lang/parser.out
 henrio/lang/parsetab.py

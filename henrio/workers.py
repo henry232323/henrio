@@ -35,6 +35,7 @@ def worker(pooltype, func, *args, **kwargs):
     pool = get_pool(pooltype, loop)
     pool.apply_async(func, args=args, kwds=kwargs, callback=fut.set_result, error_callback=fut.set_exception)
     res = yield from fut
+    pool.join()
     return res
 
 

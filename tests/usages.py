@@ -58,18 +58,18 @@ class Tests(TestCase):
 
     def test_run_stdreaders(self):
         import sys
-        loop = IOCPLoop()
+        loop = IOCPLoop() if sys.platform == "nt" else SelectorLoop()
         file = sys.stdin
         print(file.fileno())
         wrapped = loop.wrap_file(file)
 
         async def do_thing():
-            print(await wrapped.read(1024))
+            print(await wrapped.read(15))
 
         loop.run_until_complete(do_thing())
 
     def test_run_files(self):
-        loop = IOCPLoop()
+        loop = IOCPLoop() if sys.platform == "nt" else SelectorLoop()
         with open("testfile.hio", 'rb') as file:
             print(file.fileno())
             wrapped = loop.wrap_file(file)
@@ -82,7 +82,7 @@ class Tests(TestCase):
     def test_run_socks(self):
         raise Exception("Brokey")
         import socket
-        loop = IOCPLoop()
+        loop = IOCPLoop() if sys.platform == "nt" else SelectorLoop()
         r, w = socket.socketpair()
 
         # w.send(b"Elle me dit ecris un chanson")
@@ -103,7 +103,7 @@ class Tests(TestCase):
     def test_run_socks2(self):
         raise Exception("Buggeroni")
         import socket
-        loop = IOCPLoop()
+        loop = IOCPLoop() if sys.platform == "nt" else SelectorLoop()
         rw = socket.socket()
         rw.connect(("irc.mindfang.org", 6667))
 
@@ -177,7 +177,7 @@ class Tests(TestCase):
 
         async def do_thing():
             print('asd')
-            await writer.send(b"Fuckeroni!")
+            await writer.send(b"asdasd!")
             print("dsa")
             f = r.recv(5)
             print(f)
@@ -275,5 +275,5 @@ class Tests(TestCase):
 
         run(AClass)
 
-    def test_workers(self):
-        run(processworker(print, 123, 456, 32))
+    #def test_workers(self):
+    #    run(processworker(print, 123, 456, 32))

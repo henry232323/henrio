@@ -1,21 +1,19 @@
-#a, b = 5, 6
+print("test")
+print(__cached__)
 
-func asd(){
+func asd(a, b){
     f = 3
     a = 4
     print("ouchie!")
-    print("frak", a)
+    print("asdasd", a)
     a = 3
     return 23
 }
 
-b = asd()
+b = asd(5, 6)
 print(b)
 
-for a <- range(1,15) {
-    print(a)
-
-}
+for a in range(1,15) {print('brev')}
 
 for (a) {a = 5} {a = a - 1} {
     print(a)
@@ -23,11 +21,12 @@ for (a) {a = 5} {a = a - 1} {
 
 # print([a for a <- range(12)])
 
-func afd() {
-    func dsa() {
-        print("shint!")
+func afd(a, d) {
+    func dsa(d, a) {
+        print("dsadsa!")
     }
-    return dsa()
+
+    return dsa(1, 5)
 }
 
 

@@ -17,12 +17,15 @@ mfun = """
 func asd(){
     print("ouchie!".__class__)
     a = 3
+    return 5
 }
+
 print(asd())
 """
 impt = """
-import :testfile
-print(testfile.asd())
+import testfile
+
+#print(testfile.asd())
 """
 
-evald = compiler.eval(impt, globals(), locals())
+import testfile

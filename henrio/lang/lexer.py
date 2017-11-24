@@ -61,7 +61,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'LPAREN', 'RPAREN', 'INVERT', 'DOT',
           'FXN', 'RBRACE', 'LBRACE', 'LBRACKET',
           'RBRACKET', 'COMMA', 'AND', 'OR', 'IS',
-          'IF', 'ELIF', 'ELSE', 'IMPORT', 'IMPNAME',
+          'IF', 'ELIF', 'ELSE', 'IMPORT',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS',
           'FOR', 'IN', 'WHILE', 'BREAK', 'CONTINUE',
@@ -75,8 +75,8 @@ t_DIVIDE = r'/'
 t_POWER = r'\*\*'
 t_INVERT = r'\~'
 t_DOT = r'\.'
-t_COMMA = r'\,'
-t_TAKES = r'<-'
+t_COMMA = r'\,[\n\r]*'
+t_TAKES = r'(\<\-|in)'
 t_PURE = r'\$'
 
 t_ignore = " \t"
@@ -96,7 +96,7 @@ reserved = {
     "del": "DEL",
     "as": "AS",
     "for": "FOR",
-    "in": "IN",
+    "in": "TAKES",
     "while": "WHILE",
     "break": "BREAK",
     "continue": "CONTINUE",
@@ -111,13 +111,6 @@ def t_VAR(t):
     return t
 
 
-def t_IMPNAME(t):
-    r'\:[a-zA-Z_][a-zA-Z0-9_]*'
-    if t.value[1:] in reserved:
-        raise SyntaxError("Bad import name!")
-    return t
-
-
 def t_STRING(t):
     r'b?r?f?\'\'\'[\s\S]*?\'\'\'|b?r?f?\"\"\"[\s\S]*?\"\"\"|b?r?f?\"[^\n\r]*?\"|b?r?f?\'[^\n\r]*?\''
     t.value = ast.parse(t.value).body[0].value
@@ -127,10 +120,11 @@ def t_STRING(t):
 def t_FLOAT(t):
     r'(\d*\.\d+|\d+\.)j?'
     if t.value.endswith("j"):
-        t.value = ast.Num(complex(t.value))
+        type = complex
         t.type = 'COMPLEX'
-        return t
-    t.value = ast.Num(float(t.value))
+    else:
+        type = float
+    t.value = ast.Num(type(t.value))
     return t
 
 
@@ -146,13 +140,13 @@ def t_INT(t):
 
 
 def t_comment(t):
-    r"[ ]*\043[^\n]*"  # \043 is '#'
+    r"[ ]*\043[^\n\r]*"  # \043 is '#'
     pass
 
 
 def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
+    r'[\n\r]+'
+    t.lexer.lineno += t.value.count("\n")
     t.type = "NEWLINE"
     if paren_count != 0:
         return t
@@ -180,7 +174,7 @@ def t_LBRACE(t):
 
 
 def t_RBRACE(t):
-    r'\n*\}'
+    r'\}'
     global paren_count
     paren_count -= 1
     return t
@@ -209,19 +203,6 @@ precedence = (
     ('left', 'TIMES', 'DIVIDE'),
     ('right', 'UMINUS', 'INVERT'),
 )
-
-
-def p_statement_hio_import(p):  # note use importlib loaders?
-    '''stmt : IMPORT IMPNAME
-            | IMPORT IMPNAME AS VAR'''
-    if len(p) == 5:
-        alias = p[4]
-    else:
-        alias = p[2][1:]
-    loader = ast.Call(ast.Name("load_hio", ast.Load()), [ast.Str(p[2][1:] + ".hio")], [], lineno=p.lexer.lineno)
-    lexpr = ast.Expr(loader, lineno=p.lexer.lineno, col_offset=paren_count)
-    importer = ast.Import([ast.alias(p[2][1:], alias)], lineno=p.lexer.lineno)
-    p[0] = [lexpr, importer]
 
 
 def p_statement_import(p):
@@ -274,22 +255,8 @@ def p_statement_func_args(p):
         p[0] = tuple(p[2])
 
 
-def p_stmts(p):
-    '''stmts : stmt
-             | stmts NEWLINE stmt
-             | stmts NEWLINE
-    '''
-    if len(p) == 2:
-        p[0] = [p[1]] if type(p[1]) is not list else p[1]
-    elif len(p) == 3:
-        p[0] = p[1]
-    else:
-        p[1].append(p[3]) if type(p[3]) is not list else p[1].extend(p[3])
-        p[0] = p[1]
-
-
 def p_return_stmt(p):
-    "stmt : RETURN expression"
+    """stmt : RETURN expression"""
     p[0] = ast.Return(p[2])
 
 
@@ -307,16 +274,6 @@ def p_compound_stmt(p):
     """stmt : if_stmt
             | funcdef
             | classdef"""
-    p[0] = p[1]
-
-
-def p_expr_stmt(p):
-    'expr_stmt : expression'
-    p[0] = ast.Expr(p[1])
-
-
-def p_stmt_expr(p):
-    'stmt : expr_stmt'
     p[0] = p[1]
 
 
@@ -382,20 +339,6 @@ def p_continue_stmt(p):
     p[0] = ast.Continue()
 
 
-def p_body_stmts(p):
-    '''body : LBRACE stmts RBRACE'''
-    if len(p) in (4, 5):
-        if type(p[2]) is str:
-            if len(p) == 5:
-                p[0] = p[3]
-            else:
-                p[0] = []
-        else:
-            p[0] = p[2]
-    else:
-        p[0] = []
-
-
 def p_body_empty(p):
     '''body : LBRACE RBRACE'''
     p[0] = []
@@ -404,6 +347,7 @@ def p_body_empty(p):
 def p_expression_csv(p):
     '''csv : expression
            | csv COMMA expression
+           | csv COMMA
     '''
     if len(p) == 2:
         p[0] = [p[1]]
@@ -432,7 +376,7 @@ def p_call_expr(p):
         call = ast.Call(runner, args, [])
         p[0] = ast.Await(call)
     else:
-        p[0] = ast.Call(p[2], list(p[3]))
+        p[0] = ast.Call(p[2], list(p[3]), [])
 
 
 def p_funcdef(p):
@@ -472,11 +416,6 @@ def p_expression_literals(p):
     p[0] = p[1]
 
 
-def p_expression_var(p):
-    'expression : VAR'
-    p[0] = ast.Name(id=p[1], ctx=ast.Load())
-
-
 def p_tuple_litr(p):
     'expression : tuple'
     p[0] = ast.Tuple(list(p[1]), ast.Load())
@@ -506,10 +445,10 @@ def p_expression_list(p):
 
 def p_expression_binop(p):
     '''expression : expression PLUS expression
-              | expression MINUS expression
-              | expression TIMES expression
-              | expression DIVIDE expression
-              | expression POWER expression'''
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression
+                  | expression POWER expression'''
     p[0] = ast.BinOp(p[1], binops[p[2]](), p[3])
 
 
@@ -534,9 +473,14 @@ def p_expression_fbool(p):
     p[0] = ast.NameConstant(True)
 
 
-def p_file_input_end(p):
-    """file_input_end : file_input"""
-    p[0] = p[1]
+def p_expression_var(p):
+    'expression : VAR'
+    p[0] = ast.Name(id=p[1], ctx=ast.Load())
+
+
+def p_expr_stmt(p):
+    'stmt : expression'
+    p[0] = ast.Expr(p[1])
 
 
 def p_file_input(p):
@@ -544,7 +488,8 @@ def p_file_input(p):
                   | file_input stmt
                   | NEWLINE
                   | stmt"""
-    if isinstance(list(p)[-1], str):
+
+    if isinstance(p[len(p) - 1], str):
         if len(p) == 3:
             p[0] = p[1]
         else:
@@ -554,9 +499,34 @@ def p_file_input(p):
             p[0] = p[1] + [p[2]]
         else:
             p[0] = [p[1]]
+            
+
+def p_file_input_end(p):
+    """file_input_end : file_input"""
+    p[0] = p[1]
+
+
+def p_stmts(p):
+    '''stmts : stmts NEWLINE stmt
+             | NEWLINE
+             | stmt
+    '''
+    if len(p) == 2:
+        p[0] = [p[1]] if type(p[1]) is not list else p[1]
+    elif len(p) == 3:
+        p[0] = p[1]
+    else:
+        p[1].append(p[3]) if type(p[3]) is not list else p[1].extend(p[3])
+        p[0] = p[1]
+
+
+def p_body_stmts(p):
+    '''body : LBRACE stmts RBRACE'''
+    p[0] = p[2]
 
 
 def p_error(p):
+    [print(f"{x}: {y}") for x, y in nyacc.__dict__.items()]
     if p is not None:
         raise SyntaxError(f"Syntax error at {p.type, p.value, p.lexpos, p.lineno, paren_count}")
     else:
@@ -576,6 +546,11 @@ def Assign(left, right):
         raise SyntaxError("Can't do that yet")
 
 
+nyacc = None
+
+
 def prep():
     lex.lex()
-    return yacc.yacc(start="file_input_end")
+    global nyacc
+    nyacc = yacc.yacc(start="stmts")
+    return nyacc

@@ -130,6 +130,7 @@ class SelectorFile(BaseFile):
     def __init__(self, file: typing.IO[typing.AnyStr]):
         self._read_queue = deque()
         self._write_queue = deque()
+        self.file = file
 
     def _read_ready(self, value: bool):
         if value and self._read_queue:

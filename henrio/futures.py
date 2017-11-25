@@ -55,6 +55,7 @@ class Future:
             return False
         self.cancelled = True
         self.set_exception(CancelledError)
+        return True
 
     def __iter__(self):
         while not self.complete and self._error is None:

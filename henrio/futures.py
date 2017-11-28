@@ -59,14 +59,14 @@ class Future:
 
     def __iter__(self):
         while not self.complete and self._error is None:
-            yield self
+            yield
         return self.result()
 
     __await__ = __iter__
 
     def send(self, data):
         if not self.complete and self._error is None:
-            return self
+            return
         return self.result()
 
     def add_done_callback(self, fn):

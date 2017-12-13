@@ -1,7 +1,7 @@
 import concurrent.futures
 
 from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
-from .futures import Future, Task, timeout
+from .futures import Future, Task, timeout, Conditional
 from .locks import Lock, ResourceLock
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue
@@ -16,7 +16,7 @@ from .io import socket_connect, socket_bind, gethostbyname, create_socketpair
 from .lang import parse, execute, eval, load_hio, compile_hio, _hio_interpret_call, prep as prep_parsing
 
 CancelledError = concurrent.futures.CancelledError
-del concurrent
+del concurrent  # Not for export
 
 import sys
 if sys.platform == "win32":

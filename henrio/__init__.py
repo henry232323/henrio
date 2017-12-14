@@ -7,13 +7,12 @@ from .loop import BaseLoop
 from .queue import Queue, HeapQueue
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
 from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
-                     remove_writer, spawn, wrap_file, wrap_socket, current_task,
+                     remove_writer, spawn, wrap_file, wrap_socket, current_task, sleepinf,
                      unwrap_socket, postpone, spawn_after)
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
 from .io import socket_connect, socket_bind, gethostbyname, create_socketpair
-from .lang import parse, execute, eval, load_hio, compile_hio, _hio_interpret_call, prep as prep_parsing
 
 CancelledError = concurrent.futures.CancelledError
 del concurrent  # Not for export

@@ -197,10 +197,10 @@ class SelectorSocket(BaseSocket):
         return await fut
 
     async def connect(self, hostpair):
-        await socket_connect(socket, hostpair)
+        await socket_connect(self.file, hostpair)
 
     async def bind(self, hostpair):
-        await socket_bind(socket, hostpair)
+        await socket_bind(self.file, hostpair)
 
     @property
     def fileno(self):

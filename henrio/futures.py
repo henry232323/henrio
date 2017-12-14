@@ -159,7 +159,7 @@ class timeout:
 
 
 class Conditional(Future):
-    def __init__(self, condition: typing.Callable[[None], bool]):
+    def __init__(self, condition: typing.Callable[..., bool]):
         """An awaitable that waits until the condition becomes true. Returns whatever the done callback returns"""
         super().__init__()
         self.condition = condition

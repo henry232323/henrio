@@ -4,7 +4,7 @@ from heapq import heappush, heappop
 from . import Future
 from types import coroutine
 
-__all__ = ["Queue", "HeapQueue"]
+__all__ = ["Queue", "HeapQueue", "QueueWouldBlock"]
 
 
 class QueueWouldBlock(Exception):

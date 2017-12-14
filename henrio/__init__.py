@@ -4,7 +4,7 @@ from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
 from .futures import Future, Task, timeout, Conditional
 from .locks import Lock, ResourceLock
 from .loop import BaseLoop
-from .queue import Queue, HeapQueue
+from .queue import Queue, HeapQueue, QueueWouldBlock
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
 from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
                      remove_writer, spawn, wrap_file, wrap_socket, current_task, sleepinf,

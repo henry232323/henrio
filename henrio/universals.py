@@ -13,7 +13,7 @@ import typing
 from math import inf
 from time import monotonic
 
-__all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf"]
+__all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf", "sleep"]
 
 
 @coroutine

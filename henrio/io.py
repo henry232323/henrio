@@ -7,7 +7,7 @@ __all__ = ["socket_connect", "socket_bind", "gethostbyname", "create_socketpair"
 
 async def socket_connect(socket, hostpair):
     socket.setblocking(True)
-    await worker(socket.connect, hostpair)
+    await threadworker(socket.connect, hostpair)
 
 
 async def socket_bind(socket, hostpair):

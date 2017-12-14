@@ -65,6 +65,7 @@ async_threadworker = partial(async_worker, 0)
 async_processworker = partial(async_worker, 1)
 
 
+@coroutine
 def AsyncFuture(async_result):
     """Meant to wrap a `multiprocessing.pool.ApplyResult`. Returns a conditional that waits for the result to be ready"""
     cond = Conditional(async_result.ready)

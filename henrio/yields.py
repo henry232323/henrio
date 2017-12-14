@@ -12,7 +12,7 @@ def sleep(seconds: typing.Union[float, int]):
     if seconds == 0:
         yield
     elif seconds == inf:
-        yield from postpone()
+        yield from sleepinf()
     else:
         yield ("sleep", seconds)
 
@@ -95,9 +95,9 @@ def spawn_after(coro, time):
 async def schedule_after(coro, time):
     await sleep(time)
     loop = await get_loop()
-    loop.create_task(coro)
+    return loop.create_task(coro)
 
 
 async def call_after(func, time):
     await sleep(time)
-    func()
+    return func()

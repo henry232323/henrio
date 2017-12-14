@@ -23,7 +23,7 @@ from setuptools import setup
 
 setup(
     name='henrio',
-    version='3.0',
+    version='3.2',
     description='My trials screwing with async loops',
     url='https://github.com/henry232323/henrio',
     author='henry232323',

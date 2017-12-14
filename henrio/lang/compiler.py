@@ -169,12 +169,11 @@ def load_either(modulename):
     compiled_path = f"__pycache__/{modulename}.cpython-36.pyc"
     if os.path.exists(compiled_path):
         with open(compiled_path, 'rb') as pyc:
-            pyc.read(4) # Get magic
+            pyc.read(4)  # Get magic
             timestamp_packed = pyc.read(8)
             pyc_timestamp = struct.unpack("L", timestamp_packed)[0]
-            pyc.read(4) # Get filesize
+            pyc.read(4)  # Get filesize
         hio_timestamp = os.stat(f"{modulename}.hio").st_ctime
-        print(pyc_timestamp, hio_timestamp)
         if pyc_timestamp >= int(hio_timestamp):
             return importlib.import_module(modulename, compiled_path)
 
@@ -195,12 +194,12 @@ class HIOLoader(importlib.abc.Loader, importlib.abc.PathEntryFinder):
         """Get the code of a module object, pulled from marshalled .pyc data or compile the source"""
         if os.path.exists(module.__cache__):
             with open(module.__cache__, 'rb') as pyc:
-                pyc.read(4) # Magic Number
-                timestamp_packed = pyc.read(8) # Actual timestamped packed
-                pyc.read(4) # Size
+                pyc.read(4)  # Magic Number
+                timestamp_packed = pyc.read(8)  # Actual timestamped packed
+                pyc.read(4)  # Size
                 pyc_timestamp = struct.unpack("L", timestamp_packed)[0]
                 hio_timestamp = os.stat(module.__file__).st_ctime
-                if pyc_timestamp >= int(hio_timestamp): # Compare edit time and pyc generation time
+                if pyc_timestamp >= int(hio_timestamp):  # Compare edit time and pyc generation time
                     module.__cached__ = True  # Grab cached version if pyc is more recent
                     bytecode = pyc.read()
                     return marshal.loads(bytecode)
@@ -249,7 +248,7 @@ class HIOLoader(importlib.abc.Loader, importlib.abc.PathEntryFinder):
     def create_module(cls, spec):
         if spec.name in sys.modules:  # If its already in sys.modules, just grab it from there
             return sys.modules[spec.name]  # As specified in PEP-302
-        mod = ModuleType(spec.name)  #  A plain module with the name we want
+        mod = ModuleType(spec.name)  # A plain module with the name we want
         mod.__file__ = spec.origin  # File is the above origin
         mod.__name__ = spec.name  # Name is the name we're given
         mod.__loader__ = cls  # Loader is obviously cls

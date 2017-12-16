@@ -1,16 +1,17 @@
 import socket
+import errno
 
 from .workers import threadworker
 
-__all__ = ["socket_connect", "socket_bind", "gethostbyname", "create_socketpair"]
+__all__ = ["threaded_connect", "threaded_bing", "gethostbyname", "create_socketpair", "async_connect"]
 
 
-async def socket_connect(socket, hostpair):
+async def threaded_connect(socket, hostpair):
     socket.setblocking(True)
     await threadworker(socket.connect, hostpair)
 
 
-async def socket_bind(socket, hostpair):
+async def threaded_bind(socket, hostpair):
     socket.setblocking(False)
     try:
         resp = socket.bind(hostpair)
@@ -19,6 +20,22 @@ async def socket_bind(socket, hostpair):
     except BlockingIOError:
         socket.setblocking(True)
         return await threadworker(socket.bind, hostpair)
+
+
+async def async_connect(socket, hostpair):
+    socket.setblocking(False)
+    socket.connect_ex(hostpair)
+    while True:
+        try:
+            socket.getpeername()
+            break
+        except OSError as err:
+            if err.errno == errno.ENOTCONN:
+                yield
+            else:
+                raise
+
+    socket.setblocking(True)
 
 
 async def gethostbyname(name):

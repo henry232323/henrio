@@ -13,6 +13,7 @@ from math import inf
 from time import monotonic
 import select
 from types import coroutine
+import errno
 
 __all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf", "sleep", "timeout", "AsyncFile"]
 
@@ -78,6 +79,14 @@ class AsyncFile:
         return self.file.read(nbytes)
 
     @coroutine
+    def readwith(self, func, *args, **kwargs):
+        """Read using a custom function, args will be forwarded. Will call the function when ready to read.
+        AsyncFile.file to pass the underlying socket"""
+        cond = Conditional(lambda: select.select([self.file], [], [], 0)[0])
+        yield from cond
+        return func(*args, **kwargs)
+
+    @coroutine
     def send(self, data):
         cond = Conditional(lambda: select.select([], [self.file], [], 0)[1])
         yield from cond
@@ -94,6 +103,28 @@ class AsyncFile:
         cond = Conditional(lambda: select.select([self.file], [], [], 0)[0])
         yield from cond
         return self.file.accept()
+
+    @coroutine
+    def connect(self, hostpair):
+        self.file.setblocking(False)
+        self.file.connect_ex(hostpair)
+        while True:
+            try:
+                self.file.getpeername()
+                break
+            except OSError as err:
+                if err.errno == errno.ENOTCONN:
+                    yield
+                else:
+                    raise
+
+        self.file.setblocking(True)
+
+    def dup(self):
+        return AsyncFile(self.file.dup())
+
+    def makefile(self, mode='r', buffering=None, *, encoding=None, errors=None, newline=None):
+        return AsyncFile(self.file.makefile(mode, buffering, encoding=encoding, errors=errors, newline=newline))
 
     def fileno(self):
         return self.file.fileno()

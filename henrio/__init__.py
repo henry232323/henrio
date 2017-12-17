@@ -12,7 +12,7 @@ from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer,
 from .selector import SelectorLoop, SelectorFile, SelectorSocket
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
-from .io import socket_connect, socket_bind, gethostbyname, create_socketpair
+from .io import async_connect, threaded_bind, threaded_connect, gethostbyname, create_socketpair
 from . import universals
 
 CancelledError = concurrent.futures.CancelledError

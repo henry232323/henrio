@@ -5,7 +5,7 @@ import typing
 from collections import deque
 
 from .yields import unwrap_file
-from .io import socket_connect, socket_bind
+from .io import async_connect, threaded_bind, gethostbyname
 from . import Future, BaseLoop, BaseSocket, BaseFile
 
 __all__ = ["SelectorLoop", "SelectorFile", "SelectorSocket"]
@@ -178,29 +178,57 @@ class SelectorSocket(BaseSocket):
 
     def _read_ready(self, value: bool):
         if value and self._read_queue:
-            fut, nbytes = self._read_queue.popleft()
-            fut.set_result(self.file.recv(nbytes))
+            type, fut, args = self._read_queue.popleft()
+            if type == 0:  # Regular read
+                fut.set_result(self.file.recv(*args))
+            elif type == 1:
+                fut.set_result(self.file.recvfrom(*args))
+            else:
+                sock, addr = self.file.accept()
+                return SelectorSocket(sock), addr
 
     def _write_ready(self, value: bool):
         if value and self._write_queue:
-            fut, data = self._write_queue.popleft()
-            fut.set_result(self.file.send(data))
+            type, fut, data = self._write_queue.popleft()
+            if type == 0:
+                fut.set_result(self.file.send(*data))
+            elif type == 1:
+                fut.set_result(self.file.sendto(*data))
 
     async def recv(self, nbytes: int) -> bytes:
         fut = Future()
-        self._read_queue.append((fut, nbytes))
+        self._read_queue.append((0, fut, (nbytes,)))
         return await fut
 
     async def send(self, data: bytes):
         fut = Future()
-        self._write_queue.append((fut, data))
+        self._write_queue.append((1, fut, (data,)))
+        return await fut
+
+    async def sendto(self, data: bytes, address: tuple):
+        fut = Future()
+        name = await gethostbyname(address)
+        self._write_queue.append((1, fut, (data, address)))
+        await fut
+
+    async def accept(self):
+        fut = Future()
+        self._read_queue.append((2, fut, ()))
         return await fut
 
     async def connect(self, hostpair):
-        await socket_connect(self.file, hostpair)
+        await async_connect(self.file, hostpair)
 
     async def bind(self, hostpair):
-        await socket_bind(self.file, hostpair)
+        await threaded_bind(self.file, hostpair)
+
+    async def __aenter__(self):
+        pass
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        if exc_val:
+            raise exc_val
 
     @property
     def fileno(self):

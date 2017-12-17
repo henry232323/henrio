@@ -6,7 +6,7 @@ from typing import Callable
 
 from .yields import create_writer, create_reader, spawn, remove_writer, remove_reader, \
     get_loop
-from .io import socket_connect, socket_bind
+from .io import async_connect, threaded_bind, ssl_do_handshake
 from . import Future
 
 if sys.platform == "win32":
@@ -48,7 +48,7 @@ class ConnectionBase:
             future.set_result(ans)  # Length of content we sent, return barely matters just set future once its complete
 
     async def _connect(self):
-        await socket_connect(self.socket, self.host)
+        await async_connect(self.socket, self.host)
         await spawn(self.connection_made())  # All callbacks are spawns, thus don't interfere with internals
 
     async def _connection_lost(self):
@@ -109,6 +109,7 @@ class ServerBase:
         self.connections.append(wrapped)
         await create_reader(wrapped, self._client_readable, wrapped)
         await create_writer(wrapped, self._client_writable, wrapped)
+        await spawn(self._connection_made(wrapped))
         await spawn(self.connection_made(wrapped))
 
     async def _client_writable(self, sock):
@@ -132,6 +133,9 @@ class ServerBase:
         if sock in self.connections:  # This can get called multiple times before we actually stop reading
             await self._connection_lost(sock)  # So only do it once
             await spawn(self.connection_lost(sock, error))
+
+    async def _connection_made(self, sock):
+        await ssl_do_handshake(sock)
 
     async def _connection_lost(self, sock):
         self.connections.remove(sock)
@@ -218,6 +222,7 @@ async def ssl_connect(protocol_factory, address=None, port=None, bufsize=1024, s
     connection = protocol_factory(socket=sock, host=(address, port), bufsize=bufsize)  # All protos need these args
 
     await connection._connect()
+    await ssl_do_handshake(sock)
     await create_writer(sock, connection._writer_callback)  # Create our reader and writer
     await create_reader(sock, connection._reader_callback)
 
@@ -241,7 +246,7 @@ async def create_server(protocol_factory: Callable[..., ServerBase], address, po
     await create_reader(sock, connection._reader_callback)
 
     if not bound:  # We need to bind the sock if it isn't already
-        await socket_bind(sock, (address, port))
+        await threaded_bind(sock, (address, port))
         sock.listen(backlog) if backlog is not None else sock.listen()
     # We assume we're already listening if we're using an already bound socket, maybe this needs to change?
 
@@ -250,7 +255,7 @@ async def create_server(protocol_factory: Callable[..., ServerBase], address, po
 
 async def create_ssl_server(address, port, bufsize=1024, backlog=None,
                             sockopt: tuple = (SOL_SOCKET, SO_REUSEADDR, 1),
-                            ssl_wrap_attributes=dict(server_size=True)):
+                            ssl_wrap_attributes=dict(server_side=True)):
     sock = socket()
     bound = False
 
@@ -259,7 +264,7 @@ async def create_ssl_server(address, port, bufsize=1024, backlog=None,
     await create_reader(sock, connection._reader_callback)
 
     if not bound:  # We need to bind the sock if it isn't already
-        await socket_bind(sock, (address, port))
+        await threaded_bind(sock, (address, port))
         sock.listen(backlog) if backlog is not None else sock.listen()
     # We assume we're already listening if we're using an already bound socket, maybe this needs to change?
 

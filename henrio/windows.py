@@ -1,8 +1,8 @@
 import _overlapped
 from _winapi import NULL, INFINITE, CloseHandle
+from collections import deque
 
-from . import BaseLoop, Future
-from .io import AsyncSocket
+from . import BaseLoop, Future, BaseFile, BaseSocket
 
 __all__ = ["IOCPLoop", "IOCPSocket", "IOCPInstance", "IOCPFile"]
 
@@ -36,7 +36,7 @@ class IOCPLoop(BaseLoop):
 
                 try:
                     future = self._current_iocp.pop(address)
-                    if isinstance(future, AsyncSocket):
+                    if isinstance(future, IOCPInstance):
                         future._io_ready(address, transferred)
                     elif isinstance(future, Future):
                         future.set_result(transferred)
@@ -56,13 +56,76 @@ class IOCPLoop(BaseLoop):
 
     def wrap_file(self, file) -> "IOCPFile":
         """Wrap a file in an async file API."""
-        return self.wrap_channel(AsyncSocket, file)
+        return self.wrap_channel(IOCPFile, file)
 
     def wrap_socket(self, socket) -> "IOCPSocket":
         """Wrap a file in an async socket API."""
-        return self.wrap_channel(AsyncSocket, socket)
+        return self.wrap_channel(IOCPSocket, socket)
 
     def unwrap_file(self, file):
         if file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
             CloseHandle(file.fileno())
         del self._current_iocp[file._overlap.overlap.address]
+
+
+class IOCPInstance:
+    def __init__(self, file, loop):
+        self.file = file
+        self._readqueue = deque()
+        self._writequeue = deque()
+        self._loop = loop
+        self._queue = dict()
+
+    def _io_ready(self, key, data):  # When we're ready to process IO
+        _type, fut, _data = self._queue.pop(key)
+        fut.set_result(data)
+
+    def close(self):
+        try:
+            # self._overlap.cancel()
+            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
+                CloseHandle(self.file.fileno())
+        finally:
+            self.file.close()
+
+    @property
+    def fileno(self):
+        return self.file.fileno()
+
+
+class IOCPFile(BaseFile, IOCPInstance):
+    def write(self, data):
+        ov = _overlapped.Overlapped(NULL)
+        ov.WriteFile(self.file.fileno(), data)  # Write our file data
+        fut = Future()
+        self._queue[ov.address] = (0, fut, data)
+        self._loop._current_iocp[ov.address] = self
+        return fut
+
+    async def read(self, nbytes):  # Read from file
+        ov = _overlapped.Overlapped(NULL)
+        ov.ReadFile(self.file.fileno(), nbytes)
+        fut = Future()
+        self._queue[ov.address] = (0, fut, nbytes)
+        self._loop._current_iocp[ov.address] = self
+        await fut  # Ok this one is weird, we actually wait to be told we can read, rather than delegating the reading
+        return self.file.read(nbytes)  # Like we do with writing
+
+
+class IOCPSocket(BaseSocket, IOCPInstance):  # Its literally all the same, except send and recv not write and read
+    def send(self, data, flags=0):
+        ov = _overlapped.Overlapped(NULL)
+        ov.WSASend(self.file.fileno(), data, flags)
+        fut = Future()
+        self._queue[ov.address] = (0, fut, data)
+        self._loop._current_iocp[ov.address] = self
+        return fut
+
+    async def recv(self, nbytes, flags=0):
+        ov = _overlapped.Overlapped(NULL)
+        ov.WSARecv(self.file.fileno(), nbytes, flags)
+        fut = Future()
+        self._queue[ov.address] = (1, fut, nbytes)
+        self._loop._current_iocp[ov.address] = self
+        await fut
+        return self.file.recv(nbytes)

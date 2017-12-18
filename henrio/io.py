@@ -3,13 +3,14 @@ import errno
 import ssl as _ssl
 from types import coroutine
 import typing
+import os
 
 from .workers import threadworker
 from .yields import wrap_socket, unwrap_file, wait_readable, wait_writable
 from .bases import BaseSocket
 from . import timeout as _timeout
 
-__all__ = ["threaded_connect", "threaded_bind", "gethostbyname", "create_socketpair", "async_connect",
+__all__ = ["threaded_connect", "threaded_bind", "getaddrinfo", "create_socketpair", "async_connect",
            "ssl_do_handshake", "AsyncSocket"]
 
 
@@ -29,25 +30,41 @@ async def threaded_bind(socket, hostpair):
         return await threadworker(socket.bind, hostpair)
 
 
+yerrlist = [
+    "EINPROGRESS",
+    "WSAEINPROGRESS",
+    "EWOULDBLOCK",
+    "WSAEWOULDBLOCK",
+    "EINVAL",
+    "WSAEINVAL",
+]
+yerrors = {getattr(errno, name) for name in yerrlist if hasattr(errno, name)}
+
+
 @coroutine
-def async_connect(socket, hostpair):
-    socket.setblocking(False)
-    socket.connect_ex(hostpair)
+def _async_connect(sock, host):
+    addr, port = host
+    addr = (yield from getaddrinfo(addr, port))[0][-1][0]
+    sock.setblocking(False)
     while True:
-        try:
-            socket.getpeername()
+        err = sock.connect_ex((addr, port))
+        if err in yerrors:
+            yield
+        elif err in (getattr(errno, "EISCONN"), getattr(errno, "WSAEISCONN")):
             break
-        except OSError as err:
-            if err.errno == errno.ENOTCONN:
-                yield
-            else:
-                raise
-        finally:
-            socket.setblocking(True)
+        else:
+            raise OSError(err, os.strerror(err))
 
 
-async def gethostbyname(name):
-    return await threadworker(socket.gethostbyname, name)
+async def async_connect(sock, host, timeout=None):
+    if timeout is not None:
+        async with _timeout(timeout):
+            return await _async_connect(sock, host)
+    return await _async_connect(sock, host)
+
+
+async def getaddrinfo(name, port):
+    return await threadworker(socket.getaddrinfo, name, port)
 
 
 async def create_socketpair(*args, **kwargs):
@@ -78,6 +95,7 @@ async def open_connection(hostpair: tuple, ssl=False, timeout=None):
         addr = await gethostbyname(addr)
         await async_connect(sock, (addr, port))
         if ssl:
+            print(sock.getpeername())
             await ssl_do_handshake(sock)
         return await wrap_socket(sock)
 

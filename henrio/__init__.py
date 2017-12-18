@@ -13,7 +13,7 @@ from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer,
 from .selector import SelectorLoop
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
-from .io import async_connect, threaded_bind, threaded_connect, gethostbyname, create_socketpair, AsyncSocket
+from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket
 from .timeout import timeout
 from . import universals
 

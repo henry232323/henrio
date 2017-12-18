@@ -2,15 +2,12 @@ import typing
 from concurrent.futures import CancelledError
 from functools import partial
 
-from .yields import postpone, current_task
-
-__all__ = ["Future", "Task", "timeout", "Conditional"]
+__all__ = ["Future", "Task", "Conditional"]
 
 
 class Future:
     def __init__(self):
         """An awaitable that will yield until an exception or result is set."""
-        self.__name__ = self.__class__.__name__
         self._data = None
         self._result = None
         self._error = None
@@ -19,8 +16,9 @@ class Future:
         self._running = False
         self._callback = None
 
-    def __lt__(self, other):  # We use this to make sure heapsort doesn't get mad at us, its arbitrary
-        return False  # And more importantly, an implementation detail
+    __lt__ = lambda *_: False  # We use this to make sure heapsort doesn't get mad at us, its arbitrary
+
+    # And more importantly, an implementation detail
 
     def running(self):
         return self._running
@@ -60,15 +58,14 @@ class Future:
         return True
 
     def __iter__(self):
-        while not self.complete and self._error is None:
-            yield
+        yield self
         return self.result()
 
     __await__ = __iter__
 
     def send(self, data):
         if not self.complete and self._error is None:
-            return
+            return self
         raise StopIteration(self.result())
 
     def add_done_callback(self, fn, *args, **kwargs):
@@ -78,9 +75,16 @@ class Future:
         self._error = StopIteration("Closed!")
 
 
-class Task(Future):
+class Task:
     def __init__(self, task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any):
         """A Future that wraps a coroutine or another future"""
+        self._data = None
+        self._result = None
+        self._error = None
+        self.complete = False
+        self.cancelled = False
+        self._running = False
+        self._callback = None
         super().__init__()
         if hasattr(task, "__await__"):
             self._task = task.__await__()
@@ -97,6 +101,34 @@ class Task(Future):
             return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
         else:
             return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
+
+    __lt__ = lambda *_: False
+
+    def running(self):
+        return self._running
+
+    def done(self):
+        return self.complete
+
+    def result(self):
+        if self._error is not None:
+            raise self._error
+        if not self.complete:
+            raise RuntimeError("Result isn't ready!")
+        return self._result
+
+    def set_result(self, data: typing.Any):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
+        self.complete = True
+        self._result = data
+        if self._callback:
+            self._callback()
+
+    def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
+        self._error = exception
 
     def __iter__(self):
         return self._task
@@ -130,32 +162,6 @@ class Task(Future):
 
     def close(self):
         self._task.close()
-
-
-class timeout:
-    def __init__(self, time):
-        """A timeout that cancels the task once the timeout is reached. May act weirdly if no other tasks are running"""
-        if time <= 0:
-            raise ValueError("Timeout must be greater than 0!")
-        self.timeout = time
-        self.exited = False
-        self.task = None
-
-    def canceller(self):
-        if self.exited:
-            return
-        self.task.cancel()
-
-    async def __aenter__(self):
-        self.task = await current_task()
-        await postpone(self.canceller, self.timeout)
-
-    async def __aexit__(self, exc_type, exc, tb):
-        if exc:
-            if exc_type is CancelledError:
-                raise TimeoutError
-            raise exc
-        self.exited = True
 
 
 class Conditional(Future):

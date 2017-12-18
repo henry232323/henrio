@@ -4,7 +4,7 @@ work with other libraries like asyncio or curio or trio (or really any other asy
 method of operation)
 """
 
-from . import Future, Task, Conditional
+from . import Task, Conditional
 from . import Queue, HeapQueue
 from . import sleepinf
 
@@ -60,6 +60,77 @@ class timeout:
         if monotonic() < self._finish:
             return self._coro.throw(data)
         raise TimeoutError
+
+
+class Future:
+    def __init__(self):
+        """An awaitable that will yield until an exception or result is set."""
+        self.__name__ = self.__class__.__name__
+        self._data = None
+        self._result = None
+        self._error = None
+        self.complete = False
+        self.cancelled = False
+        self._running = False
+        self._callback = None
+
+    def __lt__(self, other):  # We use this to make sure heapsort doesn't get mad at us, its arbitrary
+        return False  # And more importantly, an implementation detail
+
+    def running(self):
+        return self._running
+
+    def done(self):
+        return self.complete
+
+    def result(self):
+        if self._error is not None:
+            raise self._error
+        if not self.complete:
+            raise RuntimeError("Result isn't ready!")
+        return self._result
+
+    def set_result(self, data: typing.Any):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
+        self.complete = True
+        self._result = data
+        if self._callback:
+            self._callback()
+
+    def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
+        if self.complete or self._error is not None:
+            raise RuntimeError("Future already completed")
+        self._error = exception
+
+    def cancel(self):
+        if self.cancelled:
+            return True
+        if self.complete:
+            return False
+        if self.running():
+            return False
+        self.cancelled = True
+        self.set_exception(CancelledError)
+        return True
+
+    def __iter__(self):
+        while not self.complete and self._error is None:
+            yield
+        return self.result()
+
+    __await__ = __iter__
+
+    def send(self, data):
+        if not self.complete and self._error is None:
+            return
+        raise StopIteration(self.result())
+
+    def add_done_callback(self, fn, *args, **kwargs):
+        self._callback = partial(fn, args=args, kwargs=kwargs)
+
+    def close(self):
+        self._error = StopIteration("Closed!")
 
 
 class AsyncFile:

@@ -170,12 +170,13 @@ class Tests(TestCase):
         l.run_until_complete(asd())
 
     def test_async_working(self):
+        raise Exception
         l = SelectorLoop()
         import socket
-        r, w = socket.socketpair()
-        reader, writer = l.wrap_socket(r), l.wrap_socket(w)
 
         async def do_thing():
+            r, w = socket.socketpair()
+            reader, writer = l.wrap_socket(r), l.wrap_socket(w)
             print('asd')
             await writer.send(b"asdasd!")
             print("dsa")
@@ -214,7 +215,7 @@ class Tests(TestCase):
 
         l = SelectorLoop()
         f = l.run_until_complete(pepe())
-        print(f, type(f), f.__name__)
+        print(f, type(f))
 
     def test_locktests(self):
         d = 0

@@ -32,3 +32,5 @@ def run_serv():
     loop = IOCPLoop()
     loop.create_task(create_server(MyProto, "127.0.0.1", 8888))
     loop.run_forever()
+
+run_serv()

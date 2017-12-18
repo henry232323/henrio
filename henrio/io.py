@@ -92,7 +92,7 @@ async def open_connection(hostpair: tuple, ssl=False, timeout=None):
             ssl_context = _ssl.create_default_context()
             sock = ssl_context.wrap_socket(sock)
         addr, port = hostpair
-        addr = await gethostbyname(addr)
+        addr = (await getaddrinfo(addr, port))[0][-1][0]
         await async_connect(sock, (addr, port))
         if ssl:
             print(sock.getpeername())

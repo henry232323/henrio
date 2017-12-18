@@ -2,9 +2,12 @@ import typing
 from types import coroutine
 from math import inf
 
+from .futures import Future
+
 __all__ = ["sleep", "get_loop", "unwrap_file", "create_reader", "create_writer", "remove_reader",
            "remove_writer", "spawn", "wrap_file", "wrap_socket", "current_task",
-           "unwrap_socket", "postpone", "spawn_after", "gethostbyname"]
+           "unwrap_socket", "postpone", "spawn_after", "gethostbyname", "wait_readable", "wait_writable",
+           "sleepinf", "call_after", "schedule_after"]
 
 
 @coroutine
@@ -101,3 +104,17 @@ async def schedule_after(coro, time):
 async def call_after(func, time):
     await sleep(time)
     return func()
+
+
+@coroutine
+def wait_readable(socket):
+    fut = Future()
+    yield ("_wait_read", socket, fut)
+    return (yield from fut)
+
+
+@coroutine
+def wait_writable(socket):
+    fut = Future()
+    yield ("_wait_write", socket, fut)
+    return (yield from fut)

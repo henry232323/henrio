@@ -1,18 +1,20 @@
 import concurrent.futures
 
 from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
-from .futures import Future, Task, timeout, Conditional
+from .futures import Future, Task, Conditional
 from .locks import Lock, ResourceLock
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue, QueueWouldBlock
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
 from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
                      remove_writer, spawn, wrap_file, wrap_socket, current_task, sleepinf,
-                     unwrap_socket, postpone, spawn_after)
-from .selector import SelectorLoop, SelectorFile, SelectorSocket
+                     unwrap_socket, postpone, spawn_after, wait_readable, wait_writable, call_after,
+                     schedule_after)
+from .selector import SelectorLoop
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
-from .io import async_connect, threaded_bind, threaded_connect, gethostbyname, create_socketpair
+from .io import async_connect, threaded_bind, threaded_connect, gethostbyname, create_socketpair, AsyncSocket
+from .timeout import timeout
 from . import universals
 
 CancelledError = concurrent.futures.CancelledError
@@ -24,14 +26,17 @@ if sys.platform == "win32":
 
 del sys  # Not for export
 
-_current_loops = []
+import threading
+_current_loops = threading.local()
+_current_loops.value = []
+del threading
 
 
 def get_default_loop():
-    if _current_loops:
-        return _current_loops[0]
+    if _current_loops.value:
+        return _current_loops.value[0]
     else:
-        _current_loops.append(SelectorLoop())
+        _current_loops.value.append(SelectorLoop())
     return get_default_loop()
 
 

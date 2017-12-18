@@ -17,6 +17,7 @@ class BaseLoop(AbstractLoop):
     def __init__(self):
         self._queue = deque()
         self._tasks = deque()
+        self._futures = list()
         self._timers = list()
         self._readers = dict()
         self._writers = dict()
@@ -79,6 +80,11 @@ class BaseLoop(AbstractLoop):
             else:
                 break
 
+        for future, task in self._futures.copy():
+            if future.complete or future.cancelled:
+                self._tasks.append(task)
+                self._futures.remove((future, task))
+
         self._poll()  # Poll for IO
 
         while self._queue:
@@ -98,7 +104,7 @@ class BaseLoop(AbstractLoop):
                     # A generator yielding us a tuple of `("sleep", time_in_seconds)`
                     if isinstance(task._data,
                                   tuple):  # These are all our 'commands' that can be yielded directly into the loop
-                        command = task._data[0]  # Always ('command', *args) in the form of tuples
+                        command, *args = task._data  # Always ('command', *args) in the form of tuples
                         if command == 'sleep':
                             heappush(self._timers,
                                      (task, self.time() + task._data[1]))  # Add our time to our list of timers
@@ -108,14 +114,16 @@ class BaseLoop(AbstractLoop):
                             elif command == "current_task":
                                 task._data = task
                             else:
-                                task._data = getattr(self, command)(*task._data[1:])
+                                task._data = getattr(self, command)(*args)
                                 if iscoroutine(task._data) and command != "create_task":
                                     self._tasks.append(task._data)
                             self._tasks.append(task)
-                    else:
-                        if iscoroutine(task._data):  # If we received back a coroutine as data, queue it
-                            self._tasks.append(task._data)
+                    elif task._data is None:
                         self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task
+                    elif isinstance(task._data, Future):
+                        self._futures.append((task._data, task))
+                    else:
+                        raise RuntimeError("Invalid yield!")
             else:
                 if task.cancelled:
                     task.close()

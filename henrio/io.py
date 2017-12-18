@@ -2,13 +2,15 @@ import socket
 import errno
 import ssl as _ssl
 from types import coroutine
+import typing
 
 from .workers import threadworker
-from .yields import wrap_socket
+from .yields import wrap_socket, unwrap_file, wait_readable, wait_writable
+from .bases import BaseSocket
 from . import timeout as _timeout
 
 __all__ = ["threaded_connect", "threaded_bind", "gethostbyname", "create_socketpair", "async_connect",
-           "ssl_do_handshake"]
+           "ssl_do_handshake", "AsyncSocket"]
 
 
 async def threaded_connect(socket, hostpair):
@@ -78,3 +80,55 @@ async def open_connection(hostpair: tuple, ssl=False, timeout=None):
         if ssl:
             await ssl_do_handshake(sock)
         return await wrap_socket(sock)
+
+
+class AsyncSocket(BaseSocket):
+    def __init__(self, file: socket.socket):
+        self.file = file
+
+    async def recv(self, nbytes: int) -> bytes:
+        await wait_readable(self.file)
+        return self.file.recv(nbytes)
+
+    async def read(self, nbytes: int):
+        await wait_readable(self.file)
+        return self.file.read(nbytes)
+
+    async def send(self, data: bytes):
+        await wait_writable(self.file)
+        return self.file.send(data)
+
+    async def write(self, data: typing.Union[bytes, str]):
+        await wait_writable(self.file)
+        return self.file.write(data)
+
+    async def sendto(self, data: bytes, address: tuple):
+        await wait_writable(self.file)
+        return self.file.sendto(data, address)
+
+    async def accept(self):
+        await wait_readable(self.file)
+        sock, addr = self.accept()
+        return AsyncSocket(sock), addr
+
+    async def connect(self, hostpair):
+        await async_connect(self.file, hostpair)
+
+    async def bind(self, hostpair):
+        await threaded_bind(self.file, hostpair)
+
+    async def __aenter__(self):
+        pass
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        if exc_val:
+            raise exc_val
+
+    @property
+    def fileno(self):
+        return self.file.fileno()
+
+    def close(self):
+        self.file.close()
+        return unwrap_file(self)

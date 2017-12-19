@@ -118,3 +118,31 @@ def wait_writable(socket):
     fut = Future()
     yield ("_wait_write", socket, fut)
     return (yield from fut)
+
+
+class TaskGroup:
+    def __init__(self):
+        self.tasks = []
+
+    async def spawn(self, coro):
+        task = await spawn(coro)
+        self.tasks.append(task)
+
+    async def join(self):
+        for task in self.tasks:
+            await task.wait()
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.join()
+        if exc_val:
+            raise exc_val
+
+    async def cancel_rest(self):
+        for task in self.tasks:
+            task.cancel()
+
+
+

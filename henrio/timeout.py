@@ -20,6 +20,7 @@ class timeout:
     async def __aenter__(self):
         self.task = await current_task()
         await postpone(self.canceller, self.timeout)
+        return self
 
     async def __aexit__(self, exc_type, exc, tb):
         if exc:
@@ -27,3 +28,7 @@ class timeout:
                 raise TimeoutError
             raise exc
         self.exited = True
+
+    def __iter__(self):
+        self.task = yield from current_task()
+        yield from postpone(self.canceller, self.timeout)

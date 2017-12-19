@@ -91,7 +91,10 @@ class BaseLoop(AbstractLoop):
             task = self._queue.popleft()  # Get next task (FIFO)
             if not task.cancelled and not task.complete:  # If the task isn't done, run it
                 try:
-                    task._data = task.send(task._data)  # Iterate, send it the new data
+                    if task._throw_later:
+                        task._data = task.throw(task._throw_later)
+                    else:
+                        task._data = task.send(task._data)  # Iterate, send it the new data
                 except StopIteration as err:
                     task.set_result(err.value)  # Are we done iterating? Get the err value as the result
                 except CancelledError as err:
@@ -114,7 +117,10 @@ class BaseLoop(AbstractLoop):
                             elif command == "current_task":
                                 task._data = task
                             else:
-                                task._data = getattr(self, command)(*args)
+                                try:
+                                    task._data = getattr(self, command)(*args)
+                                except Exception as e:
+                                    task._throw_later = e
                                 if iscoroutine(task._data) and command != "create_task":
                                     self._tasks.append(task._data)
                             self._tasks.append(task)

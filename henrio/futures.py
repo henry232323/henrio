@@ -1,8 +1,9 @@
 import typing
 from concurrent.futures import CancelledError
 from functools import partial
+from types import coroutine
 
-__all__ = ["Future", "Task", "Conditional"]
+__all__ = ["Future", "Task", "Conditional", "Event"]
 
 
 class Future:
@@ -15,6 +16,7 @@ class Future:
         self.cancelled = False
         self._running = False
         self._callback = None
+        self._joiners = list()
 
     __lt__ = lambda *_: False  # We use this to make sure heapsort doesn't get mad at us, its arbitrary
 
@@ -38,13 +40,15 @@ class Future:
             raise RuntimeError("Future already completed")
         self.complete = True
         self._result = data
-        if self._callback:
-            self._callback()
+        for fut in self._joiners:
+            fut.set_result(None)
 
-    def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
+    def set_exception(self, exception):
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self._error = exception
+        for fut in self._joiners:
+            fut.set_exception(exception)
 
     def cancel(self):
         if self.cancelled:
@@ -74,6 +78,13 @@ class Future:
     def close(self):
         self._error = StopIteration("Closed!")
 
+    async def wait(self):
+        if self.complete or self.cancelled or self._error:
+            return
+        fut = Future()
+        self._joiners.append(fut)
+        await fut
+
 
 class Task:
     def __init__(self, task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any):
@@ -85,6 +96,8 @@ class Task:
         self.cancelled = False
         self._running = False
         self._callback = None
+        self._joiners = list()
+        self._throw_later = None
         super().__init__()
         if hasattr(task, "__await__"):
             self._task = task.__await__()
@@ -122,13 +135,15 @@ class Task:
             raise RuntimeError("Future already completed")
         self.complete = True
         self._result = data
-        if self._callback:
-            self._callback()
+        for fut in self._joiners:
+            fut.set_result(None)
 
     def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self._error = exception
+        for fut in self._joiners:
+            fut.set_exception(exception)
 
     def __iter__(self):
         return self._task
@@ -163,6 +178,11 @@ class Task:
     def close(self):
         self._task.close()
 
+    async def wait(self):
+        fut = Future()
+        self._joiners.append(fut)
+        await fut
+
 
 class Conditional(Future):
     def __init__(self, condition: typing.Callable[..., bool]):
@@ -188,3 +208,24 @@ class Conditional(Future):
         if not self.complete:
             raise RuntimeError("Result isn't ready!")
         return self._callback()
+
+
+class Event:
+    def __init__(self):
+        self._value = False
+        self._waiters = 0
+
+    @coroutine
+    def wait(self):
+        self._waiters += 1
+        while not self.value:
+            yield
+        self._waiters -= 1
+
+    def set(self):
+        self.value = True
+
+    async def clear(self):
+        while self._waiters > 0:
+            yield
+        self.value = False

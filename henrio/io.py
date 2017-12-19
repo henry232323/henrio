@@ -1,6 +1,5 @@
 import socket
 import errno
-import ssl as _ssl
 from types import coroutine
 import typing
 import os
@@ -12,11 +11,13 @@ from .bases import BaseSocket
 from . import timeout as _timeout
 
 try:
+    import ssl as _ssl
     from ssl import SSLWantReadError, SSLWantWriteError
 
     WantRead = (BlockingIOError, InterruptedError, SSLWantReadError)
     WantWrite = (BlockingIOError, InterruptedError, SSLWantWriteError)
 except ImportError:  # Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py
+    _ssl = None
     WantRead = (BlockingIOError, InterruptedError)
     WantWrite = (BlockingIOError, InterruptedError)
 
@@ -109,6 +110,9 @@ async def open_connection(hostpair: tuple, timeout=None, *,
     addr, port = hostpair
     addr = (await getaddrinfo(addr, port))[0][-1][0]
     await async_connect(sock, (addr, port))
+
+    if ssl and _ssl is None:
+        raise RuntimeError("The SSL Module is missing! SSL connections cannot be made without it!")
 
     if ssl:
         if not isinstance(ssl, bool):

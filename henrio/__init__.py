@@ -13,7 +13,8 @@ from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer,
 from .selector import SelectorLoop
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
-from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket, open_connection
+from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket, \
+    open_connection, aopen
 from .timeout import timeout
 from . import universals
 
@@ -21,12 +22,14 @@ CancelledError = concurrent.futures.CancelledError
 del concurrent  # Not for export
 
 import sys
+
 if sys.platform == "win32":
     from .windows import IOCPLoop, IOCPFile, IOCPSocket, IOCPInstance
 
 del sys  # Not for export
 
 import threading
+
 _current_loops = threading.local()
 _current_loops.value = []
 del threading

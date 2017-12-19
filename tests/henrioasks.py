@@ -1,3 +1,4 @@
+import asks
 from multio import _AsyncLib
 
 import henrio
@@ -34,3 +35,18 @@ def _henrio_init(lib: _AsyncLib):
     lib.Event = henrio.Event
     lib.Cancelled = henrio.CancelledError
     lib.TaskTimeout = TimeoutError
+
+
+asks.multio.manager.register("henrio", _henrio_init)
+asks.multio.init("henrio")
+
+
+async def example():
+    try:
+        r = await asks.get('https://example.org')
+        return r
+    except:
+        import traceback
+        traceback.print_exc()
+
+print(henrio.run(example()))

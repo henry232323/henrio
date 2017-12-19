@@ -41,7 +41,6 @@ class SelectorLoop(BaseLoop):
                 if events & selectors.EVENT_WRITE == selectors.EVENT_WRITE:
                     queue = map[file.fileobj].data[1]
                     if queue:
-                        print("beans")
                         queue.popleft().set_result(None)
 
         else:
@@ -56,11 +55,9 @@ class SelectorLoop(BaseLoop):
         wrapped = AsyncSocket(socket)
         self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE,
                                data=(deque(), deque()))  # Get our R/W
-        print(self, dict(self.selector.get_map()))
         return wrapped
 
     def unwrap_socket(self, file):
-        print("fuck!")
         key = self.selector.get_key(file)
         for fut in key.data[0]:
             fut.cancel()
@@ -71,10 +68,7 @@ class SelectorLoop(BaseLoop):
         self.selector.unregister(file)
 
     def _wait_read(self, file, fut):
-        self.selector.get_key(file.fileno())[0].append(fut)
+        self.selector.get_key(file.fileno()).data[0].append(fut)
 
     def _wait_write(self, file, fut):
-        try:
-            self.selector.get_key(file.fileno())[1].append(fut)
-        except Exception as e:
-            print(self, dict(self.selector.get_map()))
+        self.selector.get_key(file.fileno()).data[1].append(fut)

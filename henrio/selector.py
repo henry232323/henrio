@@ -17,8 +17,16 @@ class SelectorLoop(BaseLoop):
 
     def _poll(self):
         """Poll IO using the selector"""
-        map = self.selector.get_map()
-        if map:  # Pray it doesn't block
+        map = self.selector.get_map()  # Pray it doesn't block
+        l = []
+        for key in map.values():
+            if key.fileobj.fileno() == -1:
+                l.append(key)
+
+        for item in l:
+            self.selector.unregister(item.fileobj)
+
+        if map:
             # We can block as long as we want if theres no tasks to process till we're done
             # We want our currently ready files
             if not (self._tasks or self._queue):
@@ -66,6 +74,8 @@ class SelectorLoop(BaseLoop):
             fut.cancel()
 
         self.selector.unregister(file)
+
+    unwrap_file = unwrap_socket
 
     def _wait_read(self, file, fut):
         self.selector.get_key(file.fileno()).data[0].append(fut)

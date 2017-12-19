@@ -6,7 +6,7 @@ import os
 from concurrent.futures import CancelledError
 
 from .workers import threadworker
-from .yields import wrap_socket, unwrap_file, wait_readable, wait_writable
+from .yields import wrap_socket, unwrap_socket, wait_readable, wait_writable
 from .bases import BaseSocket
 from . import timeout as _timeout
 
@@ -200,8 +200,8 @@ class AsyncSocket(BaseSocket):
         return self.file.fileno()
 
     async def close(self):
+        await unwrap_socket(self.file)
         await threadworker(self.file.close)
-        return unwrap_file(self)
 
 
 class AsyncFile(BaseSocket):

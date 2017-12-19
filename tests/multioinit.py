@@ -3,8 +3,18 @@ from multio import _AsyncLib
 import henrio
 
 
-def open_connection(host, port, ssl=False, timeout=None):
-    return henrio.open_connection((host, port), ssl=ssl, timeout=timeout)
+def open_connection(host, port,
+                    timeout=None, *,
+                    ssl=False,
+                    source_addr=None,
+                    server_hostname=None,
+                    alpn_protocols=None):
+    return henrio.open_connection((host, port),
+                                  timeout=timeout,
+                                  ssl=ssl,
+                                  source_addr=source_addr,
+                                  server_hostname=server_hostname,
+                                  alpn_protocols=alpn_protocols)
 
 
 def _henrio_init(lib: _AsyncLib):

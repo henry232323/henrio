@@ -13,9 +13,10 @@ from . import timeout as _timeout
 
 try:
     from ssl import SSLWantReadError, SSLWantWriteError
+
     WantRead = (BlockingIOError, InterruptedError, SSLWantReadError)
     WantWrite = (BlockingIOError, InterruptedError, SSLWantWriteError)
-except ImportError:    # Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py
+except ImportError:  # Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py
     WantRead = (BlockingIOError, InterruptedError)
     WantWrite = (BlockingIOError, InterruptedError)
 
@@ -91,21 +92,34 @@ def ssl_do_handshake(socket, *args, **kwargs):
             yield
 
 
-async def open_connection(hostpair: tuple, ssl=False, timeout=None):
-    if timeout is not None:
-        async with _timeout(timeout):
-            return await open_connection(hostpair, ssl)
-    else:
-        sock = socket.socket()
-        if ssl:
+async def open_connection(hostpair: tuple, timeout=None, *,
+                          ssl=False,
+                          source_addr=None,
+                          server_hostname=None,
+                          alpn_protocols=None):
+
+    sock = socket.create_connection(hostpair, source_address=source_addr, timeout=timeout)
+    if ssl:
+        if not isinstance(ssl, bool):
+            ssl_context = ssl
+        else:
             ssl_context = _ssl.create_default_context()
-            sock = ssl_context.wrap_socket(sock)
-        addr, port = hostpair
-        addr = (await getaddrinfo(addr, port))[0][-1][0]
+            if not server_hostname:
+                ssl_context.check_hostname = False
+            print(server_hostname, ssl_context.check_hostname)
+
+            if alpn_protocols:
+                ssl_context.set_alpn_protocols(alpn_protocols)
+
+        sock = ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+
+    addr, port = hostpair
+    addr = (await getaddrinfo(addr, port))[0][-1][0]
+    if ssl:
+        await ssl_do_handshake(sock)
+    else:
         await async_connect(sock, (addr, port))
-        if ssl:
-            await ssl_do_handshake(sock)
-        return await wrap_socket(sock)
+    return await wrap_socket(sock)
 
 
 class AsyncSocket(BaseSocket):
@@ -137,7 +151,7 @@ class AsyncSocket(BaseSocket):
                     buffer = buffer[nsent:]
                 except WantWrite:
                     await wait_writable(self.file)
-                except WantRead:   # pragma: no cover
+                except WantRead:  # pragma: no cover
                     await wait_readable(self.file)
         except CancelledError as e:
             e.bytes_sent = total_sent

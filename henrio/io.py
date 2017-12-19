@@ -4,14 +4,23 @@ import ssl as _ssl
 from types import coroutine
 import typing
 import os
+from concurrent.futures import CancelledError
 
 from .workers import threadworker
 from .yields import wrap_socket, unwrap_file, wait_readable, wait_writable
 from .bases import BaseSocket
 from . import timeout as _timeout
 
+try:
+    from ssl import SSLWantReadError, SSLWantWriteError
+    WantRead = (BlockingIOError, InterruptedError, SSLWantReadError)
+    WantWrite = (BlockingIOError, InterruptedError, SSLWantWriteError)
+except ImportError:    # Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py
+    WantRead = (BlockingIOError, InterruptedError)
+    WantWrite = (BlockingIOError, InterruptedError)
+
 __all__ = ["threaded_connect", "threaded_bind", "getaddrinfo", "create_socketpair", "async_connect",
-           "ssl_do_handshake", "AsyncSocket"]
+           "ssl_do_handshake", "AsyncSocket", "aopen", "AsyncFile", "open_connection"]
 
 
 async def threaded_connect(socket, hostpair):
@@ -95,7 +104,6 @@ async def open_connection(hostpair: tuple, ssl=False, timeout=None):
         addr = (await getaddrinfo(addr, port))[0][-1][0]
         await async_connect(sock, (addr, port))
         if ssl:
-            print(sock.getpeername())
             await ssl_do_handshake(sock)
         return await wrap_socket(sock)
 
@@ -115,6 +123,25 @@ class AsyncSocket(BaseSocket):
     async def send(self, data: bytes):
         await wait_writable(self.file)
         return self.file.send(data)
+
+    async def sendall(self, data, flags=0):
+        """Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py"""
+        buffer = memoryview(data).cast('b')
+        total_sent = 0
+        try:
+            while buffer:
+                try:
+                    await wait_writable(self.file)
+                    nsent = self.file.send(buffer, flags)
+                    total_sent += nsent
+                    buffer = buffer[nsent:]
+                except WantWrite:
+                    await wait_writable(self.file)
+                except WantRead:   # pragma: no cover
+                    await wait_readable(self.file)
+        except CancelledError as e:
+            e.bytes_sent = total_sent
+            raise
 
     async def write(self, data: typing.Union[bytes, str]):
         await wait_writable(self.file)
@@ -136,7 +163,7 @@ class AsyncSocket(BaseSocket):
         await threaded_bind(self.file, hostpair)
 
     async def __aenter__(self):
-        pass
+        return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.close()
@@ -147,6 +174,46 @@ class AsyncSocket(BaseSocket):
     def fileno(self):
         return self.file.fileno()
 
-    def close(self):
-        self.file.close()
+    async def close(self):
+        await threadworker(self.file.close)
         return unwrap_file(self)
+
+
+class AsyncFile(BaseSocket):
+    def __init__(self, file, mode='r', *args, **kwargs):
+        self.file = open(file, mode=mode, *args, **kwargs)
+
+    @coroutine
+    def read(self, *args, **kwargs):
+        return threadworker(self.file.read, *args, **kwargs)
+
+    @coroutine
+    def readline(self, *args, **kwargs):
+        return threadworker(self.file.readlines, *args, **kwargs)
+
+    @coroutine
+    def write(self, *args, **kwargs):
+        return threadworker(self.file.writelines, *args, **kwargs)
+
+    @coroutine
+    def writelines(self, *args, **kwargs):
+        return threadworker(self.file.writelines, *args, **kwargs)
+
+    @coroutine
+    def close(self):
+        return threadworker(self.file.close)
+
+    @coroutine
+    def flush(self):
+        return threadworker(self.file.flush)
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+        if exc_val:
+            raise exc_val
+
+
+aopen = AsyncFile

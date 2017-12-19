@@ -1,19 +1,19 @@
 import concurrent.futures
 
 from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
-from .futures import Future, Task, Conditional
-from .locks import Lock, ResourceLock
+from .futures import Future, Task, Conditional, Event
+from .locks import Lock, ResourceLock, Semaphore
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue, QueueWouldBlock
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
 from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
                      remove_writer, spawn, wrap_file, wrap_socket, current_task, sleepinf,
                      unwrap_socket, postpone, spawn_after, wait_readable, wait_writable, call_after,
-                     schedule_after)
+                     schedule_after, TaskGroup)
 from .selector import SelectorLoop
 from .protocols import ConnectionBase, connect, create_server, ServerBase, ssl_connect, SSLServer, create_ssl_server, \
     ServerSocket
-from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket
+from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket, open_connection
 from .timeout import timeout
 from . import universals
 

@@ -99,6 +99,7 @@ async def open_connection(hostpair: tuple, timeout=None, *,
                           alpn_protocols=None):
 
     sock = socket.create_connection(hostpair, source_address=source_addr, timeout=timeout)
+    stime = sock.timeout
     if ssl:
         if not isinstance(ssl, bool):
             ssl_context = ssl
@@ -106,19 +107,22 @@ async def open_connection(hostpair: tuple, timeout=None, *,
             ssl_context = _ssl.create_default_context()
             if not server_hostname:
                 ssl_context.check_hostname = False
-            print(server_hostname, ssl_context.check_hostname)
 
             if alpn_protocols:
                 ssl_context.set_alpn_protocols(alpn_protocols)
 
-        sock = ssl_context.wrap_socket(sock, server_hostname=server_hostname)
+        sock.settimeout(0.0)
+        sock = ssl_context.wrap_socket(sock, server_hostname=server_hostname, do_handshake_on_connect=False)
 
     addr, port = hostpair
     addr = (await getaddrinfo(addr, port))[0][-1][0]
+
     if ssl:
         await ssl_do_handshake(sock)
     else:
         await async_connect(sock, (addr, port))
+    sock.settimeout(stime)
+
     return await wrap_socket(sock)
 
 

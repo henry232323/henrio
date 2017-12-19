@@ -32,7 +32,7 @@ import threading
 
 _current_loops = threading.local()
 _current_loops.value = []
-del threading
+del threading # Not for export
 
 
 def get_default_loop():

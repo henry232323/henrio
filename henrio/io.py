@@ -97,9 +97,19 @@ async def open_connection(hostpair: tuple, timeout=None, *,
                           source_addr=None,
                           server_hostname=None,
                           alpn_protocols=None):
+    if timeout is not None:
+        async with _timeout(timeout):
+            open_connection(hostpair, timeout, ssl=ssl, source_addr=source_addr, server_hostname=server_hostname,
+                            alpn_protocols=alpn_protocols)
+        return
 
-    sock = socket.create_connection(hostpair, source_address=source_addr, timeout=timeout)
-    stime = sock.timeout
+    sock = socket.socket()
+    if source_addr:
+        await threaded_bind(sock, source_addr)
+    addr, port = hostpair
+    addr = (await getaddrinfo(addr, port))[0][-1][0]
+    await async_connect(sock, (addr, port))
+
     if ssl:
         if not isinstance(ssl, bool):
             ssl_context = ssl
@@ -111,17 +121,10 @@ async def open_connection(hostpair: tuple, timeout=None, *,
             if alpn_protocols:
                 ssl_context.set_alpn_protocols(alpn_protocols)
 
-        sock.settimeout(0.0)
         sock = ssl_context.wrap_socket(sock, server_hostname=server_hostname, do_handshake_on_connect=False)
-
-    addr, port = hostpair
-    addr = (await getaddrinfo(addr, port))[0][-1][0]
 
     if ssl:
         await ssl_do_handshake(sock)
-    else:
-        await async_connect(sock, (addr, port))
-    sock.settimeout(stime)
 
     return await wrap_socket(sock)
 

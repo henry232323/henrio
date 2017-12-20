@@ -7,6 +7,7 @@ method of operation)
 from . import Task, Conditional
 from . import Queue, HeapQueue
 from . import sleepinf
+from . import ssl_do_handshake, async_connect
 
 import typing
 from math import inf
@@ -15,7 +16,8 @@ import select
 from types import coroutine
 import errno
 
-__all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf", "sleep", "timeout", "AsyncFile"]
+__all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf", "sleep", "timeout", "AsyncFile",
+           "ssl_do_handshake", "async_connect"]
 
 
 @coroutine

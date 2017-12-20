@@ -86,13 +86,13 @@ def current_task():
 
 
 @coroutine
-def postpone(func, time):
-    return spawn(call_after(func, time))
+async def postpone(func, time):
+    return await spawn(call_after(func, time))
 
 
 @coroutine
-def spawn_after(coro, time):
-    return spawn(schedule_after(coro, time))
+async def spawn_after(coro, time):
+    return await spawn(schedule_after(coro, time))
 
 
 async def schedule_after(coro, time):
@@ -143,6 +143,3 @@ class TaskGroup:
     async def cancel_rest(self):
         for task in self.tasks:
             task.cancel()
-
-
-

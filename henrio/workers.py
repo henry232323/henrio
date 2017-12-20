@@ -65,32 +65,11 @@ async_threadworker = partial(async_worker, 0)
 async_processworker = partial(async_worker, 1)
 
 
-@coroutine
-def AsyncFuture(async_result):
+async def AsyncFuture(async_result):
     """Meant to wrap a `multiprocessing.pool.ApplyResult`. Returns a conditional that waits for the result to be ready"""
     cond = Conditional(async_result.ready)
     cond.add_done_callback(async_result.get)
-    return cond
-
-
-"""
-class AsyncFuture:
-    def __init__(self, async_result):
-
-        self._async_result = async_result
-
-    def __iter__(self):
-        while not self._async_result.ready():
-            yield self
-        return self._async_result.get(0)
-
-    __await__ = __iter__
-
-    def send(self, data):
-        if not self._async_result.ready():
-            return None
-        raise StopIteration(self._async_result.get(0))
-"""
+    return await cond
 
 
 class Pool:

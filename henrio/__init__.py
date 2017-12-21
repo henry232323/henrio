@@ -22,7 +22,7 @@ del concurrent  # Not for export
 import sys
 
 if sys.platform == "win32":
-    from .windows import IOCPLoop, IOCPFile, IOCPSocket, IOCPInstance
+    from .windows import IOCPLoop, IOCPFile
 
 del sys  # Not for export
 

@@ -33,6 +33,9 @@ class BaseLoop(AbstractLoop):
         """Sleep"""
         return time.sleep(amount)
 
+    def run(self, func, *args, **kwargs):
+        return self.run_until_complete(func(*args, **kwargs))
+
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):
         """Run an awaitable/generator until it is complete and return its value. Raise if the task raises"""
         try:

@@ -10,6 +10,7 @@ from .workers import threadworker
 from .yields import wrap_socket, unwrap_socket, wait_readable, wait_writable
 from .bases import BaseSocket
 from . import timeout as _timeout
+from . import dns
 
 try:
     import ssl as _ssl
@@ -79,7 +80,9 @@ async def async_connect(sock, host, timeout=None):
 
 @wraps(socket.getaddrinfo)
 async def getaddrinfo(name, port):
-    return await threadworker(socket.getaddrinfo, name, port)
+    if hasattr(dns, "getaddrinfo"):
+        return await dns.getaddrinfo(name)  # Doesn't take port argument as of now, may be inaccurate
+    return await threadworker(socket.getaddrinfo, name, port)  # But hey it's async right?
 
 
 @wraps(socket.socketpair)
@@ -237,7 +240,6 @@ class AsyncSocket(BaseSocket):
         await threadworker(self.file.close)
 
 
-@wraps(open)
 class AsyncFile(BaseSocket):
     """A wrapped file object with all methods run in a threadpool"""
     def __init__(self, file, mode='r', *args, **kwargs):

@@ -98,7 +98,7 @@ if libc:
 
         # get the records; this does i/o and does not block
         ret = getaddrinfo_a(GAI_NOWAIT, reqs, 1, None)
-        assert ret == 0
+        assert not ret
 
         # parse the records out of all the structs
         while True:
@@ -107,7 +107,7 @@ if libc:
                     res = req.contents.ar_result.contents
                     ret = getnameinfo(res.ai_addr, res.ai_addrlen,
                                       host, NI_MAXHOST, None, 0, NI_NUMERICHOST)
-                    assert ret == 0
+                    assert not ret
                     return host.value
             except ValueError:
                 yield

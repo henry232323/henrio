@@ -74,7 +74,7 @@ def compile_hio(module_path):
     ext = module_path.split(".")[-1]
     filename = os.path.basename(module_path)
     module = filename[:-len(ext) - 1]
-    with open(module_path, 'r') as rf:
+    with open(module_path) as rf:
         text = rf.read()
 
     mtree = parse(text)
@@ -107,10 +107,10 @@ def walk_tree(tree):
     for i, item in enumerate(tree):
         if isinstance(item, list):
             tree[i:i + 1] = item
-            if item:
-                item = item[0]
-            else:
+            if not item:
                 continue
+            item = item[0]
+                
         if not isinstance(item, ast.AsyncFunctionDef):  # We dont care about functions (we want top lvl)
             if getattr(item, "body", None):  # If it has a body it has children to check (Ifs etc)
                 walk_tree(item.body)
@@ -212,9 +212,7 @@ class HIOLoader(importlib.abc.Loader, importlib.abc.PathEntryFinder):
     @classmethod
     def is_package(cls, fullname):
         """Low quality func that tells you if its a package, don't rely on it"""
-        if "." in fullname:
-            return True
-        return False
+        return "." in fullname
 
     @classmethod
     def find_loader(cls, fullname):  # self, fullname

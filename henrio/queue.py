@@ -13,6 +13,7 @@ class QueueWouldBlock(Exception):
 
 class Queue:
     def __init__(self, size=0, lifo=False):
+        """A generic queue with limited space. FIFO or LIFO."""
         self._lifo = lifo
         self.size = size
         self._getters = deque()
@@ -28,12 +29,15 @@ class Queue:
                                                      self.__class__.__name__)
 
     def empty(self):
+        """Check if the queue is empty"""
         return not self._queue
 
     def full(self):
+        """Check if the queue is full"""
         return self.size and len(self._queue) == self.size
 
     async def get(self):
+        """Wait to get an item from the queue, or immediately get one if one is available."""
         if not self.empty():
             result = self._pop()
             if self._putters:
@@ -49,6 +53,7 @@ class Queue:
         return await future
 
     async def put(self, item):
+        """Wait to append to the queue or immediately append to the queue if it is not full."""
         if not self.full():
             if self._getters:
                 getter = self._getters.popleft()
@@ -64,11 +69,13 @@ class Queue:
         return await future
 
     def get_nowait(self):
+        """Try to get from the queue immediately, raises `QueueWouldBlock` on failure"""
         if self.empty():
             raise QueueWouldBlock("Queue is empty!")
         return self._pop()
 
     def put_nowait(self, item):
+        """Try to append to the queue immediately, raises `QueueWouldBlock` on failure"""
         if self.full():
             raise QueueWouldBlock("Queue is full!")
         return self._append(item)
@@ -82,6 +89,7 @@ class Queue:
         self._queue.append(item)
 
     def setlifo(self, bool: bool):
+        """Set whether the queue is FIFO or LIFO"""
         self._lifo = bool
 
     async def __anext__(self):
@@ -92,12 +100,14 @@ class Queue:
 
     @coroutine
     def join(self):
+        """Wait until the queue is empty"""
         while self._queue:
             yield
 
 
 class HeapQueue(Queue):
     def __init__(self, size=0):
+        """A Heap queue that gets and puts like the heapq module."""
         self.size = size
         self._getters = deque()
         self._putters = deque()

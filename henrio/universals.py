@@ -8,13 +8,15 @@ from . import Task, Conditional
 from . import Queue, HeapQueue
 from . import sleepinf
 from . import ssl_do_handshake, async_connect
+from . import CancelledError
 
+import errno
+import select
 import typing
 from math import inf
 from time import monotonic
-import select
 from types import coroutine
-import errno
+from functools import partial
 
 __all__ = ["Future", "Task", "Conditional", "Queue", "HeapQueue", "sleepinf", "sleep", "timeout", "AsyncFile",
            "ssl_do_handshake", "async_connect"]
@@ -35,6 +37,8 @@ def sleep(seconds: typing.Union[float, int]):
 
 class timeout:
     def __init__(self, coro, timeout):
+        """A timeout that wraps a coroutine. Generally works as long as the task continues processing while waiting
+        Meaning any tasks pulled from the internal queue probably wont work."""
         if hasattr(coro, "__await__"):
             self._coro = coro.__await__()
         else:
@@ -124,6 +128,8 @@ class Future:
     __await__ = __iter__
 
     def send(self, data):
+        if data is not None:
+            raise RuntimeError("Sent non-None value to Future")
         if not self.complete and self._error is None:
             return
         raise StopIteration(self.result())
@@ -137,6 +143,7 @@ class Future:
 
 class AsyncFile:
     def __init__(self, file):
+        """A wrapper for file-likes that have a fileno() method. Uses select.select to wait for read/write ready"""
         self.file = file
 
     @coroutine

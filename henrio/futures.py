@@ -23,12 +23,15 @@ class Future:
     # And more importantly, an implementation detail
 
     def running(self):
+        """Check if future is running"""
         return self._running
 
     def done(self):
+        """Check if future is done"""
         return self.complete
 
     def result(self):
+        """Get the result of the future. Will raise if it isnt ready or an error has been set."""
         if self._error is not None:
             raise self._error
         if not self.complete:
@@ -36,6 +39,7 @@ class Future:
         return self._result
 
     def set_result(self, data: typing.Any):
+        """Set the result of the future"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self.complete = True
@@ -44,6 +48,7 @@ class Future:
             fut.set_result(None)
 
     def set_exception(self, exception):
+        """Set the future's exception to raise when returning control"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self._error = exception
@@ -51,6 +56,7 @@ class Future:
             fut.set_exception(exception)
 
     def cancel(self):
+        """Try to cancel a coroutine. Will return True if successfully raised otherwise False"""
         if self.cancelled:
             return True
         if self.complete:
@@ -62,6 +68,7 @@ class Future:
         return True
 
     def __iter__(self):
+        """Wait for the Future to complete."""
         yield self
         return self.result()
 
@@ -73,6 +80,7 @@ class Future:
         raise StopIteration(self.result())
 
     def add_done_callback(self, fn, *args, **kwargs):
+        """Add a callback to execute when the future finishes."""
         self._callback = partial(fn, args=args, kwargs=kwargs)
 
     def close(self):
@@ -118,12 +126,15 @@ class Task:
     __lt__ = lambda *_: False
 
     def running(self):
+        """Return if the Task is executing"""
         return self._running
 
     def done(self):
+        """Check if the task is done."""
         return self.complete
 
     def result(self):
+        """Returns the result of the task. Will raise if the result isnt ready or an exception has been set"""
         if self._error is not None:
             raise self._error
         if not self.complete:
@@ -131,6 +142,7 @@ class Task:
         return self._result
 
     def set_result(self, data: typing.Any):
+        """Sets the result of Task"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self.complete = True
@@ -139,6 +151,7 @@ class Task:
             fut.set_result(None)
 
     def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
+        """Sets the exception that will be raised when control is returned"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
         self._error = exception
@@ -157,6 +170,7 @@ class Task:
         return self._task.throw(exc)
 
     def cancel(self):
+        """Returns whether or not the task has been successfully cancelled. """
         if self.cancelled:
             return True
         if self.complete:
@@ -203,6 +217,7 @@ class Conditional(Future):
         raise StopIteration(self.result())
 
     def result(self):
+        """Get the result of the conditional. If an error was set it will be raised"""
         if self._error is not None:
             raise self._error
         if not self.complete:
@@ -212,20 +227,25 @@ class Conditional(Future):
 
 class Event:
     def __init__(self):
+        """An event that can be waited on until set, then can be waited for again once cleared."""
         self._value = False
         self._waiters = 0
 
     @coroutine
     def wait(self):
+        """Wait until the event is set."""
         self._waiters += 1
         while not self.value:
             yield
         self._waiters -= 1
 
     def set(self):
+        """Toggle the event and wake all waiters"""
         self.value = True
 
-    async def clear(self):
+    @coroutine
+    def clear(self):
+        """Waits until waiters are woken then resets the Event."""
         while self._waiters > 0:
             yield
         self.value = False

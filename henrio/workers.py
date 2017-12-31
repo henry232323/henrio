@@ -74,6 +74,7 @@ async def AsyncFuture(async_result):
 
 class Pool:
     def __init__(self, factory, workers):
+        """A class that wraps a limited pool of workers."""
         self.waiter = Semaphore(workers)
         self.factory = factory
         self.workers = [factory() for _ in range(workers)]

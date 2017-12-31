@@ -9,17 +9,19 @@ __all__ = ["Lock", "ResourceLock", "Semaphore"]
 
 class Lock:
     def __init__(self):
+        """A generic lock. Use like any other lock. Holder is decided by Task"""
         self._queue = deque()
         self._holder = None
         self._held = False
 
     @property
     def holder(self):
+        """Gets the task that currently owns the lock"""
         if self._holder is not None:
             return self._holder()
 
     @holder.setter
-    def holder(self, value):
+    def holder(self, value):  # The idea here is that if the holder of a lock disappears we can assume its released
         if value is not None:
             self._holder = ref(value)
         else:
@@ -30,6 +32,7 @@ class Lock:
         return self._held
 
     async def acquire(self):
+        """Waits to acquire the lock and registers the holder as the current task."""
         if not self._held:
             self._held = True
             ct = await current_task()
@@ -41,6 +44,7 @@ class Lock:
             self.holder = await current_task()
 
     async def release(self):
+        """Release the lock and set the holder to None"""
         ct = await current_task()
         if self.holder == ct:
             if self._queue:
@@ -63,17 +67,23 @@ class Lock:
 
 
 class ResourceLock(Lock):
+    """A lock that holds a resource"""
     def __init__(self, value):
         super().__init__()
         self._value = value
 
-    async def __aenter__(self):
-        await self.acquire()
+    async def acquire(self):
+        """Acquire the lock and return the value"""
+        await super().acquire()
         return self._value
+
+    async def __aenter__(self):
+        return await self.acquire()
 
 
 class Semaphore(Lock):
     def __init__(self, maxholders=1):
+        """A lock that can be held by up to `maxholders` tasks"""
         super().__init__()
         self.maxholders = maxholders
         self.holders = []

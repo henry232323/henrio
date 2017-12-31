@@ -30,10 +30,11 @@ class BaseLoop(AbstractLoop):
         return time.monotonic()
 
     def sleep(self, amount):
-        """Sleep"""
+        """Sleep for when there is nothing to do to avoid spinning"""
         return time.sleep(amount)
 
     def run(self, func, *args, **kwargs):
+        """Run a function with the given args"""
         return self.run_until_complete(func(*args, **kwargs))
 
     def run_until_complete(self, starting_task: typing.Union[typing.Generator, typing.Awaitable]):

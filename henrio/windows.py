@@ -12,6 +12,7 @@ ERROR_CONNECTION_ABORTED = 1236
 
 class IOCPLoop(BaseLoop):
     def __init__(self, concurrency=INFINITE):
+        """An event loop that runs using Windows IOCP instead of the default Selector"""
         super().__init__()
         self._port = _overlapped.CreateIoCompletionPort(_overlapped.INVALID_HANDLE_VALUE, NULL, 0, concurrency)
         self._current_iocp = dict()  # Registered IOCPs
@@ -83,6 +84,7 @@ class IOCPLoop(BaseLoop):
 
 class IOCPFile(BaseFile, BaseSocket):
     def __init__(self, file):
+        """A class wrapping file-likes. Uses IOCP to wait for events and registers the file descriptor with the loop"""
         self.file = file
 
     @coroutine
@@ -113,6 +115,7 @@ class IOCPFile(BaseFile, BaseSocket):
         return self.file.fileno()
 
     def close(self):
+        """Unregister the file descriptor with the loop and close the file."""
         try:
             # self._overlap.cancel()
             if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):

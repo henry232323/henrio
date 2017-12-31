@@ -1,28 +1,32 @@
 import concurrent.futures
 
+CancelledError = concurrent.futures.CancelledError
+del concurrent  # Not for export
+
 from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
 from .futures import Future, Task, Conditional, Event
 from .locks import Lock, ResourceLock, Semaphore
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue, QueueWouldBlock
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture
-from .yields import (sleep, get_loop, unwrap_file, create_reader, create_writer, remove_reader,
-                     remove_writer, spawn, wrap_file, wrap_socket, current_task, sleepinf,
+from .yields import (sleep, get_loop, unwrap_file, spawn, wrap_file, wrap_socket, current_task, sleepinf,
                      unwrap_socket, postpone, spawn_after, wait_readable, wait_writable, call_after,
-                     schedule_after, TaskGroup)
+                     schedule_after, TaskGroup, get_time)
 from .selector import SelectorLoop
 from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, create_socketpair, AsyncSocket, \
     open_connection, aopen, AsyncFile, ssl_do_handshake, ssl_wrap_socket
 from .timeout import timeout
 from . import universals
-
-CancelledError = concurrent.futures.CancelledError
-del concurrent  # Not for export
+from . import dns
 
 import sys
 
 if sys.platform == "win32":
     from .windows import IOCPLoop, IOCPFile
+
+    getaddrinfo_ex = getattr(dns, "getaddrinfo_ex", None)
+
+getaddrinfo_a = getattr(dns, "getattrinfo_a", None)
 
 del sys  # Not for export
 
@@ -57,22 +61,23 @@ def run_forever(*awaitables):
         loop.create_task(awaitable)
     return loop.run_forever()
 
+
 try:
     from multio import _AsyncLib
 
 
     def _open_connection(host, port,
-                        timeout=None, *,
-                        ssl=False,
-                        source_addr=None,
-                        server_hostname=None,
-                        alpn_protocols=None):
+                         timeout=None, *,
+                         ssl=False,
+                         source_addr=None,
+                         server_hostname=None,
+                         alpn_protocols=None):
         return open_connection((host, port),
-                                      timeout=timeout,
-                                      ssl=ssl,
-                                      source_addr=source_addr,
-                                      server_hostname=server_hostname,
-                                      alpn_protocols=alpn_protocols)
+                               timeout=timeout,
+                               ssl=ssl,
+                               source_addr=source_addr,
+                               server_hostname=server_hostname,
+                               alpn_protocols=alpn_protocols)
 
 
     def _henrio_init(lib: _AsyncLib):
@@ -92,7 +97,8 @@ try:
         lib.Event = Event
         lib.Cancelled = CancelledError
         lib.TaskTimeout = TimeoutError
+
+
+    del _AsyncLib
 except ImportError:
     pass
-finally:
-    del _AsyncLib

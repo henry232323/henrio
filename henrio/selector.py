@@ -58,14 +58,14 @@ class SelectorLoop(BaseLoop):
 
         return map
 
-    def wrap_socket(self, socket: socket.socket) -> "SelectorSocket":
+    def wrap_socket(self, socket: socket.socket) -> AsyncSocket:
         """Wrap a file in an async socket API."""
         wrapped = AsyncSocket(socket)
         self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE,
                                data=(deque(), deque()))  # Get our R/W
         return wrapped
 
-    def unwrap_socket(self, file):
+    def unwrap_socket(self, file) -> AsyncSocket:
         key = self.selector.get_key(file)
         for fut in key.data[0]:
             fut.cancel()

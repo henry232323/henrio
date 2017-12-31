@@ -13,6 +13,8 @@ released to the public domain.
 import ctypes
 from types import coroutine
 
+from .yields import get_loop
+
 try:
     libc = ctypes.cdll.LoadLibrary('libc.so.6')
     libanl = ctypes.cdll.LoadLibrary('libanl.so.1')
@@ -85,9 +87,16 @@ if libc:
     # statically allocate the host array
     host = ctypes.cast((ctypes.c_char * NI_MAXHOST)(), ctypes.c_char_p)
 
+    gai_cancel = libanl.gai_cancel
+    gai_cancel.argtypes = [gaicb]
+
+
 
     @coroutine
-    def getaddrinfo(hostname):
+    def getaddrinfo_a(hostname, timeout=-1):
+        """A getaddrinfo for systems supporting `getaddrinfo_a`. Will resolve any """
+        loop = yield from get_loop()
+        etime = loop.time() + timeout
         names = [hostname]
         reqs = (c_gaicb_p * 1)()
         for i, name in enumerate(names):
@@ -101,7 +110,7 @@ if libc:
         assert ret == 0
 
         # parse the records out of all the structs
-        while True:
+        while timeout == -1 or etime > loop.time():
             try:
                 for req in reqs:
                     res = req.contents.ar_result.contents
@@ -111,8 +120,14 @@ if libc:
                     return host.value
             except ValueError:
                 yield
+        else:
+            try:
+                gai_cancel(reqs)
+            except Exception as e:
+                print(e)
+            raise TimeoutError
 
-if False: #winsock:
+if False:  # winsock:
     class GUID(ctypes.Structure):
         _fields_ = [
             ('Data1', ctypes.c_ulong),
@@ -137,6 +152,7 @@ if False: #winsock:
             ('ai_next', ctypes.c_void_p)
         ]
 
+
     c_addrinfoEx_p = ctypes.POINTER(addrinfoEx)
 
     getaddrinfoex = winsock.GetAddrInfoExW
@@ -154,3 +170,4 @@ if False: #winsock:
     ]
 
     winsock.WSAEnumProtocolsW
+

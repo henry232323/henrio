@@ -63,7 +63,7 @@ def run_forever(*awaitables):
 
 
 try:
-    from multio import _AsyncLib
+    from multio import _AsyncLib, manager
 
 
     def _open_connection(host, port,
@@ -98,7 +98,7 @@ try:
         lib.Cancelled = CancelledError
         lib.TaskTimeout = TimeoutError
 
-
+    manager.register("henrio", _henrio_init)
     del _AsyncLib
 except ImportError:
     pass

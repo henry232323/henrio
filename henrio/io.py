@@ -41,15 +41,17 @@ async def threaded_bind(socket, hostpair):
         return await threadworker(socket.bind, hostpair)
 
 
-yerrlist = [
+yerrlist = {
     "EINPROGRESS",
     "WSAEINPROGRESS",
     "EWOULDBLOCK",
     "WSAEWOULDBLOCK",
     "EINVAL",
     "WSAEINVAL",
-]
-yerrors = {getattr(errno, name) for name in yerrlist if hasattr(errno, name)}
+}
+yerrors = {getattr(errno, name, None) for name in yerrlist}
+if None in yerrors:
+    yerrors.remove(None)
 
 
 @coroutine
@@ -61,7 +63,7 @@ def _async_connect(sock, host):
         err = sock.connect_ex((addr, port))
         if err in yerrors:
             yield
-        elif err in (getattr(errno, "EISCONN"), getattr(errno, "WSAEISCONN")):
+        elif err in (getattr(errno, "EISCONN", None), getattr(errno, "WSAEISCONN", None)):
             break
         else:
             raise OSError(err, os.strerror(err))

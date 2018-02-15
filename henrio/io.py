@@ -1,10 +1,9 @@
-import typing
 import socket
 import errno
+from types import coroutine
+import typing
 import os
 from concurrent.futures import CancelledError
-from types import coroutine
-from functools import wraps
 
 from .workers import threadworker
 from .yields import wrap_socket, unwrap_socket, wait_readable, wait_writable
@@ -23,7 +22,7 @@ except ImportError:  # Borrowed from curio https://github.com/dabeaz/curio/blob/
     WantWrite = (BlockingIOError, InterruptedError)
 
 __all__ = ["threaded_connect", "threaded_bind", "getaddrinfo", "create_socketpair", "async_connect",
-           "ssl_do_handshake", "AsyncSocket", "aopen", "AsyncFile", "open_connection", "ssl_wrap_socket"]
+           "ssl_do_handshake", "AsyncSocket", "aopen", "AsyncFile", "open_connection"]
 
 
 async def threaded_connect(socket, hostpair):
@@ -54,9 +53,9 @@ yerrors = {getattr(errno, name) for name in yerrlist if hasattr(errno, name)}
 
 
 @coroutine
-@wraps(socket.socket.connect)
 def _async_connect(sock, host):
     addr, port = host
+    addr = (yield from getaddrinfo(addr, port))[0][-1][0]
     sock.setblocking(False)
     while True:
         err = sock.connect_ex((addr, port))
@@ -68,69 +67,37 @@ def _async_connect(sock, host):
             raise OSError(err, os.strerror(err))
 
 
-@wraps(_async_connect)
 async def async_connect(sock, host, timeout=None):
-    """Connects a socket with a pre-resolved address. Use `henrio.getaddrinfo` first."""
     if timeout is not None:
         async with _timeout(timeout):
             return await _async_connect(sock, host)
     return await _async_connect(sock, host)
 
 
-@wraps(socket.getaddrinfo)
-async def getaddrinfo(*args, **kwargs):
-    """Run `getaddrinfo` in a thread. Same arguments."""
-    return await threadworker(socket.getaddrinfo, args=args, kwargs=kwargs)  # But hey it's async right?
+async def getaddrinfo(name, port):
+    return await threadworker(socket.getaddrinfo, name, port)
 
 
-@wraps(socket.socketpair)
 async def create_socketpair(*args, **kwargs):
-    """Creates a pair of wrapped socket objects in the form of `henrio.AsyncSocket` instances"""
     reader, writer = socket.socketpair(*args, **kwargs)
     rr, rw = await wrap_socket(reader), await wrap_socket(writer)
     return rr, rw
 
 
-if _ssl:
-    @coroutine
-    @wraps(_ssl.SSLSocket.do_handshake)
-    def ssl_do_handshake(socket, *args, **kwargs):
-        """Performs an SSL handshake asynchronously."""
-        while True:
-            try:
-                return socket.do_handshake()
-            except (_ssl.SSLWantReadError, _ssl.SSLWantWriteError):
-                yield
+@coroutine
+def ssl_do_handshake(socket, *args, **kwargs):
+    while True:
+        try:
+            return socket.do_handshake()
+        except (_ssl.SSLWantReadError, _ssl.SSLWantWriteError):
+            yield
 
 
-    @wraps(_ssl.wrap_socket)
-    async def ssl_wrap_socket(socket, ssl_context=None, server_hostname=None, alpn_protocols=None):
-        """Wraps a socket twofold, first into a new socket with ssl.wrap_socket, then returns a new `henrio.AsyncSocket`"""
-        if ssl_context is None:
-            ssl_context = _ssl.create_default_context()
-
-            if not server_hostname:
-                ssl_context.check_hostname = False
-
-            if alpn_protocols:
-                ssl_context.set_alpn_protocols(alpn_protocols)
-
-        newsocket = ssl_context.wrap_socket(socket, server_hostname=server_hostname, do_handshake_on_connect=False)
-        return await wrap_socket(newsocket)
-
-
-else:
-    ssl_do_handshake = None
-    ssl_wrap_socket = None
-
-
-@wraps(socket.create_connection)
 async def open_connection(hostpair: tuple, timeout=None, *,
                           ssl=False,
                           source_addr=None,
                           server_hostname=None,
                           alpn_protocols=None):
-    """Open a new asynchronous connection (like `socket.create_connection`) and returns a new `henrio.AsyncSocket` instance"""
     if timeout is not None:
         async with _timeout(timeout):
             open_connection(hostpair, timeout, ssl=ssl, source_addr=source_addr, server_hostname=server_hostname,
@@ -168,7 +135,6 @@ async def open_connection(hostpair: tuple, timeout=None, *,
 
 class AsyncSocket(BaseSocket):
     def __init__(self, file: socket.socket):
-        """A class for interacting asynchronously with Sockets (transport style sockets as well)"""
         self.file = file
 
     async def recv(self, nbytes: int) -> bytes:
@@ -212,8 +178,8 @@ class AsyncSocket(BaseSocket):
 
     async def accept(self):
         await wait_readable(self.file)
-        sock, addr = self.accept()
-        return AsyncSocket(sock), addr
+        sock, addr = self.file.accept()
+        return await wrap_socket(sock), addr
 
     async def connect(self, hostpair):
         await async_connect(self.file, hostpair)
@@ -239,7 +205,6 @@ class AsyncSocket(BaseSocket):
 
 
 class AsyncFile(BaseSocket):
-    """A wrapped file object with all methods run in a threadpool"""
     def __init__(self, file, mode='r', *args, **kwargs):
         self.file = open(file, mode=mode, *args, **kwargs)
 

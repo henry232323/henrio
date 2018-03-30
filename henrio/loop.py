@@ -49,7 +49,7 @@ class BaseLoop(AbstractLoop):
                 starting_task = Task(starting_task, None)  # Convert any coros to tasks
             if starting_task not in self._tasks:
                 self._queue.appendleft(starting_task)  # Make it priority over already queued tasks
-            while not starting_task.complete and not starting_task.cancelled:
+            while not starting_task.complete and not starting_task.cancelled and not starting_task._error:
                 self._loop_once()  # Loop until we're out of tasks
 
             # Loop is done, return our result

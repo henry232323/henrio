@@ -1,6 +1,7 @@
 import typing
 import socket
 import errno
+import io
 import os
 from concurrent.futures import CancelledError
 from types import coroutine
@@ -26,12 +27,14 @@ __all__ = ["threaded_connect", "threaded_bind", "getaddrinfo", "create_socketpai
            "ssl_do_handshake", "AsyncSocket", "aopen", "AsyncFile", "open_connection", "ssl_wrap_socket"]
 
 
-async def threaded_connect(socket, hostpair):
+async def threaded_connect(socket: socket.socket, hostpair: typing.Tuple[str, int]):
+    """Run socket connect in a separate thread"""
     socket.setblocking(True)
     await threadworker(socket.connect, hostpair)
 
 
-async def threaded_bind(socket, hostpair):
+async def threaded_bind(socket: socket.socket, hostpair: typing.Tuple[str, int]):
+    """Run socket bind in a separate thread"""
     socket.setblocking(False)
     try:
         resp = socket.bind(hostpair)
@@ -173,18 +176,22 @@ class AsyncSocket(BaseSocket):
         """A class for interacting asynchronously with Sockets (transport style sockets as well)"""
         self.file = file
 
+    @wraps(socket.socket.recv)
     async def recv(self, nbytes: int) -> bytes:
         await wait_readable(self.file)
         return self.file.recv(nbytes)
 
+    @wraps(io.BytesIO.read)
     async def read(self, nbytes: int):
         await wait_readable(self.file)
         return self.file.read(nbytes)
 
+    @wraps(socket.socket.send)
     async def send(self, data: bytes):
         await wait_writable(self.file)
         return self.file.send(data)
 
+    @wraps(socket.socket.sendall)
     async def sendall(self, data, flags=0):
         """Borrowed from curio https://github.com/dabeaz/curio/blob/master/curio/io.py"""
         buffer = memoryview(data).cast('b')
@@ -204,22 +211,27 @@ class AsyncSocket(BaseSocket):
             e.bytes_sent = total_sent
             raise
 
+    @wraps(io.BytesIO.write)
     async def write(self, data: typing.Union[bytes, str]):
         await wait_writable(self.file)
         return self.file.write(data)
 
+    @wraps(socket.socket.sendto)
     async def sendto(self, data: bytes, address: tuple):
         await wait_writable(self.file)
         return self.file.sendto(data, address)
 
+    @wraps(socket.socket.accept)
     async def accept(self):
         await wait_readable(self.file)
         sock, addr = self.accept()
         return AsyncSocket(sock), addr
 
+    @wraps(socket.socket.connect)
     async def connect(self, hostpair):
         await async_connect(self.file, hostpair)
 
+    @wraps(socket.socket.bind)
     async def bind(self, hostpair):
         await threaded_bind(self.file, hostpair)
 
@@ -235,6 +247,7 @@ class AsyncSocket(BaseSocket):
     def fileno(self):
         return self.file.fileno()
 
+    @wraps(socket.socket.close)
     async def close(self):
         await unwrap_socket(self.file)
         await threadworker(self.file.close)
@@ -246,26 +259,32 @@ class AsyncFile(BaseSocket):
         self.file = open(file, mode=mode, *args, **kwargs)
 
     @coroutine
+    @wraps(io.BytesIO.read)
     def read(self, *args, **kwargs):
         return threadworker(self.file.read, *args, **kwargs)
 
     @coroutine
+    @wraps(io.BytesIO.readline)
     def readline(self, *args, **kwargs):
         return threadworker(self.file.readlines, *args, **kwargs)
 
     @coroutine
+    @wraps(io.BytesIO.write)
     def write(self, *args, **kwargs):
         return threadworker(self.file.writelines, *args, **kwargs)
 
     @coroutine
+    @wraps(io.BytesIO.writelines)
     def writelines(self, *args, **kwargs):
         return threadworker(self.file.writelines, *args, **kwargs)
 
     @coroutine
+    @wraps(io.BytesIO.close)
     def close(self):
         return threadworker(self.file.close)
 
     @coroutine
+    @wraps(io.BytesIO.flush)
     def flush(self):
         return threadworker(self.file.flush)
 

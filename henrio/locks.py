@@ -93,6 +93,7 @@ class Semaphore(Lock):
         return len(self.holders) == self.maxholders
 
     async def acquire(self):
+        """Wait to acquire the lock"""
         if not self.locked:
             ct = await current_task()
             self.holders.append(ct)
@@ -103,6 +104,7 @@ class Semaphore(Lock):
             self.holders.append(await current_task())
 
     async def release(self):
+        """Release the lock"""
         ct = await current_task()
         if ct in self.holders:
             if self._queue:

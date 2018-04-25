@@ -16,7 +16,6 @@ Abstract Bases
 
 .. autoclass:: henrio.AbstractLoop
    :members:
-   :undoc-members:
    
 .. autoclass:: henrio.BaseFile
    :members:
@@ -36,23 +35,18 @@ Futures & Tasks
 
 .. autoclass:: henrio.Future
    :members:
-   :undoc-members:
    
 .. autoclass:: henrio.Task
    :members:
-   :undoc-members:
    
 .. autoclass:: henrio.Conditional
    :members:
-   :undoc-members:
    
 .. autoclass:: henrio.Event
    :members:
-   :undoc-members:
 
 .. autoclass:: henrio.timeout
    :members:
-   :undoc-members:
    
    
 Locks
@@ -91,8 +85,22 @@ Loops
 .. autoclass:: henrio.IOCPFile
    :members:
    :undoc-members:
-   
-   
+
+
+I/O
+-------
+.. autoclass:: henrio.AsyncSocket
+    :members:
+
+.. autoclass:: henrio.AsyncFile
+    :members:
+
+.. automodule:: henrio.io
+   :members:
+   :special-members:
+   :undoc-members:
+
+
 Queues
 ---------
 

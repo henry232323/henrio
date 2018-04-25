@@ -1,0 +1,1308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ssl &#8212; henrio 3.4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '3.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ssl</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Wrapper module for _ssl, providing some additional facilities</span>
+<span class="c1"># implemented in Python.  Written by Bill Janssen.</span>
+
+<span class="sd">&quot;&quot;&quot;This module provides some more Pythonic support for SSL.</span>
+
+<span class="sd">Object types:</span>
+
+<span class="sd">  SSLSocket -- subtype of socket.socket which does SSL over the socket</span>
+
+<span class="sd">Exceptions:</span>
+
+<span class="sd">  SSLError -- exception raised for I/O errors</span>
+
+<span class="sd">Functions:</span>
+
+<span class="sd">  cert_time_to_seconds -- convert time string used for certificate</span>
+<span class="sd">                          notBefore and notAfter functions to integer</span>
+<span class="sd">                          seconds past the Epoch (the time values</span>
+<span class="sd">                          returned from time.time())</span>
+
+<span class="sd">  fetch_server_certificate (HOST, PORT) -- fetch the certificate provided</span>
+<span class="sd">                          by the server running on HOST at port PORT.  No</span>
+<span class="sd">                          validation of the certificate is performed.</span>
+
+<span class="sd">Integer constants:</span>
+
+<span class="sd">SSL_ERROR_ZERO_RETURN</span>
+<span class="sd">SSL_ERROR_WANT_READ</span>
+<span class="sd">SSL_ERROR_WANT_WRITE</span>
+<span class="sd">SSL_ERROR_WANT_X509_LOOKUP</span>
+<span class="sd">SSL_ERROR_SYSCALL</span>
+<span class="sd">SSL_ERROR_SSL</span>
+<span class="sd">SSL_ERROR_WANT_CONNECT</span>
+
+<span class="sd">SSL_ERROR_EOF</span>
+<span class="sd">SSL_ERROR_INVALID_ERROR_CODE</span>
+
+<span class="sd">The following group define certificate requirements that one side is</span>
+<span class="sd">allowing/requiring from the other side:</span>
+
+<span class="sd">CERT_NONE - no certificates from the other side are required (or will</span>
+<span class="sd">            be looked at if provided)</span>
+<span class="sd">CERT_OPTIONAL - certificates are not required, but if provided will be</span>
+<span class="sd">                validated, and if validation fails, the connection will</span>
+<span class="sd">                also fail</span>
+<span class="sd">CERT_REQUIRED - certificates are required, and will be validated, and</span>
+<span class="sd">                if validation fails, the connection will also fail</span>
+
+<span class="sd">The following constants identify various SSL protocol variants:</span>
+
+<span class="sd">PROTOCOL_SSLv2</span>
+<span class="sd">PROTOCOL_SSLv3</span>
+<span class="sd">PROTOCOL_SSLv23</span>
+<span class="sd">PROTOCOL_TLS</span>
+<span class="sd">PROTOCOL_TLS_CLIENT</span>
+<span class="sd">PROTOCOL_TLS_SERVER</span>
+<span class="sd">PROTOCOL_TLSv1</span>
+<span class="sd">PROTOCOL_TLSv1_1</span>
+<span class="sd">PROTOCOL_TLSv1_2</span>
+
+<span class="sd">The following constants identify various SSL alert message descriptions as per</span>
+<span class="sd">http://www.iana.org/assignments/tls-parameters/tls-parameters.xml#tls-parameters-6</span>
+
+<span class="sd">ALERT_DESCRIPTION_CLOSE_NOTIFY</span>
+<span class="sd">ALERT_DESCRIPTION_UNEXPECTED_MESSAGE</span>
+<span class="sd">ALERT_DESCRIPTION_BAD_RECORD_MAC</span>
+<span class="sd">ALERT_DESCRIPTION_RECORD_OVERFLOW</span>
+<span class="sd">ALERT_DESCRIPTION_DECOMPRESSION_FAILURE</span>
+<span class="sd">ALERT_DESCRIPTION_HANDSHAKE_FAILURE</span>
+<span class="sd">ALERT_DESCRIPTION_BAD_CERTIFICATE</span>
+<span class="sd">ALERT_DESCRIPTION_UNSUPPORTED_CERTIFICATE</span>
+<span class="sd">ALERT_DESCRIPTION_CERTIFICATE_REVOKED</span>
+<span class="sd">ALERT_DESCRIPTION_CERTIFICATE_EXPIRED</span>
+<span class="sd">ALERT_DESCRIPTION_CERTIFICATE_UNKNOWN</span>
+<span class="sd">ALERT_DESCRIPTION_ILLEGAL_PARAMETER</span>
+<span class="sd">ALERT_DESCRIPTION_UNKNOWN_CA</span>
+<span class="sd">ALERT_DESCRIPTION_ACCESS_DENIED</span>
+<span class="sd">ALERT_DESCRIPTION_DECODE_ERROR</span>
+<span class="sd">ALERT_DESCRIPTION_DECRYPT_ERROR</span>
+<span class="sd">ALERT_DESCRIPTION_PROTOCOL_VERSION</span>
+<span class="sd">ALERT_DESCRIPTION_INSUFFICIENT_SECURITY</span>
+<span class="sd">ALERT_DESCRIPTION_INTERNAL_ERROR</span>
+<span class="sd">ALERT_DESCRIPTION_USER_CANCELLED</span>
+<span class="sd">ALERT_DESCRIPTION_NO_RENEGOTIATION</span>
+<span class="sd">ALERT_DESCRIPTION_UNSUPPORTED_EXTENSION</span>
+<span class="sd">ALERT_DESCRIPTION_CERTIFICATE_UNOBTAINABLE</span>
+<span class="sd">ALERT_DESCRIPTION_UNRECOGNIZED_NAME</span>
+<span class="sd">ALERT_DESCRIPTION_BAD_CERTIFICATE_STATUS_RESPONSE</span>
+<span class="sd">ALERT_DESCRIPTION_BAD_CERTIFICATE_HASH_VALUE</span>
+<span class="sd">ALERT_DESCRIPTION_UNKNOWN_PSK_IDENTITY</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">ipaddress</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span> <span class="k">as</span> <span class="n">_Enum</span><span class="p">,</span> <span class="n">IntEnum</span> <span class="k">as</span> <span class="n">_IntEnum</span><span class="p">,</span> <span class="n">IntFlag</span> <span class="k">as</span> <span class="n">_IntFlag</span>
+
+<span class="kn">import</span> <span class="nn">_ssl</span>             <span class="c1"># if we can&#39;t import it, let the error propagate</span>
+
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">OPENSSL_VERSION_NUMBER</span><span class="p">,</span> <span class="n">OPENSSL_VERSION_INFO</span><span class="p">,</span> <span class="n">OPENSSL_VERSION</span>
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">_SSLContext</span><span class="p">,</span> <span class="n">MemoryBIO</span><span class="p">,</span> <span class="n">SSLSession</span>
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SSLError</span><span class="p">,</span> <span class="n">SSLZeroReturnError</span><span class="p">,</span> <span class="n">SSLWantReadError</span><span class="p">,</span> <span class="n">SSLWantWriteError</span><span class="p">,</span>
+    <span class="n">SSLSyscallError</span><span class="p">,</span> <span class="n">SSLEOFError</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">txt2obj</span> <span class="k">as</span> <span class="n">_txt2obj</span><span class="p">,</span> <span class="n">nid2obj</span> <span class="k">as</span> <span class="n">_nid2obj</span>
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">RAND_status</span><span class="p">,</span> <span class="n">RAND_add</span><span class="p">,</span> <span class="n">RAND_bytes</span><span class="p">,</span> <span class="n">RAND_pseudo_bytes</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">RAND_egd</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># LibreSSL does not provide RAND_egd</span>
+    <span class="k">pass</span>
+
+
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">HAS_SNI</span><span class="p">,</span> <span class="n">HAS_ECDH</span><span class="p">,</span> <span class="n">HAS_NPN</span><span class="p">,</span> <span class="n">HAS_ALPN</span>
+<span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">_OPENSSL_API_VERSION</span>
+
+
+<span class="n">_IntEnum</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;_SSLMethod&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;PROTOCOL_&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;PROTOCOL_SSLv23&#39;</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+<span class="n">_IntFlag</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;Options&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;OP_&#39;</span><span class="p">),</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+<span class="n">_IntEnum</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;AlertDescription&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ALERT_DESCRIPTION_&#39;</span><span class="p">),</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+<span class="n">_IntEnum</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;SSLErrorNumber&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;SSL_ERROR_&#39;</span><span class="p">),</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+<span class="n">_IntFlag</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;VerifyFlags&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;VERIFY_&#39;</span><span class="p">),</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+<span class="n">_IntEnum</span><span class="o">.</span><span class="n">_convert</span><span class="p">(</span>
+    <span class="s1">&#39;VerifyMode&#39;</span><span class="p">,</span> <span class="vm">__name__</span><span class="p">,</span>
+    <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;CERT_&#39;</span><span class="p">),</span>
+    <span class="n">source</span><span class="o">=</span><span class="n">_ssl</span><span class="p">)</span>
+
+
+<span class="n">PROTOCOL_SSLv23</span> <span class="o">=</span> <span class="n">_SSLMethod</span><span class="o">.</span><span class="n">PROTOCOL_SSLv23</span> <span class="o">=</span> <span class="n">_SSLMethod</span><span class="o">.</span><span class="n">PROTOCOL_TLS</span>
+<span class="n">_PROTOCOL_NAMES</span> <span class="o">=</span> <span class="p">{</span><span class="n">value</span><span class="p">:</span> <span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">_SSLMethod</span><span class="o">.</span><span class="n">__members__</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+<span class="n">_SSLv2_IF_EXISTS</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">_SSLMethod</span><span class="p">,</span> <span class="s1">&#39;PROTOCOL_SSLv2&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">_ssl</span> <span class="k">import</span> <span class="n">enum_certificates</span><span class="p">,</span> <span class="n">enum_crls</span>
+
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="n">socket</span><span class="p">,</span> <span class="n">AF_INET</span><span class="p">,</span> <span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">create_connection</span>
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_TYPE</span>
+<span class="kn">import</span> <span class="nn">base64</span>        <span class="c1"># for DER-to-PEM translation</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+
+<span class="n">socket_error</span> <span class="o">=</span> <span class="ne">OSError</span>  <span class="c1"># keep that public name in module namespace</span>
+
+<span class="k">if</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">HAS_TLS_UNIQUE</span><span class="p">:</span>
+    <span class="n">CHANNEL_BINDING_TYPES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tls-unique&#39;</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">CHANNEL_BINDING_TYPES</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+<span class="c1"># Disable weak or insecure ciphers by default</span>
+<span class="c1"># (OpenSSL&#39;s default setting is &#39;DEFAULT:!aNULL:!eNULL&#39;)</span>
+<span class="c1"># Enable a better set of ciphers by default</span>
+<span class="c1"># This list has been explicitly chosen to:</span>
+<span class="c1">#   * Prefer cipher suites that offer perfect forward secrecy (DHE/ECDHE)</span>
+<span class="c1">#   * Prefer ECDHE over DHE for better performance</span>
+<span class="c1">#   * Prefer AEAD over CBC for better performance and security</span>
+<span class="c1">#   * Prefer AES-GCM over ChaCha20 because most platforms have AES-NI</span>
+<span class="c1">#     (ChaCha20 needs OpenSSL 1.1.0 or patched 1.0.2)</span>
+<span class="c1">#   * Prefer any AES-GCM and ChaCha20 over any AES-CBC for better</span>
+<span class="c1">#     performance and security</span>
+<span class="c1">#   * Then Use HIGH cipher suites as a fallback</span>
+<span class="c1">#   * Disable NULL authentication, NULL encryption, 3DES and MD5 MACs</span>
+<span class="c1">#     for security reasons</span>
+<span class="n">_DEFAULT_CIPHERS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;ECDH+AESGCM:ECDH+CHACHA20:DH+AESGCM:DH+CHACHA20:ECDH+AES256:DH+AES256:&#39;</span>
+    <span class="s1">&#39;ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:RSA+AESGCM:RSA+AES:RSA+HIGH:&#39;</span>
+    <span class="s1">&#39;!aNULL:!eNULL:!MD5:!3DES&#39;</span>
+    <span class="p">)</span>
+
+<span class="c1"># Restricted and more secure ciphers for the server side</span>
+<span class="c1"># This list has been explicitly chosen to:</span>
+<span class="c1">#   * Prefer cipher suites that offer perfect forward secrecy (DHE/ECDHE)</span>
+<span class="c1">#   * Prefer ECDHE over DHE for better performance</span>
+<span class="c1">#   * Prefer AEAD over CBC for better performance and security</span>
+<span class="c1">#   * Prefer AES-GCM over ChaCha20 because most platforms have AES-NI</span>
+<span class="c1">#   * Prefer any AES-GCM and ChaCha20 over any AES-CBC for better</span>
+<span class="c1">#     performance and security</span>
+<span class="c1">#   * Then Use HIGH cipher suites as a fallback</span>
+<span class="c1">#   * Disable NULL authentication, NULL encryption, MD5 MACs, DSS, RC4, and</span>
+<span class="c1">#     3DES for security reasons</span>
+<span class="n">_RESTRICTED_SERVER_CIPHERS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s1">&#39;ECDH+AESGCM:ECDH+CHACHA20:DH+AESGCM:DH+CHACHA20:ECDH+AES256:DH+AES256:&#39;</span>
+    <span class="s1">&#39;ECDH+AES128:DH+AES:ECDH+HIGH:DH+HIGH:RSA+AESGCM:RSA+AES:RSA+HIGH:&#39;</span>
+    <span class="s1">&#39;!aNULL:!eNULL:!MD5:!DSS:!RC4:!3DES&#39;</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">CertificateError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">_dnsname_match</span><span class="p">(</span><span class="n">dn</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">max_wildcards</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Matching according to RFC 6125, section 6.4.3</span>
+
+<span class="sd">    http://tools.ietf.org/html/rfc6125#section-6.4.3</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dn</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">leftmost</span><span class="p">,</span> <span class="o">*</span><span class="n">remainder</span> <span class="o">=</span> <span class="n">dn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+
+    <span class="n">wildcards</span> <span class="o">=</span> <span class="n">leftmost</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">wildcards</span> <span class="o">&gt;</span> <span class="n">max_wildcards</span><span class="p">:</span>
+        <span class="c1"># Issue #17980: avoid denials of service by refusing more</span>
+        <span class="c1"># than one wildcard per fragment.  A survey of established</span>
+        <span class="c1"># policy among SSL implementations showed it to be a</span>
+        <span class="c1"># reasonable choice.</span>
+        <span class="k">raise</span> <span class="n">CertificateError</span><span class="p">(</span>
+            <span class="s2">&quot;too many wildcards in certificate DNS name: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">dn</span><span class="p">))</span>
+
+    <span class="c1"># speed up common case w/o wildcards</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wildcards</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dn</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">hostname</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="c1"># RFC 6125, section 6.4.3, subitem 1.</span>
+    <span class="c1"># The client SHOULD NOT attempt to match a presented identifier in which</span>
+    <span class="c1"># the wildcard character comprises a label other than the left-most label.</span>
+    <span class="k">if</span> <span class="n">leftmost</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+        <span class="c1"># When &#39;*&#39; is a fragment by itself, it matches a non-empty dotless</span>
+        <span class="c1"># fragment.</span>
+        <span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;[^.]+&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">leftmost</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;xn--&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">hostname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;xn--&#39;</span><span class="p">):</span>
+        <span class="c1"># RFC 6125, section 6.4.3, subitem 3.</span>
+        <span class="c1"># The client SHOULD NOT attempt to match a presented identifier</span>
+        <span class="c1"># where the wildcard character is embedded within an A-label or</span>
+        <span class="c1"># U-label of an internationalized domain name.</span>
+        <span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">leftmost</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Otherwise, &#39;*&#39; matches any dotless string, e.g. www*</span>
+        <span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">leftmost</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\*&#39;</span><span class="p">,</span> <span class="s1">&#39;[^.]*&#39;</span><span class="p">))</span>
+
+    <span class="c1"># add the remaining fragments, ignore any wildcards</span>
+    <span class="k">for</span> <span class="n">frag</span> <span class="ow">in</span> <span class="n">remainder</span><span class="p">:</span>
+        <span class="n">pats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">frag</span><span class="p">))</span>
+
+    <span class="n">pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\A&#39;</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pats</span><span class="p">)</span> <span class="o">+</span> <span class="sa">r</span><span class="s1">&#39;\Z&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_ipaddress_match</span><span class="p">(</span><span class="n">ipname</span><span class="p">,</span> <span class="n">host_ip</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exact matching of IP addresses.</span>
+
+<span class="sd">    RFC 6125 explicitly doesn&#39;t define an algorithm for this</span>
+<span class="sd">    (section 1.7.2 - &quot;Out of Scope&quot;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># OpenSSL may add a trailing newline to a subjectAltName&#39;s IP address</span>
+    <span class="n">ip</span> <span class="o">=</span> <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">ipname</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">ip</span> <span class="o">==</span> <span class="n">host_ip</span>
+
+
+<span class="k">def</span> <span class="nf">match_hostname</span><span class="p">(</span><span class="n">cert</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Verify that *cert* (in decoded format as returned by</span>
+<span class="sd">    SSLSocket.getpeercert()) matches the *hostname*.  RFC 2818 and RFC 6125</span>
+<span class="sd">    rules are followed, but IP addresses are not accepted for *hostname*.</span>
+
+<span class="sd">    CertificateError is raised on failure. On success, the function</span>
+<span class="sd">    returns nothing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cert</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;empty or no certificate, match_hostname needs a &quot;</span>
+                         <span class="s2">&quot;SSL socket or SSL context with either &quot;</span>
+                         <span class="s2">&quot;CERT_OPTIONAL or CERT_REQUIRED&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">host_ip</span> <span class="o">=</span> <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="c1"># Not an IP address (common case)</span>
+        <span class="n">host_ip</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dnsnames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">san</span> <span class="o">=</span> <span class="n">cert</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subjectAltName&#39;</span><span class="p">,</span> <span class="p">())</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">san</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;DNS&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">host_ip</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_dnsname_match</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
+                <span class="k">return</span>
+            <span class="n">dnsnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;IP Address&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">host_ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_ipaddress_match</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">host_ip</span><span class="p">):</span>
+                <span class="k">return</span>
+            <span class="n">dnsnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dnsnames</span><span class="p">:</span>
+        <span class="c1"># The subject is only checked when there is no dNSName entry</span>
+        <span class="c1"># in subjectAltName</span>
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">cert</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subject&#39;</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sub</span><span class="p">:</span>
+                <span class="c1"># XXX according to RFC 2818, the most specific Common Name</span>
+                <span class="c1"># must be used.</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;commonName&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">_dnsname_match</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
+                        <span class="k">return</span>
+                    <span class="n">dnsnames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dnsnames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CertificateError</span><span class="p">(</span><span class="s2">&quot;hostname </span><span class="si">%r</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;doesn&#39;t match either of </span><span class="si">%s</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">repr</span><span class="p">,</span> <span class="n">dnsnames</span><span class="p">))))</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dnsnames</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CertificateError</span><span class="p">(</span><span class="s2">&quot;hostname </span><span class="si">%r</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;doesn&#39;t match </span><span class="si">%r</span><span class="s2">&quot;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="n">hostname</span><span class="p">,</span> <span class="n">dnsnames</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">CertificateError</span><span class="p">(</span><span class="s2">&quot;no appropriate commonName or &quot;</span>
+            <span class="s2">&quot;subjectAltName fields were found&quot;</span><span class="p">)</span>
+
+
+<span class="n">DefaultVerifyPaths</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;DefaultVerifyPaths&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cafile capath openssl_cafile_env openssl_cafile openssl_capath_env &quot;</span>
+    <span class="s2">&quot;openssl_capath&quot;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_default_verify_paths</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return paths to default cafile and capath.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">get_default_verify_paths</span><span class="p">()</span>
+
+    <span class="c1"># environment vars shadow paths</span>
+    <span class="n">cafile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">capath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">DefaultVerifyPaths</span><span class="p">(</span><span class="n">cafile</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">cafile</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="n">capath</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">capath</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                              <span class="o">*</span><span class="n">parts</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_ASN1Object</span><span class="p">(</span><span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;_ASN1Object&quot;</span><span class="p">,</span> <span class="s2">&quot;nid shortname longname oid&quot;</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;ASN.1 object identifier lookup</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">oid</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">_txt2obj</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fromnid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create _ASN1Object from OpenSSL numeric ID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">_nid2obj</span><span class="p">(</span><span class="n">nid</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">fromname</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create _ASN1Object from short name, long name or OID</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">_txt2obj</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">Purpose</span><span class="p">(</span><span class="n">_ASN1Object</span><span class="p">,</span> <span class="n">_Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SSLContext purpose flags with X509v3 Extended Key Usage objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">SERVER_AUTH</span> <span class="o">=</span> <span class="s1">&#39;1.3.6.1.5.5.7.3.1&#39;</span>
+    <span class="n">CLIENT_AUTH</span> <span class="o">=</span> <span class="s1">&#39;1.3.6.1.5.5.7.3.2&#39;</span>
+
+
+<span class="k">class</span> <span class="nc">SSLContext</span><span class="p">(</span><span class="n">_SSLContext</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An SSLContext holds various SSL-related configuration options and</span>
+<span class="sd">    data, such as certificates and possibly a private key.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;protocol&#39;</span><span class="p">,</span> <span class="s1">&#39;__weakref__&#39;</span><span class="p">)</span>
+    <span class="n">_windows_cert_stores</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;CA&quot;</span><span class="p">,</span> <span class="s2">&quot;ROOT&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">_SSLContext</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">protocol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">protocol</span> <span class="o">!=</span> <span class="n">_SSLv2_IF_EXISTS</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_ciphers</span><span class="p">(</span><span class="n">_DEFAULT_CIPHERS</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">protocol</span> <span class="o">=</span> <span class="n">protocol</span>
+
+    <span class="k">def</span> <span class="nf">wrap_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">server_hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SSLSocket</span><span class="p">(</span><span class="n">sock</span><span class="o">=</span><span class="n">sock</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="n">server_side</span><span class="p">,</span>
+                         <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="n">do_handshake_on_connect</span><span class="p">,</span>
+                         <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="n">suppress_ragged_eofs</span><span class="p">,</span>
+                         <span class="n">server_hostname</span><span class="o">=</span><span class="n">server_hostname</span><span class="p">,</span>
+                         <span class="n">_context</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wrap_bio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming</span><span class="p">,</span> <span class="n">outgoing</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">server_hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">sslobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wrap_bio</span><span class="p">(</span><span class="n">incoming</span><span class="p">,</span> <span class="n">outgoing</span><span class="p">,</span> <span class="n">server_side</span><span class="o">=</span><span class="n">server_side</span><span class="p">,</span>
+                                <span class="n">server_hostname</span><span class="o">=</span><span class="n">server_hostname</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">SSLObject</span><span class="p">(</span><span class="n">sslobj</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_npn_protocols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npn_protocols</span><span class="p">):</span>
+        <span class="n">protos</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="n">npn_protocols</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SSLError</span><span class="p">(</span><span class="s1">&#39;NPN protocols must be 1 to 255 in length&#39;</span><span class="p">)</span>
+            <span class="n">protos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+            <span class="n">protos</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_npn_protocols</span><span class="p">(</span><span class="n">protos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_alpn_protocols</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpn_protocols</span><span class="p">):</span>
+        <span class="n">protos</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">protocol</span> <span class="ow">in</span> <span class="n">alpn_protocols</span><span class="p">:</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">255</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SSLError</span><span class="p">(</span><span class="s1">&#39;ALPN protocols must be 1 to 255 in length&#39;</span><span class="p">)</span>
+            <span class="n">protos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+            <span class="n">protos</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_alpn_protocols</span><span class="p">(</span><span class="n">protos</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_windows_store_certs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">storename</span><span class="p">,</span> <span class="n">purpose</span><span class="p">):</span>
+        <span class="n">certs</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">cert</span><span class="p">,</span> <span class="n">encoding</span><span class="p">,</span> <span class="n">trust</span> <span class="ow">in</span> <span class="n">enum_certificates</span><span class="p">(</span><span class="n">storename</span><span class="p">):</span>
+                <span class="c1"># CA certs are never PKCS#7 encoded</span>
+                <span class="k">if</span> <span class="n">encoding</span> <span class="o">==</span> <span class="s2">&quot;x509_asn&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">trust</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">purpose</span><span class="o">.</span><span class="n">oid</span> <span class="ow">in</span> <span class="n">trust</span><span class="p">:</span>
+                        <span class="n">certs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cert</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">PermissionError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;unable to enumerate Windows certificate store&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">certs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_verify_locations</span><span class="p">(</span><span class="n">cadata</span><span class="o">=</span><span class="n">certs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">certs</span>
+
+    <span class="k">def</span> <span class="nf">load_default_certs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">Purpose</span><span class="o">.</span><span class="n">SERVER_AUTH</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">purpose</span><span class="p">,</span> <span class="n">_ASN1Object</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">purpose</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">storename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_windows_cert_stores</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_windows_store_certs</span><span class="p">(</span><span class="n">storename</span><span class="p">,</span> <span class="n">purpose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_default_verify_paths</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Options</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+    <span class="nd">@options</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSLContext</span><span class="p">,</span> <span class="n">SSLContext</span><span class="p">)</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">verify_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">VerifyFlags</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">verify_flags</span><span class="p">)</span>
+
+    <span class="nd">@verify_flags</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">verify_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSLContext</span><span class="p">,</span> <span class="n">SSLContext</span><span class="p">)</span><span class="o">.</span><span class="n">verify_flags</span><span class="o">.</span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">verify_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">verify_mode</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">VerifyMode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="nd">@verify_mode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">verify_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SSLContext</span><span class="p">,</span> <span class="n">SSLContext</span><span class="p">)</span><span class="o">.</span><span class="n">verify_mode</span><span class="o">.</span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">create_default_context</span><span class="p">(</span><span class="n">purpose</span><span class="o">=</span><span class="n">Purpose</span><span class="o">.</span><span class="n">SERVER_AUTH</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cafile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">capath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a SSLContext object with default settings.</span>
+
+<span class="sd">    NOTE: The protocol and settings may change anytime without prior</span>
+<span class="sd">          deprecation. The values represent a fair balance between maximum</span>
+<span class="sd">          compatibility and security.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">purpose</span><span class="p">,</span> <span class="n">_ASN1Object</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">purpose</span><span class="p">)</span>
+
+    <span class="c1"># SSLContext sets OP_NO_SSLv2, OP_NO_SSLv3, OP_NO_COMPRESSION,</span>
+    <span class="c1"># OP_CIPHER_SERVER_PREFERENCE, OP_SINGLE_DH_USE and OP_SINGLE_ECDH_USE</span>
+    <span class="c1"># by default.</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">SSLContext</span><span class="p">(</span><span class="n">PROTOCOL_TLS</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">purpose</span> <span class="o">==</span> <span class="n">Purpose</span><span class="o">.</span><span class="n">SERVER_AUTH</span><span class="p">:</span>
+        <span class="c1"># verify certs and host name in client mode</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">verify_mode</span> <span class="o">=</span> <span class="n">CERT_REQUIRED</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">check_hostname</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">purpose</span> <span class="o">==</span> <span class="n">Purpose</span><span class="o">.</span><span class="n">CLIENT_AUTH</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">set_ciphers</span><span class="p">(</span><span class="n">_RESTRICTED_SERVER_CIPHERS</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cafile</span> <span class="ow">or</span> <span class="n">capath</span> <span class="ow">or</span> <span class="n">cadata</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_verify_locations</span><span class="p">(</span><span class="n">cafile</span><span class="p">,</span> <span class="n">capath</span><span class="p">,</span> <span class="n">cadata</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">context</span><span class="o">.</span><span class="n">verify_mode</span> <span class="o">!=</span> <span class="n">CERT_NONE</span><span class="p">:</span>
+        <span class="c1"># no explicit cafile, capath or cadata but the verify mode is</span>
+        <span class="c1"># CERT_OPTIONAL or CERT_REQUIRED. Let&#39;s try to load default system</span>
+        <span class="c1"># root CA certificates for the given purpose. This may fail silently.</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_default_certs</span><span class="p">(</span><span class="n">purpose</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">context</span>
+
+<span class="k">def</span> <span class="nf">_create_unverified_context</span><span class="p">(</span><span class="n">protocol</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cert_reqs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">check_hostname</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">purpose</span><span class="o">=</span><span class="n">Purpose</span><span class="o">.</span><span class="n">SERVER_AUTH</span><span class="p">,</span>
+                           <span class="n">certfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">cafile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">capath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cadata</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a SSLContext object for Python stdlib modules</span>
+
+<span class="sd">    All Python stdlib modules shall use this function to create SSLContext</span>
+<span class="sd">    objects in order to keep common settings in one place. The configuration</span>
+<span class="sd">    is less restrict than create_default_context()&#39;s to increase backward</span>
+<span class="sd">    compatibility.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">purpose</span><span class="p">,</span> <span class="n">_ASN1Object</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">purpose</span><span class="p">)</span>
+
+    <span class="c1"># SSLContext sets OP_NO_SSLv2, OP_NO_SSLv3, OP_NO_COMPRESSION,</span>
+    <span class="c1"># OP_CIPHER_SERVER_PREFERENCE, OP_SINGLE_DH_USE and OP_SINGLE_ECDH_USE</span>
+    <span class="c1"># by default.</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">SSLContext</span><span class="p">(</span><span class="n">protocol</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cert_reqs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">verify_mode</span> <span class="o">=</span> <span class="n">cert_reqs</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">check_hostname</span> <span class="o">=</span> <span class="n">check_hostname</span>
+
+    <span class="k">if</span> <span class="n">keyfile</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">certfile</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;certfile must be specified&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">certfile</span> <span class="ow">or</span> <span class="n">keyfile</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_cert_chain</span><span class="p">(</span><span class="n">certfile</span><span class="p">,</span> <span class="n">keyfile</span><span class="p">)</span>
+
+    <span class="c1"># load CA root certs</span>
+    <span class="k">if</span> <span class="n">cafile</span> <span class="ow">or</span> <span class="n">capath</span> <span class="ow">or</span> <span class="n">cadata</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_verify_locations</span><span class="p">(</span><span class="n">cafile</span><span class="p">,</span> <span class="n">capath</span><span class="p">,</span> <span class="n">cadata</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">context</span><span class="o">.</span><span class="n">verify_mode</span> <span class="o">!=</span> <span class="n">CERT_NONE</span><span class="p">:</span>
+        <span class="c1"># no explicit cafile, capath or cadata but the verify mode is</span>
+        <span class="c1"># CERT_OPTIONAL or CERT_REQUIRED. Let&#39;s try to load default system</span>
+        <span class="c1"># root CA certificates for the given purpose. This may fail silently.</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">load_default_certs</span><span class="p">(</span><span class="n">purpose</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">context</span>
+
+<span class="c1"># Used by http.client if no context is explicitly passed.</span>
+<span class="n">_create_default_https_context</span> <span class="o">=</span> <span class="n">create_default_context</span>
+
+
+<span class="c1"># Backwards compatibility alias, even though it&#39;s not a public name.</span>
+<span class="n">_create_stdlib_context</span> <span class="o">=</span> <span class="n">_create_unverified_context</span>
+
+
+<span class="k">class</span> <span class="nc">SSLObject</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;This class implements an interface on top of a low-level SSL object as</span>
+<span class="sd">    implemented by OpenSSL. This object captures the state of an SSL connection</span>
+<span class="sd">    but does not provide any network IO itself. IO needs to be performed</span>
+<span class="sd">    through separate &quot;BIO&quot; objects which are OpenSSL&#39;s IO abstraction layer.</span>
+
+<span class="sd">    This class does not have a public constructor. Instances are returned by</span>
+<span class="sd">    ``SSLContext.wrap_bio``. This class is typically used by framework authors</span>
+<span class="sd">    that want to implement asynchronous IO for SSL through memory buffers.</span>
+
+<span class="sd">    When compared to ``SSLSocket``, this object lacks the following features:</span>
+
+<span class="sd">     * Any form of network IO incluging methods such as ``recv`` and ``send``.</span>
+<span class="sd">     * The ``do_handshake_on_connect`` and ``suppress_ragged_eofs`` machinery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sslobj</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="n">sslobj</span>
+        <span class="c1"># Note: _sslobj takes a weak reference to owner</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span> <span class="ow">or</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The SSLContext that is currently in use.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">context</span>
+
+    <span class="nd">@context</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">ctx</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The SSLSession for client socket.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session</span>
+
+    <span class="nd">@session</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session_reused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Was the client session reused during handshake&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session_reused</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">server_side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Whether this is a server-side socket.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">server_side</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">server_hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The currently set server hostname (for SNI), or ``None`` if no</span>
+<span class="sd">        server hostame is set.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">server_hostname</span>
+
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read up to &#39;len&#39; bytes from the SSL object and return them.</span>
+
+<span class="sd">        If &#39;buffer&#39; is provided, read into this buffer and return the number of</span>
+<span class="sd">        bytes read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">len</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write &#39;data&#39; to the SSL object and return the number of bytes</span>
+<span class="sd">        written.</span>
+
+<span class="sd">        The &#39;data&#39; argument must support the buffer interface.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getpeercert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_form</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a formatted version of the data in the certificate provided</span>
+<span class="sd">        by the other end of the SSL channel.</span>
+
+<span class="sd">        Return None if no certificate was provided, {} if a certificate was</span>
+<span class="sd">        provided, but not validated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">peer_certificate</span><span class="p">(</span><span class="n">binary_form</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">selected_npn_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the currently selected NPN protocol as a string, or ``None``</span>
+<span class="sd">        if a next protocol was not negotiated or if NPN is not supported by one</span>
+<span class="sd">        of the peers.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">HAS_NPN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">selected_npn_protocol</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">selected_alpn_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the currently selected ALPN protocol as a string, or ``None``</span>
+<span class="sd">        if a next protocol was not negotiated or if ALPN is not supported by one</span>
+<span class="sd">        of the peers.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">HAS_ALPN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">selected_alpn_protocol</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">cipher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the currently selected cipher as a 3-tuple ``(name,</span>
+<span class="sd">        ssl_version, secret_bits)``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">cipher</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">shared_ciphers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of ciphers shared by the client during the handshake or</span>
+<span class="sd">        None if this is not a valid server connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">shared_ciphers</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">compression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the current compression algorithm in use, or ``None`` if</span>
+<span class="sd">        compression was not negotiated or not supported by one of the peers.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">compression</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">pending</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the number of bytes that can be read immediately.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">pending</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">do_handshake</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start the SSL/TLS handshake.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">check_hostname</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_hostname</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;check_hostname needs server_hostname &quot;</span>
+                                 <span class="s2">&quot;argument&quot;</span><span class="p">)</span>
+            <span class="n">match_hostname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getpeercert</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_hostname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start the SSL shutdown handshake.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">get_channel_binding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb_type</span><span class="o">=</span><span class="s2">&quot;tls-unique&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get channel binding data for current connection.  Raise ValueError</span>
+<span class="sd">        if the requested `cb_type` is not supported.  Return bytes of the data</span>
+<span class="sd">        or None if the data is not available (e.g. before the handshake).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cb_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">CHANNEL_BINDING_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupported channel binding type&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cb_type</span> <span class="o">!=</span> <span class="s2">&quot;tls-unique&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> channel binding type not implemented&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cb_type</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">tls_unique_cb</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a string identifying the protocol version used by the</span>
+<span class="sd">        current SSL channel. &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">version</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">SSLSocket</span><span class="p">(</span><span class="n">socket</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class implements a subtype of socket.socket that wraps</span>
+<span class="sd">    the underlying OS socket in an SSL context when necessary, and</span>
+<span class="sd">    provides read and write methods over that channel.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">certfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">server_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cert_reqs</span><span class="o">=</span><span class="n">CERT_NONE</span><span class="p">,</span>
+                 <span class="n">ssl_version</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span> <span class="n">ca_certs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">family</span><span class="o">=</span><span class="n">AF_INET</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">fileno</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">npn_protocols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ciphers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">server_hostname</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">_context</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_session</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">_context</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">_context</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">server_side</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">certfile</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;certfile must be specified for server-side &quot;</span>
+                                 <span class="s2">&quot;operations&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">keyfile</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">certfile</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;certfile must be specified&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">certfile</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">keyfile</span><span class="p">:</span>
+                <span class="n">keyfile</span> <span class="o">=</span> <span class="n">certfile</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">SSLContext</span><span class="p">(</span><span class="n">ssl_version</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">verify_mode</span> <span class="o">=</span> <span class="n">cert_reqs</span>
+            <span class="k">if</span> <span class="n">ca_certs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">load_verify_locations</span><span class="p">(</span><span class="n">ca_certs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">certfile</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">load_cert_chain</span><span class="p">(</span><span class="n">certfile</span><span class="p">,</span> <span class="n">keyfile</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">npn_protocols</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">set_npn_protocols</span><span class="p">(</span><span class="n">npn_protocols</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ciphers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">set_ciphers</span><span class="p">(</span><span class="n">ciphers</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keyfile</span> <span class="o">=</span> <span class="n">keyfile</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">certfile</span> <span class="o">=</span> <span class="n">certfile</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">cert_reqs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ssl_version</span> <span class="o">=</span> <span class="n">ssl_version</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ca_certs</span> <span class="o">=</span> <span class="n">ca_certs</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ciphers</span> <span class="o">=</span> <span class="n">ciphers</span>
+        <span class="c1"># Can&#39;t use sock.type as other flags (such as SOCK_NONBLOCK) get</span>
+        <span class="c1"># mixed in.</span>
+        <span class="k">if</span> <span class="n">sock</span><span class="o">.</span><span class="n">getsockopt</span><span class="p">(</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">SO_TYPE</span><span class="p">)</span> <span class="o">!=</span> <span class="n">SOCK_STREAM</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;only stream sockets are supported&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">server_side</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">server_hostname</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;server_hostname can only be specified &quot;</span>
+                                 <span class="s2">&quot;in client mode&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;session can only be specified in &quot;</span>
+                                 <span class="s2">&quot;client mode&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">check_hostname</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">server_hostname</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;check_hostname requires server_hostname&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">_session</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_side</span> <span class="o">=</span> <span class="n">server_side</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_hostname</span> <span class="o">=</span> <span class="n">server_hostname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake_on_connect</span> <span class="o">=</span> <span class="n">do_handshake_on_connect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppress_ragged_eofs</span> <span class="o">=</span> <span class="n">suppress_ragged_eofs</span>
+        <span class="k">if</span> <span class="n">sock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">socket</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">family</span><span class="o">=</span><span class="n">sock</span><span class="o">.</span><span class="n">family</span><span class="p">,</span>
+                            <span class="nb">type</span><span class="o">=</span><span class="n">sock</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                            <span class="n">proto</span><span class="o">=</span><span class="n">sock</span><span class="o">.</span><span class="n">proto</span><span class="p">,</span>
+                            <span class="n">fileno</span><span class="o">=</span><span class="n">sock</span><span class="o">.</span><span class="n">fileno</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="n">gettimeout</span><span class="p">())</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">fileno</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">socket</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fileno</span><span class="o">=</span><span class="n">fileno</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">socket</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">family</span><span class="o">=</span><span class="n">family</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">,</span> <span class="n">proto</span><span class="o">=</span><span class="n">proto</span><span class="p">)</span>
+
+        <span class="c1"># See if we are connected</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getpeername</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENOTCONN</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connected</span> <span class="o">=</span> <span class="n">connected</span>
+        <span class="k">if</span> <span class="n">connected</span><span class="p">:</span>
+            <span class="c1"># create the SSL object</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sslobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span><span class="o">.</span><span class="n">_wrap_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_side</span><span class="p">,</span>
+                                                    <span class="n">server_hostname</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="n">SSLObject</span><span class="p">(</span><span class="n">sslobj</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">do_handshake_on_connect</span><span class="p">:</span>
+                    <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gettimeout</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="c1"># non-blocking</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;do_handshake_on_connect should not be specified for non-blocking sockets&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">()</span>
+
+            <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">raise</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context</span>
+
+    <span class="nd">@context</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context</span> <span class="o">=</span> <span class="n">ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">ctx</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The SSLSession for client socket.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session</span>
+
+    <span class="nd">@session</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session</span> <span class="o">=</span> <span class="n">session</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">session</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">session_reused</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Was the client session reused during handshake&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">session_reused</span>
+
+    <span class="k">def</span> <span class="nf">dup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span><span class="p">(</span><span class="s2">&quot;Can&#39;t dup() </span><span class="si">%s</span><span class="s2"> instances&quot;</span> <span class="o">%</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_checkClosed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># raise an exception here if you wish to check for spurious closes</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_check_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected</span><span class="p">:</span>
+            <span class="c1"># getpeername() will raise ENOTCONN if the socket is really</span>
+            <span class="c1"># not connected; note that we can be connected even without</span>
+            <span class="c1"># _connected being set, e.g. if connect() first returned</span>
+            <span class="c1"># EAGAIN.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getpeername</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">buffer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read up to LEN bytes and return them.</span>
+<span class="sd">        Return zero-length string on EOF.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Read on closed or unwrapped SSL socket.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SSLError</span> <span class="k">as</span> <span class="n">x</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">SSL_ERROR_EOF</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress_ragged_eofs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write DATA to the underlying SSL channel.  Returns</span>
+<span class="sd">        number of bytes of DATA actually transmitted.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Write on closed or unwrapped SSL socket.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">getpeercert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">binary_form</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a formatted version of the data in the</span>
+<span class="sd">        certificate provided by the other end of the SSL channel.</span>
+<span class="sd">        Return None if no certificate was provided, {} if a</span>
+<span class="sd">        certificate was provided, but not validated.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_connected</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">getpeercert</span><span class="p">(</span><span class="n">binary_form</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">selected_npn_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">HAS_NPN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">selected_npn_protocol</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">selected_alpn_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_ssl</span><span class="o">.</span><span class="n">HAS_ALPN</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">selected_alpn_protocol</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">cipher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">cipher</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">shared_ciphers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">shared_ciphers</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">compression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">compression</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;non-zero flags not allowed in calls to send() on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sendto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags_or_addr</span><span class="p">,</span> <span class="n">addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;sendto not allowed on instances of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">addr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags_or_addr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags_or_addr</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sendmsg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># Ensure programs don&#39;t send data unencrypted if they try to</span>
+        <span class="c1"># use this method.</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;sendmsg not allowed on instances of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sendall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;non-zero flags not allowed in calls to sendall() on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="p">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">amount</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">count</span><span class="p">:])</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="n">v</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sendfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a file, possibly by using os.sendfile() if this is a</span>
+<span class="sd">        clear-text socket.  Return the total number of bytes sent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># os.sendfile() works with plain sockets only</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sendfile</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sendfile_use_send</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buflen</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;non-zero flags not allowed in calls to recv() on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">buflen</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buflen</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recv_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">buffer</span> <span class="ow">and</span> <span class="p">(</span><span class="n">nbytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">nbytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buffer</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">nbytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nbytes</span> <span class="o">=</span> <span class="mi">1024</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                  <span class="s2">&quot;non-zero flags not allowed in calls to recv_into() on </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">nbytes</span><span class="p">,</span> <span class="n">buffer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recvfrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buflen</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;recvfrom not allowed on instances of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">recvfrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buflen</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recvfrom_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;recvfrom_into not allowed on instances of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">recvfrom_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">nbytes</span><span class="p">,</span> <span class="n">flags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recvmsg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;recvmsg not allowed on instances of </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">recvmsg_into</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;recvmsg_into not allowed on instances of &quot;</span>
+                                  <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">pending</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">pending</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">how</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_checkClosed</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">how</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">s</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No SSL wrapper around &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_real_close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">socket</span><span class="o">.</span><span class="n">_real_close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">do_handshake</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Perform a TLS/SSL handshake.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_connected</span><span class="p">()</span>
+        <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gettimeout</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">timeout</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">block</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">()</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_real_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">connect_ex</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_side</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;can&#39;t connect in server-side mode&quot;</span><span class="p">)</span>
+        <span class="c1"># Here we assume that the socket is client-side, and not</span>
+        <span class="c1"># connected at the time of the call.  We connect it, then wrap it.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;attempt to connect already-connected SSLSocket!&quot;</span><span class="p">)</span>
+        <span class="n">sslobj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">_wrap_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_hostname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="n">SSLObject</span><span class="p">(</span><span class="n">sslobj</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">session</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_session</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">connect_ex</span><span class="p">:</span>
+                <span class="n">rc</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">connect_ex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rc</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_connected</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake_on_connect</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">do_handshake</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">rc</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connects to remote ADDR, and then wraps the connection in</span>
+<span class="sd">        an SSL channel.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_real_connect</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">connect_ex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connects to remote ADDR, and then wraps the connection in</span>
+<span class="sd">        an SSL channel.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_real_connect</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Accepts a new connection from a remote client, and returns</span>
+<span class="sd">        a tuple containing that new connection wrapped with a server-side</span>
+<span class="sd">        SSL channel, and the address of the remote client.&quot;&quot;&quot;</span>
+
+        <span class="n">newsock</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">newsock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">newsock</span><span class="p">,</span>
+                    <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">do_handshake_on_connect</span><span class="p">,</span>
+                    <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">suppress_ragged_eofs</span><span class="p">,</span>
+                    <span class="n">server_side</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">newsock</span><span class="p">,</span> <span class="n">addr</span>
+
+    <span class="k">def</span> <span class="nf">get_channel_binding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb_type</span><span class="o">=</span><span class="s2">&quot;tls-unique&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get channel binding data for current connection.  Raise ValueError</span>
+<span class="sd">        if the requested `cb_type` is not supported.  Return bytes of the data</span>
+<span class="sd">        or None if the data is not available (e.g. before the handshake).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">get_channel_binding</span><span class="p">(</span><span class="n">cb_type</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a string identifying the protocol version used by the</span>
+<span class="sd">        current SSL channel, or None if there is no established channel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sslobj</span><span class="o">.</span><span class="n">version</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">wrap_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">certfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">server_side</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cert_reqs</span><span class="o">=</span><span class="n">CERT_NONE</span><span class="p">,</span>
+                <span class="n">ssl_version</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span> <span class="n">ca_certs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">ciphers</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">SSLSocket</span><span class="p">(</span><span class="n">sock</span><span class="o">=</span><span class="n">sock</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="n">keyfile</span><span class="p">,</span> <span class="n">certfile</span><span class="o">=</span><span class="n">certfile</span><span class="p">,</span>
+                     <span class="n">server_side</span><span class="o">=</span><span class="n">server_side</span><span class="p">,</span> <span class="n">cert_reqs</span><span class="o">=</span><span class="n">cert_reqs</span><span class="p">,</span>
+                     <span class="n">ssl_version</span><span class="o">=</span><span class="n">ssl_version</span><span class="p">,</span> <span class="n">ca_certs</span><span class="o">=</span><span class="n">ca_certs</span><span class="p">,</span>
+                     <span class="n">do_handshake_on_connect</span><span class="o">=</span><span class="n">do_handshake_on_connect</span><span class="p">,</span>
+                     <span class="n">suppress_ragged_eofs</span><span class="o">=</span><span class="n">suppress_ragged_eofs</span><span class="p">,</span>
+                     <span class="n">ciphers</span><span class="o">=</span><span class="n">ciphers</span><span class="p">)</span>
+
+<span class="c1"># some utility functions</span>
+
+<span class="k">def</span> <span class="nf">cert_time_to_seconds</span><span class="p">(</span><span class="n">cert_time</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the time in seconds since the Epoch, given the timestring</span>
+<span class="sd">    representing the &quot;notBefore&quot; or &quot;notAfter&quot; date from a certificate</span>
+<span class="sd">    in ``&quot;%b %d %H:%M:%S %Y %Z&quot;`` strptime format (C locale).</span>
+
+<span class="sd">    &quot;notBefore&quot; or &quot;notAfter&quot; dates must use UTC (RFC 5280).</span>
+
+<span class="sd">    Month is one of: Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec</span>
+<span class="sd">    UTC should be specified as GMT (see ASN1_TIME_print())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">strptime</span>
+    <span class="kn">from</span> <span class="nn">calendar</span> <span class="k">import</span> <span class="n">timegm</span>
+
+    <span class="n">months</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;Jan&quot;</span><span class="p">,</span><span class="s2">&quot;Feb&quot;</span><span class="p">,</span><span class="s2">&quot;Mar&quot;</span><span class="p">,</span><span class="s2">&quot;Apr&quot;</span><span class="p">,</span><span class="s2">&quot;May&quot;</span><span class="p">,</span><span class="s2">&quot;Jun&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Jul&quot;</span><span class="p">,</span><span class="s2">&quot;Aug&quot;</span><span class="p">,</span><span class="s2">&quot;Sep&quot;</span><span class="p">,</span><span class="s2">&quot;Oct&quot;</span><span class="p">,</span><span class="s2">&quot;Nov&quot;</span><span class="p">,</span><span class="s2">&quot;Dec&quot;</span>
+    <span class="p">)</span>
+    <span class="n">time_format</span> <span class="o">=</span> <span class="s1">&#39; </span><span class="si">%d</span><span class="s1"> %H:%M:%S %Y GMT&#39;</span> <span class="c1"># NOTE: no month, fixed GMT</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">month_number</span> <span class="o">=</span> <span class="n">months</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cert_time</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">title</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;time data </span><span class="si">%r</span><span class="s1"> does not match &#39;</span>
+                         <span class="s1">&#39;format &quot;</span><span class="si">%%</span><span class="s1">b</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cert_time</span><span class="p">,</span> <span class="n">time_format</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># found valid month</span>
+        <span class="n">tt</span> <span class="o">=</span> <span class="n">strptime</span><span class="p">(</span><span class="n">cert_time</span><span class="p">[</span><span class="mi">3</span><span class="p">:],</span> <span class="n">time_format</span><span class="p">)</span>
+        <span class="c1"># return an integer, the previous mktime()-based implementation</span>
+        <span class="c1"># returned a float (fractional seconds are always zero here).</span>
+        <span class="k">return</span> <span class="n">timegm</span><span class="p">((</span><span class="n">tt</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">month_number</span><span class="p">)</span> <span class="o">+</span> <span class="n">tt</span><span class="p">[</span><span class="mi">2</span><span class="p">:</span><span class="mi">6</span><span class="p">])</span>
+
+<span class="n">PEM_HEADER</span> <span class="o">=</span> <span class="s2">&quot;-----BEGIN CERTIFICATE-----&quot;</span>
+<span class="n">PEM_FOOTER</span> <span class="o">=</span> <span class="s2">&quot;-----END CERTIFICATE-----&quot;</span>
+
+<span class="k">def</span> <span class="nf">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">der_cert_bytes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Takes a certificate in binary DER format and returns the</span>
+<span class="sd">    PEM version of it as a string.&quot;&quot;&quot;</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">standard_b64encode</span><span class="p">(</span><span class="n">der_cert_bytes</span><span class="p">),</span> <span class="s1">&#39;ASCII&#39;</span><span class="p">,</span> <span class="s1">&#39;strict&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">PEM_HEADER</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+            <span class="n">PEM_FOOTER</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">PEM_cert_to_DER_cert</span><span class="p">(</span><span class="n">pem_cert_string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Takes a certificate in ASCII PEM format and returns the</span>
+<span class="sd">    DER-encoded version of it as a byte sequence&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pem_cert_string</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">PEM_HEADER</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid PEM encoding; must start with </span><span class="si">%s</span><span class="s2">&quot;</span>
+                         <span class="o">%</span> <span class="n">PEM_HEADER</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pem_cert_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">PEM_FOOTER</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid PEM encoding; must end with </span><span class="si">%s</span><span class="s2">&quot;</span>
+                         <span class="o">%</span> <span class="n">PEM_FOOTER</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">pem_cert_string</span><span class="o">.</span><span class="n">strip</span><span class="p">()[</span><span class="nb">len</span><span class="p">(</span><span class="n">PEM_HEADER</span><span class="p">):</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">PEM_FOOTER</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">decodebytes</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ASCII&#39;</span><span class="p">,</span> <span class="s1">&#39;strict&#39;</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">get_server_certificate</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">ssl_version</span><span class="o">=</span><span class="n">PROTOCOL_TLS</span><span class="p">,</span> <span class="n">ca_certs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve the certificate from the server at the specified address,</span>
+<span class="sd">    and return it as a PEM-encoded string.</span>
+<span class="sd">    If &#39;ca_certs&#39; is specified, validate the server cert against it.</span>
+<span class="sd">    If &#39;ssl_version&#39; is specified, use it in the connection attempt.&quot;&quot;&quot;</span>
+
+    <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">addr</span>
+    <span class="k">if</span> <span class="n">ca_certs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">CERT_REQUIRED</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cert_reqs</span> <span class="o">=</span> <span class="n">CERT_NONE</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">_create_stdlib_context</span><span class="p">(</span><span class="n">ssl_version</span><span class="p">,</span>
+                                     <span class="n">cert_reqs</span><span class="o">=</span><span class="n">cert_reqs</span><span class="p">,</span>
+                                     <span class="n">cafile</span><span class="o">=</span><span class="n">ca_certs</span><span class="p">)</span>
+    <span class="k">with</span>  <span class="n">create_connection</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span> <span class="k">as</span> <span class="n">sock</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">context</span><span class="o">.</span><span class="n">wrap_socket</span><span class="p">(</span><span class="n">sock</span><span class="p">)</span> <span class="k">as</span> <span class="n">sslsock</span><span class="p">:</span>
+            <span class="n">dercert</span> <span class="o">=</span> <span class="n">sslsock</span><span class="o">.</span><span class="n">getpeercert</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">DER_cert_to_PEM_cert</span><span class="p">(</span><span class="n">dercert</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_protocol_name</span><span class="p">(</span><span class="n">protocol_code</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_PROTOCOL_NAMES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">protocol_code</span><span class="p">,</span> <span class="s1">&#39;&lt;unknown&gt;&#39;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, henry232323.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

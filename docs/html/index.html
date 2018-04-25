@@ -1,0 +1,914 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to henrio’s documentation! &#8212; henrio 3.4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '3.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-henrio-s-documentation">
+<h1>Welcome to henrio&#8217;s documentation!<a class="headerlink" href="#welcome-to-henrio-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="abstract-bases">
+<h2>Abstract Bases<a class="headerlink" href="#abstract-bases" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.AbstractLoop">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">AbstractLoop</code><a class="headerlink" href="#henrio.AbstractLoop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="henrio.BaseFile">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">BaseFile</code><a class="headerlink" href="#henrio.BaseFile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.BaseFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseFile.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseFile.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.BaseSocket">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">BaseSocket</code><a class="headerlink" href="#henrio.BaseSocket" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.BaseSocket.recv">
+<code class="descname">recv</code><span class="sig-paren">(</span><em>nbytes</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseSocket.recv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseSocket.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseSocket.send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.IOBase">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">IOBase</code><a class="headerlink" href="#henrio.IOBase" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.IOBase.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOBase.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.IOBase.file">
+<code class="descname">file</code><em class="property"> = None</em><a class="headerlink" href="#henrio.IOBase.file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOBase.fileno">
+<code class="descname">fileno</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOBase.fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="futures-tasks">
+<h2>Futures &amp; Tasks<a class="headerlink" href="#futures-tasks" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.Future">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Future</code><a class="headerlink" href="#henrio.Future" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Future.add_done_callback">
+<code class="descname">add_done_callback</code><span class="sig-paren">(</span><em>fn</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.add_done_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a callback to execute when the future finishes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.cancel">
+<code class="descname">cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to cancel a coroutine. Will return True if successfully raised otherwise False</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.done">
+<code class="descname">done</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if future is done</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.result">
+<code class="descname">result</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the result of the future. Will raise if it isnt ready or an error has been set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.running">
+<code class="descname">running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if future is running</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.set_exception">
+<code class="descname">set_exception</code><span class="sig-paren">(</span><em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.set_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the future&#8217;s exception to raise when returning control</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Future.set_result">
+<code class="descname">set_result</code><span class="sig-paren">(</span><em>data: typing.Any</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Future.set_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the result of the future</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.Task">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Task</code><span class="sig-paren">(</span><em>task: typing.Union[typing.Generator, typing.Awaitable], data: typing.Any</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Task.cancel">
+<code class="descname">cancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.cancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns whether or not the task has been successfully cancelled.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Task.done">
+<code class="descname">done</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.done" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the task is done.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Task.result">
+<code class="descname">result</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the result of the task. Will raise if the result isnt ready or an exception has been set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Task.running">
+<code class="descname">running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.running" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return if the Task is executing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Task.set_exception">
+<code class="descname">set_exception</code><span class="sig-paren">(</span><em>exception: typing.Union[Exception, typing.Callable[..., Exception]]</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.set_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the exception that will be raised when control is returned</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Task.set_result">
+<code class="descname">set_result</code><span class="sig-paren">(</span><em>data: typing.Any</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Task.set_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the result of Task</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.Conditional">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Conditional</code><span class="sig-paren">(</span><em>condition: typing.Callable[..., bool]</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Conditional" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Conditional.result">
+<code class="descname">result</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Conditional.result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the result of the conditional. If an error was set it will be raised</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.Event">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Event</code><a class="headerlink" href="#henrio.Event" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Event.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Event.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits until waiters are woken then resets the Event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Event.set">
+<code class="descname">set</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Event.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Toggle the event and wake all waiters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Event.wait">
+<code class="descname">wait</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Event.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait until the event is set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.timeout">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">timeout</code><span class="sig-paren">(</span><em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.timeout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="locks">
+<h2>Locks<a class="headerlink" href="#locks" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.Lock">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Lock</code><a class="headerlink" href="#henrio.Lock" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Lock.acquire">
+<code class="descname">acquire</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Lock.acquire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Waits to acquire the lock and registers the holder as the current task.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.Lock.holder">
+<code class="descname">holder</code><a class="headerlink" href="#henrio.Lock.holder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the task that currently owns the lock</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.Lock.locked">
+<code class="descname">locked</code><a class="headerlink" href="#henrio.Lock.locked" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.Lock.release">
+<code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Lock.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release the lock and set the holder to None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.ResourceLock">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">ResourceLock</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.ResourceLock" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lock that holds a resource</p>
+<dl class="method">
+<dt id="henrio.ResourceLock.acquire">
+<code class="descname">acquire</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.ResourceLock.acquire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire the lock and return the value</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.Semaphore">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Semaphore</code><span class="sig-paren">(</span><em>maxholders=1</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Semaphore" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Semaphore.acquire">
+<code class="descname">acquire</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Semaphore.acquire" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.Semaphore.locked">
+<code class="descname">locked</code><a class="headerlink" href="#henrio.Semaphore.locked" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.Semaphore.release">
+<code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Semaphore.release" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="loops">
+<h2>Loops<a class="headerlink" href="#loops" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.BaseLoop">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">BaseLoop</code><a class="headerlink" href="#henrio.BaseLoop" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.BaseLoop.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the running event loop</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.create_task">
+<code class="descname">create_task</code><span class="sig-paren">(</span><em>task: typing.Union[typing.Generator, typing.Awaitable]</em><span class="sig-paren">)</span> &#x2192; henrio.futures.Task<a class="headerlink" href="#henrio.BaseLoop.create_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a task to the internal queue, will get called eventually. Returns the awaitable wrapped in a Task</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>func</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a function with the given args</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.run_forever">
+<code class="descname">run_forever</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.run_forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the current tasks queue forever</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.run_until_complete">
+<code class="descname">run_until_complete</code><span class="sig-paren">(</span><em>starting_task: typing.Union[typing.Generator, typing.Awaitable]</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.run_until_complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run an awaitable/generator until it is complete and return its value. Raise if the task raises</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.sleep">
+<code class="descname">sleep</code><span class="sig-paren">(</span><em>amount</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.sleep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sleep for when there is nothing to do to avoid spinning</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.BaseLoop.time">
+<code class="descname">time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.BaseLoop.time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current loop time, relative and monotonic. Speed up the loop by increasing increments</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.SelectorLoop">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">SelectorLoop</code><span class="sig-paren">(</span><em>selector=None</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.SelectorLoop" title="Permalink to this definition">¶</a></dt>
+<dd><p>An event loop using the the OS&#8217;s builtin Selector.</p>
+<dl class="method">
+<dt id="henrio.SelectorLoop.unwrap_file">
+<code class="descname">unwrap_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span> &#x2192; henrio.io.AsyncSocket<a class="headerlink" href="#henrio.SelectorLoop.unwrap_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.SelectorLoop.unwrap_socket">
+<code class="descname">unwrap_socket</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span> &#x2192; henrio.io.AsyncSocket<a class="headerlink" href="#henrio.SelectorLoop.unwrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.SelectorLoop.wrap_socket">
+<code class="descname">wrap_socket</code><span class="sig-paren">(</span><em>socket: socket.socket</em><span class="sig-paren">)</span> &#x2192; henrio.io.AsyncSocket<a class="headerlink" href="#henrio.SelectorLoop.wrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a file in an async socket API.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.IOCPLoop">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">IOCPLoop</code><span class="sig-paren">(</span><em>concurrency=4294967295</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPLoop" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.IOCPLoop.unwrap_file">
+<code class="descname">unwrap_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPLoop.unwrap_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPLoop.wrap_file">
+<code class="descname">wrap_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPLoop.wrap_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPLoop.wrap_socket">
+<code class="descname">wrap_socket</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPLoop.wrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.IOCPFile">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">IOCPFile</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.IOCPFile.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregister the file descriptor with the loop and close the file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPFile.fileno">
+<code class="descname">fileno</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>nbytes</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPFile.recv">
+<code class="descname">recv</code><span class="sig-paren">(</span><em>nbytes</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.recv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPFile.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>data</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.IOCPFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.IOCPFile.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="i-o">
+<h2>I/O<a class="headerlink" href="#i-o" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.AsyncSocket">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">AsyncSocket</code><span class="sig-paren">(</span><em>file: socket.socket</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.AsyncSocket" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.AsyncSocket.sendall">
+<code class="descname">sendall</code><span class="sig-paren">(</span><em>data</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.AsyncSocket.sendall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Borrowed from curio <a class="reference external" href="https://github.com/dabeaz/curio/blob/master/curio/io.py">https://github.com/dabeaz/curio/blob/master/curio/io.py</a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.AsyncFile">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">AsyncFile</code><span class="sig-paren">(</span><em>file</em>, <em>mode='r'</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.AsyncFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapped file object with all methods run in a threadpool</p>
+</dd></dl>
+
+<span class="target" id="module-henrio.io"></span><dl class="function">
+<dt id="henrio.io.threaded_connect">
+<code class="descclassname">henrio.io.</code><code class="descname">threaded_connect</code><span class="sig-paren">(</span><em>socket</em>, <em>hostpair</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.threaded_connect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.threaded_bind">
+<code class="descclassname">henrio.io.</code><code class="descname">threaded_bind</code><span class="sig-paren">(</span><em>socket</em>, <em>hostpair</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.threaded_bind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.getaddrinfo">
+<code class="descclassname">henrio.io.</code><code class="descname">getaddrinfo</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>family=0</em>, <em>type=0</em>, <em>proto=0</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/socket.html#getaddrinfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#henrio.io.getaddrinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resolve host and port into list of address info entries.</p>
+<p>Translate the host/port argument into a sequence of 5-tuples that contain
+all the necessary arguments for creating a socket connected to that service.
+host is a domain name, a string representation of an IPv4/v6 address or
+None. port is a string service name such as &#8216;http&#8217;, a numeric port number or
+None. By passing None as the value of host and port, you can pass NULL to
+the underlying C API.</p>
+<p>The family, type and proto arguments can be optionally specified in order to
+narrow the list of addresses returned. Passing zero as a value for each of
+these arguments selects the full range of results.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.create_socketpair">
+<code class="descclassname">henrio.io.</code><code class="descname">create_socketpair</code><span class="sig-paren">(</span><em>family=&lt;AddressFamily.AF_INET: 2&gt;</em>, <em>type=&lt;SocketKind.SOCK_STREAM: 1&gt;</em>, <em>proto=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.create_socketpair" title="Permalink to this definition">¶</a></dt>
+<dd><p>socketpair([family[, type[, proto]]]) -&gt; (socket object, socket object)
+Create a pair of socket objects from the sockets returned by the platform
+socketpair() function.
+The arguments are the same as for socket() except the default family is AF_UNIX
+if defined on the platform; otherwise, the default is AF_INET.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.async_connect">
+<code class="descclassname">henrio.io.</code><code class="descname">async_connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.async_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>connect(address)</p>
+<p>Connect the socket to a remote address.  For IP sockets, the address
+is a pair (host, port).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.ssl_do_handshake">
+<code class="descclassname">henrio.io.</code><code class="descname">ssl_do_handshake</code><span class="sig-paren">(</span><em>self</em>, <em>block=False</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.ssl_do_handshake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a TLS/SSL handshake.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.io.AsyncSocket">
+<em class="property">class </em><code class="descclassname">henrio.io.</code><code class="descname">AsyncSocket</code><span class="sig-paren">(</span><em>file: socket.socket</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.io.AsyncSocket.__aenter__">
+<code class="descname">__aenter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.__aenter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.__aexit__">
+<code class="descname">__aexit__</code><span class="sig-paren">(</span><em>exc_type</em>, <em>exc_val</em>, <em>exc_tb</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.__aexit__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>file: socket.socket</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class for interacting asynchronously with Sockets (transport style sockets as well)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.io.AsyncSocket.__module__">
+<code class="descname">__module__</code><em class="property"> = 'henrio.io'</em><a class="headerlink" href="#henrio.io.AsyncSocket.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.accept">
+<code class="descname">accept</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.accept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.bind">
+<code class="descname">bind</code><span class="sig-paren">(</span><em>hostpair</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.bind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><em>hostpair</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.connect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.io.AsyncSocket.fileno">
+<code class="descname">fileno</code><a class="headerlink" href="#henrio.io.AsyncSocket.fileno" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>nbytes: int</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.recv">
+<code class="descname">recv</code><span class="sig-paren">(</span><em>nbytes: int</em><span class="sig-paren">)</span> &#x2192; bytes<a class="headerlink" href="#henrio.io.AsyncSocket.recv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>data: bytes</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.send" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.sendall">
+<code class="descname">sendall</code><span class="sig-paren">(</span><em>data</em>, <em>flags=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.sendall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Borrowed from curio <a class="reference external" href="https://github.com/dabeaz/curio/blob/master/curio/io.py">https://github.com/dabeaz/curio/blob/master/curio/io.py</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.sendto">
+<code class="descname">sendto</code><span class="sig-paren">(</span><em>data: bytes</em>, <em>address: tuple</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.sendto" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncSocket.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>data: typing.Union[bytes, str]</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncSocket.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.io.aopen">
+<code class="descclassname">henrio.io.</code><code class="descname">aopen</code><a class="headerlink" href="#henrio.io.aopen" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#henrio.io.AsyncFile" title="henrio.io.AsyncFile"><code class="xref py py-class docutils literal"><span class="pre">AsyncFile</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.io.AsyncFile">
+<em class="property">class </em><code class="descclassname">henrio.io.</code><code class="descname">AsyncFile</code><span class="sig-paren">(</span><em>file</em>, <em>mode='r'</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapped file object with all methods run in a threadpool</p>
+<dl class="method">
+<dt id="henrio.io.AsyncFile.__aenter__">
+<code class="descname">__aenter__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.__aenter__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.__aexit__">
+<code class="descname">__aexit__</code><span class="sig-paren">(</span><em>exc_type</em>, <em>exc_val</em>, <em>exc_tb</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.__aexit__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>file</em>, <em>mode='r'</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="henrio.io.AsyncFile.__module__">
+<code class="descname">__module__</code><em class="property"> = 'henrio.io'</em><a class="headerlink" href="#henrio.io.AsyncFile.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.close" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.flush">
+<code class="descname">flush</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.flush" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.read">
+<code class="descname">read</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.read" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.readline">
+<code class="descname">readline</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.readline" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.write">
+<code class="descname">write</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.write" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="henrio.io.AsyncFile.writelines">
+<code class="descname">writelines</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.AsyncFile.writelines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.open_connection">
+<code class="descclassname">henrio.io.</code><code class="descname">open_connection</code><span class="sig-paren">(</span><em>address</em>, <em>timeout=&lt;object object&gt;</em>, <em>source_address=None</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.open_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to <em>address</em> and return the socket object.</p>
+<p>Convenience function.  Connect to <em>address</em> (a 2-tuple <code class="docutils literal"><span class="pre">(host,</span>
+<span class="pre">port)</span></code>) and return the socket object.  Passing the optional
+<em>timeout</em> parameter will set the timeout on the socket instance
+before attempting to connect.  If no <em>timeout</em> is supplied, the
+global default timeout setting returned by <code class="xref py py-func docutils literal"><span class="pre">getdefaulttimeout()</span></code>
+is used.  If <em>source_address</em> is set it must be a tuple of (host, port)
+for the socket to bind as a source address before making the connection.
+A host of &#8216;&#8217; or port 0 tells the OS to use the default.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.io.ssl_wrap_socket">
+<code class="descclassname">henrio.io.</code><code class="descname">ssl_wrap_socket</code><span class="sig-paren">(</span><em>sock</em>, <em>keyfile=None</em>, <em>certfile=None</em>, <em>server_side=False</em>, <em>cert_reqs=&lt;VerifyMode.CERT_NONE: 0&gt;</em>, <em>ssl_version=&lt;_SSLMethod.PROTOCOL_TLS: 2&gt;</em>, <em>ca_certs=None</em>, <em>do_handshake_on_connect=True</em>, <em>suppress_ragged_eofs=True</em>, <em>ciphers=None</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.io.ssl_wrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="queues">
+<h2>Queues<a class="headerlink" href="#queues" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="henrio.Queue">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">Queue</code><span class="sig-paren">(</span><em>size=0</em>, <em>lifo=False</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="henrio.Queue.empty">
+<code class="descname">empty</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.empty" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the queue is empty</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.full">
+<code class="descname">full</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the queue is full</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.get">
+<code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait to get an item from the queue, or immediately get one if one is available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.get_nowait">
+<code class="descname">get_nowait</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.get_nowait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to get from the queue immediately, raises <cite>QueueWouldBlock</cite> on failure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.join">
+<code class="descname">join</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait until the queue is empty</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.put">
+<code class="descname">put</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.put" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait to append to the queue or immediately append to the queue if it is not full.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.put_nowait">
+<code class="descname">put_nowait</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.put_nowait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to append to the queue immediately, raises <cite>QueueWouldBlock</cite> on failure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="henrio.Queue.setlifo">
+<code class="descname">setlifo</code><span class="sig-paren">(</span><em>bool: bool</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.Queue.setlifo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set whether the queue is FIFO or LIFO</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="henrio.HeapQueue">
+<em class="property">class </em><code class="descclassname">henrio.</code><code class="descname">HeapQueue</code><span class="sig-paren">(</span><em>size=0</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.HeapQueue" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="attribute">
+<dt id="henrio.HeapQueue.setlifo">
+<code class="descname">setlifo</code><a class="headerlink" href="#henrio.HeapQueue.setlifo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="henrio.QueueWouldBlock">
+<em class="property">exception </em><code class="descclassname">henrio.</code><code class="descname">QueueWouldBlock</code><a class="headerlink" href="#henrio.QueueWouldBlock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-henrio.workers">
+<span id="workers"></span><h2>Workers<a class="headerlink" href="#module-henrio.workers" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="henrio.workers.AsyncFuture">
+<code class="descclassname">henrio.workers.</code><code class="descname">AsyncFuture</code><span class="sig-paren">(</span><em>async_result</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.workers.AsyncFuture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Meant to wrap a <cite>multiprocessing.pool.ApplyResult</cite>. Returns a conditional that waits for the result to be ready</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-henrio.yields">
+<span id="special-yields"></span><h2>Special Yields<a class="headerlink" href="#module-henrio.yields" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="henrio.yields.sleep">
+<code class="descclassname">henrio.yields.</code><code class="descname">sleep</code><span class="sig-paren">(</span><em>seconds: typing.Union[float, int]</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.sleep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sleep a specified number of seconds. Pass <cite>math.inf</cite> for an endless sleep that returns when cancelled or thrown
+Pass 0 for an inline yield (allow the loop to process once)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.get_loop">
+<code class="descclassname">henrio.yields.</code><code class="descname">get_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.get_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the loop object that is executing the coroutine</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.unwrap_file">
+<code class="descclassname">henrio.yields.</code><code class="descname">unwrap_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.unwrap_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters the file/socket with the loop. Generally for when closing a file that has been wrapped.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.spawn">
+<code class="descclassname">henrio.yields.</code><code class="descname">spawn</code><span class="sig-paren">(</span><em>awaitable</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.spawn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start running a coroutine asynchronously. Returns the associated task.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.wrap_file">
+<code class="descclassname">henrio.yields.</code><code class="descname">wrap_file</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.wrap_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a file/socket with the loop&#8217;s file type. i.e. SelectorFile / IOCPFile depending on the loop.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.wrap_socket">
+<code class="descclassname">henrio.yields.</code><code class="descname">wrap_socket</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.wrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrap a file/socket with the loop&#8217;s file type. i.e. SelectorFile / IOCPFile depending on the loop.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.current_task">
+<code class="descclassname">henrio.yields.</code><code class="descname">current_task</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.current_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the task that is currently being executed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.unwrap_socket">
+<code class="descclassname">henrio.yields.</code><code class="descname">unwrap_socket</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.unwrap_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregisters the file/socket with the loop. Generally for when closing a file that has been wrapped.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.postpone">
+<code class="descclassname">henrio.yields.</code><code class="descname">postpone</code><span class="sig-paren">(</span><em>func</em>, <em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.postpone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spawns a function (not coroutine) after a certain amount of time. Returns the associated task</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.spawn_after">
+<code class="descclassname">henrio.yields.</code><code class="descname">spawn_after</code><span class="sig-paren">(</span><em>coro</em>, <em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.spawn_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Spawns a coroutine after a given amount of time.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.wait_readable">
+<code class="descclassname">henrio.yields.</code><code class="descname">wait_readable</code><span class="sig-paren">(</span><em>socket</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.wait_readable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait until a socket is readable</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.wait_writable">
+<code class="descclassname">henrio.yields.</code><code class="descname">wait_writable</code><span class="sig-paren">(</span><em>socket</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.wait_writable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wait until a socket is writable</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.sleepinf">
+<code class="descclassname">henrio.yields.</code><code class="descname">sleepinf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.sleepinf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sleep forever, returns when an error is raised (Cancelling or manual throwing)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.call_after">
+<code class="descclassname">henrio.yields.</code><code class="descname">call_after</code><span class="sig-paren">(</span><em>func</em>, <em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.call_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a function after the given amount of time</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.schedule_after">
+<code class="descclassname">henrio.yields.</code><code class="descname">schedule_after</code><span class="sig-paren">(</span><em>coro</em>, <em>time</em><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.schedule_after" title="Permalink to this definition">¶</a></dt>
+<dd><p>Schedule a coroutine to execute after a given amount of time</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="henrio.yields.get_time">
+<code class="descclassname">henrio.yields.</code><code class="descname">get_time</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#henrio.yields.get_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current loop internal time, good for measuring waits and timeouts.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to henrio&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#abstract-bases">Abstract Bases</a></li>
+<li><a class="reference internal" href="#futures-tasks">Futures &amp; Tasks</a></li>
+<li><a class="reference internal" href="#locks">Locks</a></li>
+<li><a class="reference internal" href="#loops">Loops</a></li>
+<li><a class="reference internal" href="#i-o">I/O</a></li>
+<li><a class="reference internal" href="#queues">Queues</a></li>
+<li><a class="reference internal" href="#module-henrio.workers">Workers</a></li>
+<li><a class="reference internal" href="#module-henrio.yields">Special Yields</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, henry232323.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -20,20 +20,10 @@ try:
     libanl = ctypes.cdll.LoadLibrary('libanl.so.1')
     winsock = None
 except OSError:
-    pass
     libc = None
     libanl = None
     winsock = None
     _overlapped = None
-    '''
-    try:
-        winsock = ctypes.windll.LoadLibrary("Ws2_32.dll")
-        import ctypes.wintypes as wintypes
-        import _overlapped
-    except ImportError:
-        winsock = None
-        _overlapped = None
-    '''
 
 if libc:
     # these constants cribbed from libanl
@@ -99,7 +89,7 @@ if libc:
 
     @coroutine
     def getaddrinfo_a(hostname, timeout=-1):
-        """A getaddrinfo for systems supporting `getaddrinfo_a`. """
+        """A getaddrinfo for systems supporting `getaddrinfo_a`."""
         loop = yield from get_loop()
         etime = loop.time() + timeout
         names = [hostname]
@@ -133,6 +123,7 @@ if libc:
             raise TimeoutError
 
 if False:  # winsock:
+
     class GUID(ctypes.Structure):
         _fields_ = [
             ('Data1', ctypes.c_ulong),
@@ -157,6 +148,13 @@ if False:  # winsock:
             ('ai_next', ctypes.c_void_p)
         ]
 
+    try:
+        winsock = ctypes.windll.LoadLibrary("Ws2_32.dll")
+        import ctypes.wintypes as wintypes
+        import _overlapped
+    except ImportError:
+        winsock = None
+        _overlapped = None
 
     c_addrinfoEx_p = ctypes.POINTER(addrinfoEx)
 

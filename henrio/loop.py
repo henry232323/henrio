@@ -8,7 +8,6 @@ from traceback import print_exc
 
 from .bases import AbstractLoop
 from .futures import Task, Future
-from .yields import sleep
 
 __all__ = ["BaseLoop"]
 
@@ -29,11 +28,11 @@ class BaseLoop(AbstractLoop):
         """Get the current loop time, relative and monotonic. Speed up the loop by increasing increments"""
         return time.monotonic()
 
-    def sleep(self, amount):
+    def sleep(self, amount: float):
         """Sleep for when there is nothing to do to avoid spinning"""
         return time.sleep(amount)
 
-    def run(self, func, *args, **kwargs):
+    def run(self, func: typing.Callable[..., typing.Any], *args, **kwargs):
         """Run a function with the given args"""
         return self.run_until_complete(func(*args, **kwargs))
 
@@ -109,34 +108,38 @@ class BaseLoop(AbstractLoop):
                     print_exc()
                 else:  # If everything went alright, check if we're supposed to sleep. Sleep is in the form of
                     # A generator yielding us a tuple of `("sleep", time_in_seconds)`
-                    if isinstance(task._data,
-                                  tuple):  # These are all our 'commands' that can be yielded directly into the loop
-                        command, *args = task._data  # Always ('command', *args) in the form of tuples
-                        if command == 'sleep':
-                            heappush(self._timers,
-                                     (task, self.time() + task._data[1]))  # Add our time to our list of timers
-                        else:
-                            if command == "loop":  # If we want the loop, give it to em
-                                task._data = self
-                            elif command == "current_task":
-                                task._data = task
-                            else:
-                                try:
-                                    task._data = getattr(self, command)(*args)
-                                except Exception as e:
-                                    task._throw_later = e
-                                if iscoroutine(task._data) and command != "create_task":
-                                    self._tasks.append(task._data)
-                            self._tasks.append(task)
-                    elif task._data is None:
-                        self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task
-                    elif isinstance(task._data, Future):
-                        self._futures.append((task._data, task))
-                    else:
-                        raise RuntimeError("Invalid yield!")
+                    self._dispatch(task)
             else:
                 if task.cancelled:
                     task.close()
+
+    def _dispatch(self, task: Task):
+        if isinstance(task._data,
+                      tuple):  # These are all our 'commands' that can be yielded directly into the loop
+            command, *args = task._data  # Always ('command', *args) in the form of tuples
+            if command == 'sleep':
+                heappush(self._timers,
+                         (task, self.time() + task._data[1]))  # Add our time to our list of timers
+            else:
+                if command == "loop":  # If we want the loop, give it to em
+                    task._data = self
+                elif command == "current_task":
+                    task._data = task
+                else:
+                    try:
+                        task._data = getattr(self, command)(*args)
+                    except Exception as e:
+                        task._throw_later = e
+                    if iscoroutine(task._data) and command != "create_task":
+                        self._tasks.append(task._data)
+                    self._tasks.append(task)
+
+        elif task._data is None:
+            self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task
+        elif isinstance(task._data, Future):
+            self._futures.append((task._data, task))
+        else:
+            raise RuntimeError("Invalid yield!")
 
     def _poll(self):
         """Poll IO once, base loop doesn't handle IO, thus nothing happens"""

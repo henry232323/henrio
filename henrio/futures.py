@@ -47,7 +47,7 @@ class Future:
         for fut in self._joiners:
             fut.set_result(None)
 
-    def set_exception(self, exception):
+    def set_exception(self, exception: BaseException):
         """Set the future's exception to raise when returning control"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
@@ -64,7 +64,7 @@ class Future:
         if self.running():
             return False
         self.cancelled = True
-        self.set_exception(CancelledError)
+        self.set_exception(CancelledError("Execution of this coro has been cancelled!"))
         return True
 
     def __iter__(self):
@@ -87,6 +87,7 @@ class Future:
         self._error = StopIteration("Closed!")
 
     async def wait(self):
+        """Wait on this future to finish (different than awaiting, which should not be done except for the original caller)"""
         if self.complete or self.cancelled or self._error:
             return
         fut = Future()
@@ -150,7 +151,7 @@ class Task:
         for fut in self._joiners:
             fut.set_result(None)
 
-    def set_exception(self, exception: typing.Union[Exception, typing.Callable[..., Exception]]):
+    def set_exception(self, exception: BaseException):
         """Sets the exception that will be raised when control is returned"""
         if self.complete or self._error is not None:
             raise RuntimeError("Future already completed")
@@ -181,7 +182,7 @@ class Task:
             self.throw(CancelledError)
         except CancelledError:
             self.cancelled = True
-            self.set_exception(CancelledError)
+            self.set_exception(CancelledError("Execution of this coro has been cancelled!"))
             return True
         except StopIteration as err:
             self.set_result(err.value)
@@ -193,6 +194,7 @@ class Task:
         self._task.close()
 
     async def wait(self):
+        """Wait on this future to finish (different than awaiting, which should not be done except for the original caller)"""
         fut = Future()
         self._joiners.append(fut)
         await fut
@@ -235,17 +237,17 @@ class Event:
     def wait(self):
         """Wait until the event is set."""
         self._waiters += 1
-        while not self.value:
+        while not self._value:
             yield
         self._waiters -= 1
 
     def set(self):
         """Toggle the event and wake all waiters"""
-        self.value = True
+        self._value = True
 
     @coroutine
     def clear(self):
         """Waits until waiters are woken then resets the Event."""
         while self._waiters > 0:
             yield
-        self.value = False
+        self._value = False

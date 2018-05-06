@@ -10,7 +10,7 @@ from functools import wraps
 from .workers import threadworker
 from .yields import wrap_socket, unwrap_socket, wait_readable, wait_writable
 from .bases import BaseSocket
-from . import timeout as _timeout
+from .timeout import timeout as _timeout
 
 try:
     import ssl as _ssl
@@ -29,19 +29,22 @@ __all__ = ["threaded_connect", "threaded_bind", "getaddrinfo", "create_socketpai
 
 async def threaded_connect(socket: socket.socket, hostpair: typing.Tuple[str, int]):
     """Run socket connect in a separate thread"""
+    isblocking = socket.gettimeout() is None
     socket.setblocking(True)
     await threadworker(socket.connect, hostpair)
+    socket.setblocking(isblocking)
 
 
 async def threaded_bind(socket: socket.socket, hostpair: typing.Tuple[str, int]):
     """Run socket bind in a separate thread"""
+    isblocking = socket.gettimeout() is None
     socket.setblocking(False)
     try:
         resp = socket.bind(hostpair)
-        socket.setblocking(True)
+        socket.setblocking(isblocking)
         return resp
     except BlockingIOError:
-        socket.setblocking(True)
+        socket.setblocking(isblocking)
         return await threadworker(socket.bind, hostpair)
 
 
@@ -61,16 +64,20 @@ if None in yerrors:
 @coroutine
 @wraps(socket.socket.connect)
 def _async_connect(sock, host):
-    addr, port = host
-    sock.setblocking(False)
-    while True:
-        err = sock.connect_ex((addr, port))
-        if err in yerrors:
-            yield
-        elif err in (getattr(errno, "EISCONN", None), getattr(errno, "WSAEISCONN", None)):
-            break
-        else:
-            raise OSError(err, os.strerror(err))
+    isblocking = sock.gettimeout() is None
+    try:
+        addr, port = host
+        sock.setblocking(False)
+        while True:
+            err = sock.connect_ex((addr, port))
+            if err in yerrors:
+                yield
+            elif err in (getattr(errno, "EISCONN", None), getattr(errno, "WSAEISCONN", None)):
+                break
+            else:
+                raise OSError(err, os.strerror(err))
+    finally:
+        sock.setblocking(isblocking)
 
 
 @wraps(_async_connect)

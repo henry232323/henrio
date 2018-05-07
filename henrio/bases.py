@@ -1,5 +1,6 @@
 import warnings
 import typing
+from io import IOBase
 
 __all__ = ["AbstractLoop", "AbstractProtocol", "IOBase", "BaseSocket", "BaseFile"]
 

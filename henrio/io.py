@@ -179,7 +179,7 @@ async def open_connection(hostpair: tuple, timeout=None, *,
 
 
 class AsyncSocket(BaseSocket):
-    def __init__(self, file: socket.socket):
+    def __init__(self, file: typing.Union[socket.socket, io.BytesIO]):
         """A class for interacting asynchronously with Sockets (transport style sockets as well)"""
         self.file = file
 
@@ -214,7 +214,7 @@ class AsyncSocket(BaseSocket):
                     await wait_writable(self.file)
                 except WantRead:  # pragma: no cover
                     await wait_readable(self.file)
-        except CancelledError as e:
+        except Exception as e:
             e.bytes_sent = total_sent
             raise
 

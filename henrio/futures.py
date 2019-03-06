@@ -115,7 +115,7 @@ class Task:
         self._data = data
 
     def __repr__(self):
-        fmt = "{0} {1} {2} {3}".format(self._result if self._data is not self else "self",
+        fmt = "result={0}, error={1}, data={2}, class={3}".format(self._result if self._data is not self else "self",
                                        self._error,
                                        self._data if self._data is not self else "self",
                                        self._task.__class__.__name__)

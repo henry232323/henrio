@@ -49,4 +49,4 @@ async def example():
         import traceback
         traceback.print_exc()
 
-print(henrio.run(example()))
+print(henrio.run(example))

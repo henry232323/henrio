@@ -65,6 +65,8 @@ class SelectorLoop(BaseLoop):
                                data=(deque(), deque()))  # Get our R/W
         return wrapped
 
+    wrap_file = wrap_socket
+
     def unwrap_socket(self, file) -> AsyncSocket:
         key = self.selector.get_key(file)
         for fut in key.data[0]:

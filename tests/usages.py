@@ -80,7 +80,10 @@ class Tests(TestCase):
 
             loop.run_until_complete(do_thing())
         finally:
-            rw.close()
+            try:
+                rw.close()
+            except:
+                pass
 
     def test_run_stdio(self):
         import sys
@@ -153,6 +156,7 @@ class Tests(TestCase):
         @types.coroutine
         def gl():
             l = yield ("loop",)
+            print("loop is", l)
             return l
 
         print(l.run_until_complete(gl()))
@@ -166,10 +170,11 @@ class Tests(TestCase):
             await sleep(3)
             print(1)
 
-        run(mf())
+        run(mf)
 
     def test_ctask(self):
         async def pepe():
+            return
             return await current_task()
 
         l = SelectorLoop()

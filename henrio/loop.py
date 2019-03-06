@@ -132,7 +132,7 @@ class BaseLoop(AbstractLoop):
                         task._throw_later = e
                     if iscoroutine(task._data) and command != "create_task":
                         self._tasks.append(task._data)
-                    self._tasks.append(task)
+                self._tasks.append(task)
 
         elif task._data is None:
             self._tasks.append(task)  # Queue the sub-coroutine first, then reschedule our task

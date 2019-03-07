@@ -22,6 +22,12 @@ class Tests(TestCase):
     async def raser(self):
         raise IndexError("Oh no")
 
+    def test_run_raiser(self):
+        try:
+            run(self.raser)
+        except IndexError:
+            print("success")
+
     def test_run_files(self):
         loop = IOCPLoop() if sys.platform == "win32" else SelectorLoop()
         with open("testfile.hio", 'rb') as file:

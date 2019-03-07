@@ -18,6 +18,15 @@ class Future:
         self._callback = None
         self._joiners = list()
 
+    def __repr__(self):
+        fmt = "result={0}, error={1}, data={2}".format(self._result if self._data is not self else "self",
+                                       self._error,
+                                       self._data if self._data is not self else "self")
+        if self.cancelled:
+            return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
+        else:
+            return "<{0} complete={1} {2}>".format(self.__class__.__name__, self.complete, fmt)
+
     __lt__ = lambda *_: False  # We use this to make sure heapsort doesn't get mad at us, its arbitrary
 
     # And more importantly, an implementation detail
@@ -118,7 +127,7 @@ class Task:
         fmt = "result={0}, error={1}, data={2}, class={3}".format(self._result if self._data is not self else "self",
                                        self._error,
                                        self._data if self._data is not self else "self",
-                                       self._task.__class__.__name__)
+                                       self._task.__class__.__name__)#, self._task)
         if self.cancelled:
             return "<Cancelled {0} {1}>".format(self.__class__.__name__, fmt)
         else:

@@ -118,7 +118,7 @@ class IOCPFile(BaseFile, BaseSocket):
         """Unregister the file descriptor with the loop and close the file."""
         try:
             # self._overlap.cancel()
-            if self.file.fileno not in (0, _overlapped.INVALID_HANDLE_VALUE):
+            if self.file.fileno() not in (0, _overlapped.INVALID_HANDLE_VALUE):
                 CloseHandle(self.file.fileno())
         finally:
             self.file.close()

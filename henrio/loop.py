@@ -49,6 +49,7 @@ class BaseLoop(AbstractLoop):
             if starting_task not in self._tasks:
                 self._queue.appendleft(starting_task)  # Make it priority over already queued tasks
             while not starting_task.complete and not starting_task.cancelled and not starting_task._error:
+                # print(starting_task, self._queue)
                 self._loop_once()  # Loop until we're out of tasks
 
             # Loop is done, return our result
@@ -114,8 +115,7 @@ class BaseLoop(AbstractLoop):
                     task.close()
 
     def _dispatch(self, task: Task):
-        if isinstance(task._data,
-                      tuple):  # These are all our 'commands' that can be yielded directly into the loop
+        if isinstance(task._data, tuple):  # These are all our 'commands' that can be yielded directly into the loop
             command, *args = task._data  # Always ('command', *args) in the form of tuples
             if command == 'sleep':
                 heappush(self._timers,

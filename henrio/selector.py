@@ -61,13 +61,23 @@ class SelectorLoop(BaseLoop):
     def wrap_socket(self, socket: socket.socket) -> AsyncSocket:
         """Wrap a file in an async socket API."""
         wrapped = AsyncSocket(socket)
-        self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE,
-                               data=(deque(), deque()))  # Get our R/W
+        key = None
+        try:
+            key = self.selector.register(socket, selectors.EVENT_READ | selectors.EVENT_WRITE,
+                                   data=(deque(), deque()))  # Get our R/W
+            self.selector.select(0)
+        except ValueError as err:
+            raise ValueError("File/socket must have a valid fileno() method") from err
+        except OSError as err:
+            raise ValueError("Must pass a valid file / socket") from err
+        finally:
+            if key in dict(self.selector.get_map()).values():
+                self.selector.unregister(socket)
         return wrapped
 
     wrap_file = wrap_socket
 
-    def unwrap_socket(self, file) -> AsyncSocket:
+    def unwrap_socket(self, file) -> None:
         key = self.selector.get_key(file)
         for fut in key.data[0]:
             fut.cancel()

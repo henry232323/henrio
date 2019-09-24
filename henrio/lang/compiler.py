@@ -35,13 +35,22 @@ def parse(text):
     walk_tree(sequence)
     if sequence is None:
         raise SyntaxError("Failed to parse!")
-    mod = ast.Module(sequence)
     for i, item in enumerate(sequence):
         if isinstance(item, list):
             sequence[i:i + 1] = item
+    nseq = []
+    nseq.extend(runner)
+    nseq.append(
+        ast.AsyncFunctionDef("__run_file__",
+                            ast.arguments(args=[], vararg=None,
+                                          kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]),
+                            sequence,
+                            [],
+                            None))
+    nseq.extend(ast.parse("hio.run(__run_file__)").body)
+
+    mod = ast.Module(nseq)
     ast.fix_missing_locations(mod)
-    for item in reversed(runner):
-        mod.body.insert(0, item)
     return mod
 
 
@@ -124,17 +133,6 @@ def walk_tree(tree):
 
             fitem, parent = item, None
             while getattr(fitem, "value", None):
-                if isinstance(fitem, ast.Await):
-                    attribute = ast.Attribute(ast.Name("hio", ast.Load()),
-                                              "run",
-                                              ast.Load())
-                    if parent is None:
-                        tree[i] = ast.Call(attribute, [fitem.value], [])
-                        fitem = tree[i]
-                    else:
-                        parent.value = ast.Call(attribute, [fitem.value], [])
-                        fitem = parent.value
-
                 if getattr(fitem, "args", None):
                     walk_tree(fitem.args)
                 if getattr(fitem, "keywords", None):
@@ -143,12 +141,6 @@ def walk_tree(tree):
                     fitem, parent = fitem.value, fitem
 
             _ = item
-            if getattr(item, "test", None):
-                if isinstance(fitem.test, ast.Await):
-                    attribute = ast.Attribute(ast.Name("hio", ast.Load()),
-                                              "run",
-                                              ast.Load())
-                    fitem.test = ast.Call(attribute, [item.test.value], [])
 
             if getattr(item, "iter", None):
                 if isinstance(fitem.iter, ast.Await):
@@ -157,16 +149,10 @@ def walk_tree(tree):
                                               ast.Load())
                     fitem.iter = ast.Call(attribute, [item.iter.value], [])
 
-            if isinstance(item, ast.Await):
-                attribute = ast.Attribute(ast.Name("hio", ast.Load()),
-                                          "run",
-                                          ast.Load())
-                tree[i] = ast.Call(attribute, [item.value], [])
-
 
 def load_either(modulename):
     """Loads either up to date bytecode or recompiles file"""
-    compiled_path = f"__pycache__/{modulename}.cpython-36.pyc"
+    compiled_path = f"__pycache__/{modulename}.cpython-37.pyc"
     if os.path.exists(compiled_path):
         with open(compiled_path, 'rb') as pyc:
             pyc.read(4)  # Get magic
@@ -237,8 +223,10 @@ class HIOLoader(importlib.abc.Loader, importlib.abc.PathEntryFinder):
                     #  Specifically in the order it appears in sys.path, first instance we see
                     #  First item is always "" NOT "/"
 
-        elif f"{fullname}.hio" in os.listdir(path):  # Else if we're given a path, look there
-            return importlib.machinery.ModuleSpec(fullname, cls, origin=os.path.join(path, fullname + ".hio"))
+        else:
+            for p in path:
+                if f"{fullname}.hio" in os.listdir(p):  # Else if we're given a path, look there
+                    return importlib.machinery.ModuleSpec(fullname, cls, origin=os.path.join(path, fullname + ".hio"))
 
         raise ModuleNotFoundError(f"No module named {repr(fullname)}")  # We absolutely couldn't find it
 

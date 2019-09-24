@@ -18,6 +18,7 @@ from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, cre
 from .timeout import timeout
 from . import universals
 from . import dns
+from .lang import _hio_interpret_call, load_hio
 
 import sys
 
@@ -99,6 +100,6 @@ try:
         lib.TaskTimeout = TimeoutError
 
     manager.register("henrio", _henrio_init)
-    del _AsyncLib
+    del _AsyncLib, manager
 except ImportError:
     pass

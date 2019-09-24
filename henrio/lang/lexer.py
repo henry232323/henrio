@@ -216,27 +216,26 @@ def p_statement_import(p):
 
 
 def p_assign_left(p):
-    '''assignment : VAR EQUALS
-                  | fargs EQUALS
-                  | csa EQUALS
-                  | expression DOT VAR EQUALS'''
-    if len(p) == 5:
-        p[0] = ast.Attribute(p[1], p[3], ast.Store())
-    elif isinstance(p[0], str):
-        p[0] = ast.Name(id=p[1], ctx=ast.Store())
+    '''stmt : VAR EQUALS expression
+            | fargs EQUALS expression
+            | expression DOT VAR EQUALS expression'''
+    if len(p) == 6:
+        p[0] = Assign(ast.Attribute(p[1], p[3], ast.Store()), p[5])
+    elif isinstance(p[1], (str, ast.Name)):
+        p[0] = Assign(ast.Name(id=p[1], ctx=ast.Store()), p[3])
     else:
-        p[0] = ast.Tuple(p[1], ast.Store())
+        p[0] = Assign(ast.Tuple(p[1], ast.Store()), p[3])
 
-
+"""
 def p_assign_complete(p):
     '''stmt : assignment expression
             | assignment csv'''
     p[0] = Assign(p[1], p[2])
-
+"""
 
 def p_expression_csa(p):
-    '''csa : VAR
-           | csa COMMA VAR
+    '''csa : VAR COMMA
+           | csa VAR
     '''
     if len(p) == 2:
         p[0] = [p[1]]
@@ -261,13 +260,9 @@ def p_return_stmt(p):
 
 
 def p_yield_stmt(p):
-    """stmt : YIELD expression
-            | assignment YIELD expression"""
+    """expression : YIELD expression"""
 
     p[0] = ast.Yield(p[2])
-
-    if len(p) == 4:
-        p[0] = Assign(p[1], p[0])
 
 
 def p_compound_stmt(p):
@@ -284,9 +279,9 @@ def p_if_stmt(p):
 
 def p_foreach_stmt(p):
     '''stmt : FOR VAR TAKES expression body
-            | FOR csa TAKES expression body
+            | FOR fargs TAKES expression body
             | FOR VAR TAKES expression body ELSE body
-            | FOR csa TAKES expression body ELSE body'''
+            | FOR fargs TAKES expression body ELSE body'''
     orelse = []
     if len(p) == 8:
         orelse = p[7]
@@ -320,14 +315,14 @@ def p_while_stmt(p):
         orelse = []
     p[0] = ast.While(p[2], p[3], orelse)
 
-
+"""
 def p_comprehension(p):
     '''expression : LPAREN expression FOR VAR TAKES expression RPAREN
                   | LBRACE expression FOR VAR TAKES expression RBRACE
                   | LBRACKET expression FOR VAR TAKES expression RBRACKET'''
     name = ast.Name(p[4], ast.Store())
     p[0] = ast.comprehension(p[2], [bracetypes[p[1]](name, p[7])], [], 0)
-
+"""
 
 def p_break_stmt(p):
     'stmt : BREAK'
@@ -345,8 +340,8 @@ def p_body_empty(p):
 
 
 def p_expression_csv(p):
-    '''csv : expression
-           | csv COMMA expression
+    '''csv : expression COMMA
+           | csv expression
            | csv COMMA
     '''
     if len(p) == 2:
@@ -367,8 +362,8 @@ def p_tuple(p):
 
 
 def p_call_expr(p):
-    '''expression : expression tuple
-                  | PURE expression tuple'''
+    '''expression : expression tuple'''
+                  #| PURE expression tuple'''
     if len(p) == 3:
         runner = ast.Name("_hio_interpret_call", ast.Load())
         args = list(p[2])
@@ -420,7 +415,7 @@ def p_tuple_litr(p):
     'expression : tuple'
     p[0] = ast.Tuple(list(p[1]), ast.Load())
 
-
+"""
 def p_expression_set(p):
     '''expression : LBRACE csv RBRACE
                   | LBRACE csv COMMA RBRACE
@@ -430,7 +425,7 @@ def p_expression_set(p):
         p[0] = ast.Set((), ast.Store())
     else:
         p[0] = ast.Set(p[2], ast.Store())
-
+"""
 
 def p_expression_list(p):
     '''expression : LBRACKET csv RBRACKET
@@ -508,8 +503,8 @@ def p_file_input_end(p):
 
 def p_stmts(p):
     '''stmts : stmts NEWLINE stmt
-             | NEWLINE
              | stmt
+             | NEWLINE
     '''
     if len(p) == 2:
         p[0] = [p[1]] if type(p[1]) is not list else p[1]

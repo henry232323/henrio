@@ -1,8 +1,8 @@
 from henrio.lang import compiler
 
 sl = "print(1,2,3)"
-asm = "a = 5"
-fun = "func as(a, b) {}"
+asm = "a = 5\nprint(a)"
+fun = "func asd(a, b) {}"
 ml = """
 a = 5
 c = 3
@@ -28,4 +28,6 @@ import testfile
 #print(testfile.asd())
 """
 
-import testfile
+compiler.execute(compiler.parse(asm), locals(), globals())
+
+#import testfile

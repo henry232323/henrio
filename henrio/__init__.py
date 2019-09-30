@@ -18,7 +18,7 @@ from .io import async_connect, threaded_bind, threaded_connect, getaddrinfo, cre
 from .timeout import timeout
 from . import universals
 from . import dns
-from .lang import _hio_interpret_call, load_hio
+#from .lang import _hio_interpret_call, load_hio
 
 import sys
 

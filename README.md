@@ -1,7 +1,7 @@
 # henrio
 A small set of projects I've been working on. The goal is to recreate some major frameworks in Python from scratch. Right now this means an async framework (like asyncio) and an embeddable Python-family language.
 
-Two Parts:
+Three Parts:
   1. An Async Library modeled after others, with lots of inspiration from Curio, Trio, and AsyncIO.
   It includes many of the same concepts and can interface with multio easily, but doesn't yet have any support for anyio (prs welcome!)
       - 3 Types of Loops: Base Loop with no Async-IO; Selector Loop using the Selector Module; and on Windows,
@@ -29,4 +29,6 @@ Two Parts:
       files. 
       - Cool other stuff maybe??
       - parser is actually broken rn
+	  
+  3. Documentation for part 1, as practice for generating Python documentation. http://typheus.me/henrio/
   

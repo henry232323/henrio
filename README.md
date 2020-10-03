@@ -1,9 +1,9 @@
 # henrio
-A small project I've been working on.
+A small set of projects I've been working on. The goal is to recreate some major frameworks in Python from scratch. Right now this means an async framework (like asyncio) and an embeddable Python-family language.
 
 Two Parts:
   1. An Async Library modeled after others, with lots of inspiration from Curio, Trio, and AsyncIO.
-  It includes many of the same concepts.
+  It includes many of the same concepts and can interface with multio easily, but doesn't yet have any support for anyio (prs welcome!)
       - 3 Types of Loops: Base Loop with no Async-IO; Selector Loop using the Selector Module; and on Windows,
       the IOCP Loop (Selector is the default)
       - Futures, Tasks, and Conditionals. Wait for a Future to be set, wrap a coroutine, 

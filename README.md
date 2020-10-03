@@ -17,7 +17,7 @@ Three Parts:
       functions found in the `henrio.yields` module. These will run the associated operation on the Loop processing
       the coroutine. Generally only one loop will be running a coroutine.
       - Universals: `henrio.universals` This is a module containing all classes that can be used between 
-      Async libraries. For more information on interoperation see [async-recipes](https://github.com/henry232323/async-recipes)
+      Async libraries. For more information on inter-operation with other async libraries see [async-recipes](https://github.com/henry232323/async-recipes)
 
   2. The Language. Sometimes the parsing actually works, realistically this isn't meant to be used and was more 
   of an attempt to learn about parsing, specifically Lex-Yacc style interpretation. The language has one primary

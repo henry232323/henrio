@@ -29,6 +29,6 @@ Three Parts:
       files. 
       - Cool other stuff maybe??
       - parser is actually broken rn, it needs to be rewritten but better this time
-	  - At some point I need a lex-yacc implementation that supports async
+	  - At some point I need a lex-yacc implementation that supports async, this has proven to be especially difficult unfortunately
   3. Documentation for part 1, as practice for generating Python documentation. http://typheus.me/henrio/
   

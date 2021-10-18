@@ -1,9 +1,9 @@
 # henrio
-A small project I've been working on.
+A small set of projects I've been working on. The goal is to recreate some major frameworks in Python from scratch. Right now this means an async framework (like asyncio) and an embeddable Python-family language.
 
-Two Parts:
+Three Parts:
   1. An Async Library modeled after others, with lots of inspiration from Curio, Trio, and AsyncIO.
-  It includes many of the same concepts.
+  It includes many of the same concepts and can interface with multio easily, but doesn't yet have any support for anyio (prs welcome!)
       - 3 Types of Loops: Base Loop with no Async-IO; Selector Loop using the Selector Module; and on Windows,
       the IOCP Loop (Selector is the default)
       - Futures, Tasks, and Conditionals. Wait for a Future to be set, wrap a coroutine, 
@@ -17,7 +17,7 @@ Two Parts:
       functions found in the `henrio.yields` module. These will run the associated operation on the Loop processing
       the coroutine. Generally only one loop will be running a coroutine.
       - Universals: `henrio.universals` This is a module containing all classes that can be used between 
-      Async libraries. For more information on interoperation see [async-recipes](https://github.com/henry232323/async-recipes)
+      Async libraries. For more information on inter-operation with other async libraries see [async-recipes](https://github.com/henry232323/async-recipes)
 
   2. The Language. Sometimes the parsing actually works, realistically this isn't meant to be used and was more 
   of an attempt to learn about parsing, specifically Lex-Yacc style interpretation. The language has one primary
@@ -30,4 +30,5 @@ Two Parts:
       - Cool other stuff maybe??
       - parser is actually broken rn, it needs to be rewritten but better this time
 	  - At some point I need a lex-yacc implementation that supports async
+  3. Documentation for part 1, as practice for generating Python documentation. http://typheus.me/henrio/
   

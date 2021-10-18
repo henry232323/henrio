@@ -5,7 +5,7 @@ del concurrent  # Not for export
 
 from .bases import AbstractLoop, BaseFile, BaseSocket, AbstractProtocol, IOBase
 from .futures import Future, Task, Conditional, Event
-from .locks import Lock, ResourceLock, Semaphore
+from .locks import Lock, ResourceLock, Semaphore, ResourceManager
 from .loop import BaseLoop
 from .queue import Queue, HeapQueue, QueueWouldBlock
 from .workers import threadworker, async_threadworker, processworker, async_processworker, AsyncFuture

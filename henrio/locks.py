@@ -113,3 +113,26 @@ class Semaphore(Lock):
                 self.holders.remove(ct)
         else:
             raise RuntimeError("You don't currently hold this lock!")
+
+
+class ResourceManager:
+    def __init__(self, lock_factory=Lock):
+        """A class for managing multiple locks on arbitrary resources."""
+        self.locks = {}
+        self._lock_factory = lock_factory
+
+    async def acquire(self, resource):
+        if resource in self.locks:
+            await self.locks[resource].acquire()
+        else:
+            lock = self.locks[resource] = self._lock_factory()
+            await lock.acquire()
+
+    async def release(self, resource):
+        if resource in self.locks:
+            lock = self.locks[resource]
+            await lock.release()
+            if lock.holder is None:
+                del self.locks[resource]
+        else:
+            raise RuntimeError("This lock is not being held!")

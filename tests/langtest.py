@@ -1,7 +1,7 @@
 from henrio.lang import compiler
 
 sl = "print(1,2,3)"
-asm = "a = 5\nprint(a)"
+asm = "print(1,2,3);print(a)"
 fun = "func asd(a, b) {}"
 ml = """
 a = 5

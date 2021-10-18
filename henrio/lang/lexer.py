@@ -65,7 +65,7 @@ tokens = ('VAR', 'INT', 'FLOAT', 'EQUALS',
           'NEWLINE', 'RETURN', 'STRING', 'TRUE',
           'FALSE', 'POWER', 'COMPLEX', 'DEL', 'AS',
           'FOR', 'IN', 'WHILE', 'BREAK', 'CONTINUE',
-          'TAKES', 'CLASS', 'PURE', 'YIELD')
+          'TAKES', 'CLASS', 'PURE', 'YIELD', 'ENDL')
 
 t_EQUALS = r'='
 t_PLUS = r'\+'
@@ -78,6 +78,7 @@ t_DOT = r'\.'
 t_COMMA = r'\,[\n\r]*'
 t_TAKES = r'(\<\-|in)'
 t_PURE = r'\$'
+t_ENDL = r';'
 
 t_ignore = " \t"
 
@@ -148,7 +149,7 @@ def t_newline(t):
     r'[\n\r]+'
     t.lexer.lineno += t.value.count("\n")
     t.type = "NEWLINE"
-    if paren_count != 0:
+    if False and paren_count != 0:
         return t
 
 
@@ -344,11 +345,14 @@ def p_expression_csv(p):
            | csv expression
            | csv COMMA
     '''
-    if len(p) == 2:
+    print(list(p))
+    if isinstance(p[1], ast.expr):
         p[0] = [p[1]]
+    elif isinstance(p[2], ast.expr):
+        p[1].append(p[2])
+        p[0] = p[1]
     else:
-        p[0] = p[1] + [p[3]]
-
+        p[0] = p[1]
 
 def p_tuple(p):
     '''tuple : LPAREN csv RPAREN
@@ -479,9 +483,9 @@ def p_expr_stmt(p):
 
 
 def p_file_input(p):
-    """file_input : file_input NEWLINE
+    """file_input : file_input ENDL
                   | file_input stmt
-                  | NEWLINE
+                  | ENDL
                   | stmt"""
 
     if isinstance(p[len(p) - 1], str):
@@ -502,9 +506,9 @@ def p_file_input_end(p):
 
 
 def p_stmts(p):
-    '''stmts : stmts NEWLINE stmt
+    '''stmts : stmts ENDL stmt
              | stmt
-             | NEWLINE
+             | ENDL
     '''
     if len(p) == 2:
         p[0] = [p[1]] if type(p[1]) is not list else p[1]

@@ -28,7 +28,7 @@ Three Parts:
       - A specially built "compiler" / pyc generator. An attempt at recreating how Python handles compiled 
       files. 
       - Cool other stuff maybe??
-      - parser is actually broken rn
-	  
+      - parser is actually broken rn, it needs to be rewritten but better this time
+	  - At some point I need a lex-yacc implementation that supports async
   3. Documentation for part 1, as practice for generating Python documentation. http://typheus.me/henrio/
   

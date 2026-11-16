@@ -23,11 +23,10 @@ from setuptools import setup
 
 setup(
     name='henrio',
-    version='3.4',
+    version='3.4.1',
     description='My trials screwing with async loops',
     url='https://github.com/henry232323/henrio',
     author='henry232323',
-    author_email='henry@typheus.me',
     license='GPL',
     packages=["henrio"],
 )
